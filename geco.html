@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Geco</title>
+      <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"-->
+       <!--integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+
+      <link href="static/assets/tabler/css/tabler.min.css" rel="stylesheet" />
+      <link href="colors.css" rel="stylesheet" />
+      <link href="geco.css" rel="stylesheet" />
+      <link href="popper.css" rel="stylesheet" />
+      <link href="scrollbar.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="GeCoViz"></div>
+      <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
+          integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
+            crossorigin="anonymous"></script>
+      <script src = "https://d3js.org/d3.v6.min.js"></script>
+      <script src = "https://unpkg.com/@popperjs/core@2"></script>
+      <script src = "palette.js"></script>
+      <script src = "helpers.js"></script>
+      <script src = "popper.js"></script>
+      <script src = "newick.js"></script>
+      <script src = "tree.js"></script>
+      <script src = "geco.js"></script>
+    <script charset="utf-8">
+        async function draw() {
+            var data = [
+              { anchor: 'BEA', gene: 'a', name: 'a', pos: '-2', strand : "+",
+              kegg: [{ id: 'k', d: 'd' }], eggnog: [{ id: 'k', d: 'd' }] },
+              { anchor: 'BEA', gene: 'b', name: 'b', pos: '-1', strand : "+", kegg: [{ id: 'b', d: 'd' }] },
+              { anchor: 'BEA', gene: 'bea', name: 'bea', pos: '0', strand : "+", kegg: [{ id: 'bea', d: 'd' }] },
+              { anchor: 'BEA', gene: 'c', name: 'c', pos: '1', strand : "-", kegg: [{ id: 'c', d: 'd' }] },
+              { anchor: 'BEA', gene: 'd', name: 'd', pos: '2', strand : "+", kegg: [{ id: 'd', d: 'd' }] },
+              { anchor: 'JORGE', gene: 'a', name: 'a', pos: '-2', strand : "-", kegg: [{ id: 'k', d: 'd' }] },
+              { anchor: 'JORGE', gene: 'b', pos: '-1', strand : "+", kegg: [{ id: 'b', d: 'd' }] },
+              { anchor: 'JORGE', gene: 'jorge', name: 'jorge', pos: '0', strand : "+", kegg: [{ id: 'bea', d: 'd' }] },
+              { anchor: 'JORGE', gene: 'c', pos: '1', strand : "+", kegg: [{ id: 'c', d: 'd' }] },
+              { anchor: 'JORGE', gene: 'd', pos: '2', strand : "+", kegg: [{ id: 'd', d: 'd' }] },
+              { anchor: 'MARTIN', gene: 'a', pos: '-2', strand : "+", kegg: [{ id: 'k', d: 'd' }] },
+              { anchor: 'MARTIN', gene: 'b', pos: '-1', strand : "+", kegg: [{ id: 'b', d: 'd' }] },
+              { anchor: 'MARTIN', gene: 'martin', name: 'margin', pos: '0', strand : "+", kegg: [{ id: 'bea', d: 'd' }] },
+              { anchor: 'MARTIN', gene: 'c', pos: '1', strand : "-", kegg: [{ id: 'c', d: 'd' }] },
+              { anchor: 'MARTIN', gene: 'd', pos: '2', strand : "+", kegg: [{ id: 'd', d: 'd'
+              }, { id: 'dd', d: 'd' }] }
+            ]
+            var newick =
+            "(Nitratireductor_basaltis.472175.Nitratireductor_basaltis.EL18_00798:1.29775,(Nitratireductor_basaltis.472175.Nitratireductor_basaltis.EL18_01788:2.05876,((((((((Mesorhizobium_loti.266835.Mesorhizobium_loti_MAFF303099.14022065:0.0792825,Mesorhizobium_sp.1380350.Mesorhizobium_sp_URHC0008.JIAP01000009_gene5829:0.0240096)86.8:0.0105196,((Mesorhizobium_loti.935548.Mesorhizobium_loti_R88b.KI912159_gene1135:0.0447533,(Mesorhizobium_ciceri.765698.Mesorhizobium_ciceri_biovar_biserrulae_WSM1271.Mesci_3347:0.0410837,Mesorhizobium_sp.1287116.Mesorhizobium_sp_L2C084A000.X734_21260:0.0364616)98.4:0.0338181)70:0.00484789,(Mesorhizobium_loti.1040982.Mesorhizobium_loti_CJ3sym.AXAL01000022_gene6483:0.0510038,Mesorhizobium_loti.1040983.Mesorhizobium_loti_USDA_3471.AXAE01000005_gene1854:0.0810142)84.7:0.0173685)69.7:0.00394526)72.2:0.00340837,(Mesorhizobium_opportunistum.536019.Mesorhizobium_opportunistum_WSM2075.Mesop_3838:0.0441365,Mesorhizobium_sp.1298858.Mesorhizobium_sp_URHA0056.AUEL01000016_gene2648:0.076275)69.2:0.00608673)79.7:0.0143728,Mesorhizobium_australicum.754035.Mesorhizobium_australicum_WSM2073.Mesau_03627:0.0820346)99.5:0.0983523,Mesorhizobium_amorphae.1082933.Mesorhizobium_amorphae_CCNWGS0123.MEA186_18612:0.120706)23.5:0.0328763,Mesorhizobium_sp.1297570.Mesorhizobium_sp_STM_4661.MESS4_680077:0.106816)92.1:0.033747,Mesorhizobium_sp.1040986.Mesorhizobium_sp_WSM3224.ATYO01000008_gene2511:0.120154)70.6:0.0253884,Mesorhizobium_sp.1287276.Mesorhizobium_sp_LNJC398B00.X752_17955:0.0734174)98.9:1.45591)1:1.29775);";
+            var fields = ['showName', 'a', 'b', 'name'];
+            var c = GeCoViz('.GeCoViz')
+                        .data(data)
+                        .nSide(0)
+                        .tree(newick, fields);
+            d3.select('.GeCoViz')
+                     .call(c);
+            d3.select('.GeCoViz') 
+                .style('opacity', 1)
+                .style('visibility', 'visible')
+            await new Promise(r => setTimeout(r, 1000));
+            c.nSide(2)
+            <!--await new Promise(r => setTimeout(r, 1000));-->
+            <!--c.notation('eggnog')-->
+        }
+        draw()
+    </script>
+    </body>
+
+</html>

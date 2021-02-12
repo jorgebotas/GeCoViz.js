@@ -1,0 +1,29 @@
+:root {
+  --nodata: #cfcfcf;
+  --highlight: var(--orange); /*#ff8c00*/
+  --black: black;
+  --white: white; /*#fefcf8*/
+
+  --gray: rgba(0, 0, 0, 0.1);
+  --dark-gray: #5d5d5d;
+
+  --sand: #f8f9fa; /*#f5f7fb;   #f8f9fa; #fefcf8*/
+
+  --orange: #ff8c00;
+
+  --dark-red: #b30059;
+
+  --green: #A3C398;
+  --dark-green: #01452c;
+
+
+  --indigo: #6574cd;
+  --dark-indigo: #3849ad;
+
+  --purple: var(--indigo);
+  --dark-purple: var(--dark-indigo);
+
+  --body-bg: #f8f9fa;
+
+}
+

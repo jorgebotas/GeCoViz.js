@@ -1,0 +1,194 @@
+/* GRAPH */
+div.GeCoViz {
+  display: flex;
+  width: 100%;
+  /*width: 100%;*/
+  /*min-width: 1600px;*/
+  /*justify-content: center;*/
+  margin: 0 auto;
+  font-size: .8em;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+
+/*PHYLOGRAM*/
+div.phylogram {
+    /*display: inline-block;*/
+    /*width: 600px;*/
+    /*min-width: 600px;*/
+    text-align: left;
+    /*height: 1000px;*/
+    border: solid var(--dark-gray) 1px;
+    border-radius: 5px;
+    /*margin: 10px 5px;*/
+    overflow-x: scroll;
+    overflow-y: hidden;
+    /*resize: horizontal;*/
+}
+
+svg.phylogram {
+    border-radius: 5px;
+}
+
+g.node {
+    cursor: pointer;
+}
+
+/*GENE CONTEXT*/
+div.gcontext {
+  /*display: inline-block;*/
+  /*padding: 0 50px 0 20px;*/
+  /*min-width: 730px;*/
+  overflow-x: scroll;
+  overflow-y: hidden;
+  /*resize: horizontal;*/
+  border: solid var(--dark-gray) 1px;
+  border-radius: 5px;
+  /*margin: 10px 5px;*/
+}
+
+svg.gcontext {
+  margin: 0;
+  padding: 0;
+}
+
+svg.scale {
+    position: sticky;
+    left: 0;
+    width: 100%;
+    height: 30px;
+}
+
+svg.scale g {
+    transform: translate(10px,20px);
+}
+
+/*GENE*/
+.gene-rect, .gene-tip {
+    cursor: pointer;
+}
+
+text.geneName {
+  fill: var(--sand);
+  transition: fill 0.3s;
+  font-size: 1em;
+  text-align: center;
+  text-anchor: middle;
+  z-index: 1;
+  cursor: pointer;
+}
+
+path.stroke {
+  fill: none;
+  stroke: var(--black);
+  stroke-width: 2px;
+  z-index: 3;
+  outline: none;
+  transition: opacity 0.3s;
+}
+
+path.light-stroke {
+  fill: none;
+  stroke: var(--dark-gray);
+  stroke-width: 0.5px;
+  z-index: 1;
+  outline: none;
+}
+
+path.anchor-stroke {
+    fill: none;
+    stroke: var(--dark-gray);
+    stroke-width: 1.5px;
+    z-index: 2;
+    outline: none;
+}
+
+
+/*TREE*/
+.leaf.node text {
+    cursor: pointer;
+    font-size: .9em;
+    fill: var(--dark-gray);
+}
+
+path.link {
+    fill: none;
+    stroke: var(--dark-gray);
+}
+
+
+/*LEGEND*/
+div.legend {
+    height: auto;
+    padding: 0;
+    display: flex;
+    margin: 0;
+    overflow: visible;
+    /*margin: 0 5px;*/
+    font-size: .9em;
+    background: transparent;
+}
+
+div.sticky-legend {
+    width: 100%;
+    height: 1px;
+    display: block;
+    /*margin: 0 10px 0 0;*/
+    overflow: visible;
+}
+
+.sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    right: 0;
+}
+
+div.split-legend {
+    width: 100%;
+    padding: 20px 10px 15px 0px;
+    border: solid 1px var(--dark-gray);
+    border-radius: 5px;
+    margin: 0px 10px 10px 0px;
+    resize: vertical;
+    line-height: 1;
+    display: flex;
+    flex-wrap: wrap;
+    text-align: center;
+    overflow: auto;
+    background: var(--sand);
+}
+
+.split-legend .legend-title {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+div.split-legend > div {
+    cursor: default;
+    display: inline-block;
+    text-align: left;
+    margin-bottom: 10px;
+    width: 50%;
+    max-height: 70px;
+    /*overflow: auto;*/
+    overflow-x: hidden;
+}
+
+div.split-legend > div div {
+    display: inline-block;
+    /*overflow: auto;*/
+    overflow: hidden;
+    width: 155px;
+    padding-left: 5px;
+    text-overflow: ellipsis;
+}
+
+div.split-legend > div div {
+    overflow-y: auto;
+}
