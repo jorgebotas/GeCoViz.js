@@ -166,7 +166,13 @@ var GeCoViz = function(selector) {
             .data(data, d => d.anchor + d.pos)
             .enter()
                 .append('g')
-                .attr('class', 'gene')
+                .attr('class', d => {
+                    let cl = 'gene'
+                    cl += d.pos == 0
+                        ? ' anchor'
+                        : '';
+                    return cl
+                })
                 .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
                 .attr('transform', d => 'translate(' +
                     (+d.pos + nSide) * geneRect.w
