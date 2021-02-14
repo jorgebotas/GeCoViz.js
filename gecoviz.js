@@ -775,9 +775,7 @@ var GeCoViz = function(selector) {
             .append('g')
             .attr('class', d => {
                 let cl = 'gene'
-                console.log(d.anchor)
-                console.log(d.gene)
-                cl += d.anchor == d.gene
+                cl += d.pos == 0
                     ? ' anchor'
                     : '';
                 return cl
