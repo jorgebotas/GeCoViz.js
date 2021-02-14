@@ -697,6 +697,9 @@ var GeCoViz = function(selector) {
               .delay(delay.update)
               .attr('x', (_, i) => x0 + i * barWidth)
               .attr('width', barWidth)
+              .attr('fill', n => n.id == 'NA'
+                ? color.noData
+                : palette(n.id));
             mergedGeneRects
               .transition()
               .duration(duration)
