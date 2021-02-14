@@ -120,7 +120,8 @@ var buildTree = function(selector,
             .attr('class', n => 'leaf' + childrenName(n).join(' leaf'))
         var nodeLeafEnter = vis.selectAll('g.leaf.node');
         nodeLeafEnter
-            .attr('id', n => 'leaf' + cleanString(n.data.name))
+            .attr('id', n => 'leaf'
+            + cleanString(n.data.name))
             .append('text')
             .attr('dx', 13)
             .attr('dy', 5)
@@ -140,7 +141,7 @@ var buildTree = function(selector,
                     popperContent = n.data.showName
                         ? '<p>' + n.data.showName + '</p>' + popperContent
                         : popperContent
-                    addPopper(selector,
+                    addPopper(selector + ' .phylogram',
                         cleanString(n.data.name),
                         popperContent,
                         'col-d-2')
@@ -156,9 +157,6 @@ var buildTree = function(selector,
 
     //treeRoot.children.forEach(toggleAll);
     update(treeRoot);
-    // Enable pop-up interactivity
-    PopperClick(selector);
-
     // Toggle node function
     function toggle(node) {
         if (node.children) {
@@ -273,23 +271,14 @@ var buildTree = function(selector,
             });
         // Inner nodes have classes that represent all children
         // Hovering over clade will highlight descendants
-        function childrenName(node) {
-            let names = []
-            if (!node.children && node.data.name) {
-                names.push(cleanString(node.data.name));
-            } else {
-                node.children.forEach(c => {
-                    names = names.concat(childrenName(c));
-                })
-            }
-            return names;
-        }
         //nodeInnerEnter
-            //.attr('class', n => 'leaf' + childrenName(n).join(' leaf'))
-        // Style leaf nodes
+            //.attr('class', n => 'leaf'
+                //+ n.leaves().map(l => cleanString(l.data.name))
+                    //.join(' leaf'))
         var nodeLeafEnter = nodeEnter.filter('.leaf');
         nodeLeafEnter
-            .attr('id', n => 'leaf' + cleanString(n.data.name))
+            .attr('id', n => 'leaf'
+                + cleanString(n.data.name))
             .append('text')
             .attr('dx', 10)
             .attr('dy', 3)
@@ -310,10 +299,10 @@ var buildTree = function(selector,
                     popperContent = n.data.showName
                         ? '<p>' + n.data.showName + '</p>' + popperContent
                         : popperContent
-                    addPopper(selector,
+                    addPopper(selector + ' .phylogram',
                         cleanString(n.data.name),
                         popperContent,
-                        'col-d-2')
+                        'col-md-2 col-sm-4')
                 })
         }
 
@@ -386,4 +375,7 @@ var buildTree = function(selector,
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
     }
+    // Enable pop-up interactivity
+    PopperClick(selector + ' .phylogram');
+
 }

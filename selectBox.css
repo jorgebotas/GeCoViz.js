@@ -1,0 +1,95 @@
+/* Select box customization */
+
+/*the container must be positioned relative:*/
+.custom-selectBox {
+  position: relative;
+  margin: 0 auto;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--sand);
+  color: var(--dark-gray);
+  font-weight: bold;
+  text-align: center;
+}
+
+.select-selected:hover {
+    color: var(--black);
+}
+
+.custom-selectBox select {
+  display: none; /*hide original SELECT element:*/
+}
+
+
+/*style the arrow inside the select element:*/
+.select-selected:after {
+  position: absolute;
+  content: "";
+  top: 13px;
+  right: 10px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-color: var(--dark-gray) transparent transparent transparent;
+}
+
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+  border-color: transparent transparent var(--dark-gray) transparent;
+  top: 6px;
+}
+
+/*style the items (options), including the selected item:*/
+.select-items div,.select-selected {
+  padding: 5px 10px;
+  margin: 5px;
+  cursor: pointer;
+  user-select: none;
+  word-break: break-word;
+}
+
+.select-selected {
+    border: 1px solid var(--dark-gray);
+    border-radius: 5px;
+}
+
+/*style items (options):*/
+.select-items {
+  margin-top: 5px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s, opacity 0.5s;
+  border: 1px solid var(--dark-gray);
+  border-radius: 5px;
+  background-color: var(--sand);
+}
+
+/*hide the items when the select box is closed:*/
+.select-hide {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.5s;
+}
+
+.select-items div:hover, .same-as-selected {
+  border: solid transparent 0px;
+  border-radius: 5px;
+  background-color: var(--gray);
+}
+
+
+:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+:disabled~div {
+    pointer-events: none;
+    opacity: 0.4;
+}

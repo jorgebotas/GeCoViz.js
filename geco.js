@@ -6,11 +6,12 @@ var GeCoViz = function(selector) {
   var anchors = [];
   var nSide = 2;
   var width = 700;
-  var height = 100;
+  var height = 700;
   var margin = {
       top : 10,
       left : 10,
   }
+  var showName = "showName";
   var notation = "kegg";
   var notationLevel;
   var excludedNotation = [];
@@ -40,12 +41,19 @@ var GeCoViz = function(selector) {
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
   var domain = [];
   var palette = buildPalette(domain);
-  var updateData, updatePalette, drawLegend, updateWidth;
+  var updateData,
+        updateShowName,
+        updateNotation,
+        updatePalette,
+        drawLegend,
+        updateWidth;
   var options = {
       showName : true,
+      showTree : true,
   }
   // Color variables
   var color = {
+      primary : 'var(--indigo)',
       noData: 'var(--nodata)',
       highlight : 'var(--highlight)',
       black : 'var(--black)',
@@ -56,16 +64,68 @@ var GeCoViz = function(selector) {
   }
   var leafColor = {
       stroke : color.darkPurple,
-      fill : color.purple,
+      fill : color.sand,
   }
 
   function chart(selection) {
     selection.each(function() {
-        function initChart(container) {
-          if (newick) {
-                buildTree(selector, newick, newickFields)
+        function getY(d) {
+            let y;
+            try {
+                let cleaned = cleanString(d.anchor);
+                cleaned = cleaned.replaceAll('_', '');
+                y = d3.select(selector
+                            + ' #leaf'
+                            + cleanString(d.anchor))
+                        .node()
+                        .getBoundingClientRect()
+                        .top
+                    - d3.select(selector + ' .phylogram')
+                        .node()
+                        .getBoundingClientRect()
+                        .top;
+                return y - 11;
             }
-          let contextContainer = container
+            catch {}
+            return anchors.indexOf(d.anchor) * geneRect.h
+        }
+
+        function getShowName(d) {
+            let geneName = d[showName];
+            if(["", "NA", undefined].every(i => i != geneName)){
+                let size = +Math.floor(geneRect.w / 13.5);
+                let name = d[showName];
+                if (size < name.length){
+                    name = name.slice(0, size);
+                }
+                geneName = name;
+            } else { geneName = "." }
+            return geneName;
+        }
+
+        updateShowName = function() {
+            d3.selectAll('text.geneName')
+                .transition()
+                .duration(duration)
+                .style('opacity', 0)
+                .transition()
+                .duration(duration)
+                .style('opacity', g => options.showName
+                    && getShowName(g) != "."
+                        ? 1 : 0)
+                .text(getShowName);
+        }
+
+        function initChart(container) {
+          customBar(selector);
+          graphContainer = container
+            .append('div')
+            .attr('class', 'row graph-container');
+          if (newick) {
+                buildTree(selector + ' .graph-container',
+                  newick, newickFields)
+            }
+          let contextContainer = graphContainer
                 .append('div')
                 .attr('class', 'col-md-6 p-1')
                 .append('div')
@@ -85,7 +145,7 @@ var GeCoViz = function(selector) {
               geneRect.w = width / (2 * nSide + 1)
           }
           updateWidth();
-          legendContainer = container
+          legendContainer = graphContainer
                 .append('div')
                 .attr('class', 'col-md-2 p-1')
                 .append('div')
@@ -93,7 +153,7 @@ var GeCoViz = function(selector) {
           drawLegend();
           let contextSVG = contextContainer
             .append('svg')
-            .attr('class', 'gcontext')
+            .attr('class', 'gcontextSVG')
             .attr('width', width)
             .attr('height', height);
           contextG = contextSVG
@@ -108,11 +168,10 @@ var GeCoViz = function(selector) {
                 .append('g')
                 .attr('class', 'gene')
                 .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-                .attr('transform', d =>
-                    'translate(' +
+                .attr('transform', d => 'translate(' +
                     (+d.pos + nSide) * geneRect.w
                     + ","
-                    + anchors.indexOf(d.anchor) * geneRect.h
+                    + getY(d)
                     + ")")
                 .transition()
                 .duration(duration)
@@ -235,6 +294,12 @@ var GeCoViz = function(selector) {
                 : filterByLevel(n)
         }
 
+        updateNotation = function() {
+            contextG.selectAll('g.gene')
+                .each(updateGene)
+                .each(updateGene);
+        }
+
         drawLegend = function() {
             // Empty pre-existing legend
             legendContainer
@@ -260,7 +325,7 @@ var GeCoViz = function(selector) {
             // Legend title
             splitLegend.append('div')
                        .attr('class', 'legend-title')
-                       .html(notation);
+                       .html(notation.toUpperCase());
             let nots = data.map(d =>
                 !d[notation]
                 ? []
@@ -268,9 +333,11 @@ var GeCoViz = function(selector) {
                 ? d[notation].filter(filterByLevel)
                 : [{id:d[notation]}])
                 .flat();
+            console.log(nots)
             let uniqueNotation = {};
             nots.forEach(n => uniqueNotation[n.id] = n);
             uniqueNotation = [...Object.values(uniqueNotation)]
+            console.log(uniqueNotation)
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
             splitLegend
@@ -285,9 +352,11 @@ var GeCoViz = function(selector) {
                         "lgnd-toggleAll");
             // Toggle checkboxes if clicked
             let legendSwitch = $(selector + " .lgnd-toggleAll");
-            legendSwitch.change(() => {
+            legendSwitch = [...legendSwitch]
+            legendSwitch = legendSwitch[legendSwitch.length - 1]
+            legendSwitch.addEventListener('change', () => {
                 let switches = $(selector + " .lgnd-switch");
-                if (legendSwitch.is(":checked")) {
+                if (legendSwitch.checked) {
                     switches.prop("checked", true);
                 } else {
                     switches.prop("checked", false);
@@ -330,7 +399,7 @@ var GeCoViz = function(selector) {
                 let t = div.append("div")
                          .style("display", "inline-block")
                          .style("outline", "none");
-                let title = URLs[notation]
+                let title = !URLs[notation]
                         ? "<em>" + n.id + "</em>"
                         : '<a href="'
                             + URLs[notation].b
@@ -357,30 +426,38 @@ var GeCoViz = function(selector) {
             })
         }
 
-        function hoverGene(selector, d) {
+        function hoverGene(d) {
+            let geneD3 = contextG
+                .select("#gene"
+                    + cleanString(d.anchor + d.pos));
+            let stroke = geneD3
+                .select('path.stroke');
+            let geneName = geneD3
+                .select('text.geneName')
+            let leaf = graphContainer
+                .select('#leaf'
+                + cleanString(d.anchor));
+            let leafCircle = leaf
+                .select('circle');
+            let leafText = leaf
+                .select('text');
             function mouseOver() {
-                let geneD3 = d3.select(selector
-                    + " #gene"
-                    + cleanString(d.anchor + d.pos))
-                geneD3.select('path.stroke')
+                stroke
                  .style('opacity', 1);
-                geneD3.select('text.geneName')
+                geneName
                  .style('fill', color.black);
                 // Highlight tree
-                let leaf = d3.select(selector
-                    + ' #leaf'
-                    + cleanString(d.anchor));
-                leaf.select('circle')
+                leafCircle
                     .style('stroke', color.highlight)
                     .style('fill', color.highlight);
-                leaf.select('text')
+                leafText
                     .style('fill', color.highlight)
                 let nots = d[notation];
-                if (typeof nots != 'object') nots = [{id:not}];
+                if (typeof nots != 'object') nots = [{id:nots}];
                 nots.filter(filterByLevel).forEach(n => {
                     // Highlight legend
-                    let div = d3.select(selector
-                        + " .lgnd"
+                    let div = graphContainer
+                        .select(".lgnd"
                         + cleanString(n.id))
                     let t = div.select('a');
                     t = t.nodes().length == 0
@@ -390,24 +467,18 @@ var GeCoViz = function(selector) {
                 })
             }
             function mouseLeave() {
-                let geneD3 = d3.select(selector
-                    + " #gene"
-                    + cleanString(d.anchor + d.pos))
-                geneD3.select('path.stroke')
+                stroke
                  .style('opacity', 0);
-                geneD3.select('text.geneName')
+                geneName
                  .style('fill', color.sand);
                 // Highlight tree
-                let leaf = d3.select(selector
-                    + ' #leaf'
-                    + cleanString(d.anchor));
-                leaf.select('circle')
+                leafCircle
                     .style('stroke', leafColor.stroke)
                     .style('fill', leafColor.fill);
-                leaf.select('text')
+                leafText
                     .style('fill', color.darkGray)
                 let nots = d[notation];
-                if (typeof nots != 'object') nots = [{id:not}];
+                if (typeof nots != 'object') nots = [{id:nots}];
                 nots.filter(filterByLevel).forEach(n => {
                     // Highlight legend
                     let div = d3.select(selector
@@ -417,16 +488,13 @@ var GeCoViz = function(selector) {
                     t = t.nodes().length == 0
                         ? div.select('em')
                         : t;
-                    t.style('color', 'initial');
+                    t.style('color', color.primary);
                 })
             }
-            // Gene SVG group
-            let geneG = document
-                .querySelector(selector + " #gene" + cleanString(d.anchor + d.pos));
-            geneG.childNodes.forEach(c => {
-                c.addEventListener('mouseover', mouseOver);
-                c.addEventListener('mouseleave', mouseLeave);
-            });
+            return {
+                mouseOver : mouseOver,
+                mouseLeave : mouseLeave
+            }
         }
 
         function formatNotation(n) {
@@ -443,6 +511,67 @@ var GeCoViz = function(selector) {
                 unfNots : unfNots,
                 nots : nots
             }
+        }
+
+        function parameterListener() {
+            // nSide slider
+            let nSideSlider = container
+                .select('.nSideSlider')
+                .node()
+                .noUiSlider;
+            nSideSlider.on('change', () => {
+                chart.nSide(Math.round(nSideSlider.get()))
+            })
+            // Tree toggler
+            let treeToggler = container
+                .select('input.toggleTree');
+            treeToggler.on('change', () => {
+                options.showTree = treeToggler.property('checked');
+                toggleTree();
+            })
+            // Show on gene
+            let showOptions = container
+                .select('select.showName')
+                .node();
+            container
+                .select('.showName + .select-selected')
+                .on('DOMSubtreeModified', () => {
+                    newShowName = showOptions
+                        .options[showOptions.selectedIndex]
+                        .value;
+                    if(newShowName != showName) chart.showName(newShowName)
+                })
+            // Notation level
+            let notationLevelOptions = container
+                .select('select.notationLevel')
+                .node();
+            container
+                .select('.notationLevel + .select-selected')
+                .on('DOMSubtreeModified', () => {
+                    let newNotationLevel = notationLevelOptions
+                        .options[notationLevelOptions.selectedIndex]
+                        .value;
+                    if(newNotationLevel != notationLevel) {
+                        chart.notation(notation, newNotationLevel)
+                    }
+                })
+            // Notation options
+            let notationOptions = container
+                .select('select.notation')
+                .node();
+            container
+                .select('.notation + .select-selected')
+                .on('DOMSubtreeModified', () => {
+                    let newNotation = notationOptions
+                        .options[notationOptions.selectedIndex]
+                        .value;
+                    if(newNotation != notation) {
+                        let notationLevelOption = notationLevelOptions
+                        .options[notationLevelOptions.selectedIndex]
+                        .value;
+                        chart.notation(newNotation, notationLevelOption)
+                    }
+                })
         }
 
         function enterGene(d) {
@@ -509,16 +638,25 @@ var GeCoViz = function(selector) {
             .attr('class', 'geneName')
             .attr('x', geneRect.w/2 - geneRect.ph/2)
             .attr('y', geneRect.h / 1.7)
-            .style('opacity', () => options.showName ? 1 : 0)
-            .text(geneName);
-            // Tooltips
-            PopperCreate(selector, d);
+            .style('opacity', g => options.showName
+                && getShowName(g) != "."
+                    ? 1 : 0)
+            .text(getShowName);
             // Hover rationale
-            hoverGene(selector, d);
+            let { mouseOver, mouseLeave } = hoverGene(d);
+            let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
+            // Gene SVG group
+            geneG.node().childNodes.forEach(c => {
+                c.addEventListener('click', popperShow);
+                c.addEventListener('mouseover', mouseOver);
+                c.addEventListener('mouseleave', mouseLeave);
+            });
         }
 
         function updateGene(d) {
             let geneG = d3.select(this);
+            let { mouseOver, mouseLeave } = hoverGene(d);
+            let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
             let {
                 unfNots,
                 nots
@@ -528,8 +666,9 @@ var GeCoViz = function(selector) {
             let tipWidth = (2 * geneRect.ph) / 5;
             let x0, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
-            let geneRects = geneG.selectAll('rect.gene-rect')
-            .data(nots, n => n.id);
+            let geneRects = geneG
+                .selectAll('rect.gene-rect')
+                .data(nots, n => n.id);
             geneRects
             .enter()
               .insert('rect', 'path')
@@ -542,6 +681,14 @@ var GeCoViz = function(selector) {
               .attr('width', 0)
               .attr('height', geneRect.h - geneRect.pv)
               .style('opacity', 0)
+              .each((_d, _i, rects) => {
+                  let newRects = [...new Set(rects)].filter(n => n != undefined);
+                  newRects.forEach(r => {
+                      r.addEventListener('click', popperShow)
+                      r.addEventListener('mouseover', mouseOver);
+                      r.addEventListener('mouseleave', mouseLeave);
+                  })
+              })
             // Updating gene rects
             let mergedGeneRects = geneRects
             .merge(geneRects);
@@ -564,11 +711,6 @@ var GeCoViz = function(selector) {
             .remove();
 
             let { tipPath, strokePath } = getArrow(d, x0, geneRect.w, tipWidth);
-/*            let tipFill = +nots.length == 0*/
-                //? color.noData
-                //: d.strand == "-"
-                //? palette(nots[0].id)
-                /*: palette(nots[nots.length-1].id);*/
             let strokeClass = "stroke "
                 + unfNots.map(n => "c" + cleanString(n.id)).join(" ");
             let geneTip = geneG
@@ -585,11 +727,7 @@ var GeCoViz = function(selector) {
             .attr('fill', n => n.id == 'NA'
                           ? color.noData
                           : palette(n.id))
-            .style('opacity', 0)
-            //enterGeneTip
-            //.transition()
-            //.duration(500)
-            //.style('opacity', 1);
+            .style('opacity', 0);
             let mergedGeneTip = geneTip
             .merge(geneTip);
             mergedGeneTip
@@ -605,10 +743,6 @@ var GeCoViz = function(selector) {
                           ? color.noData
                           : palette(n.id))
             .style('opacity', 1);
-            if(nots[0].id == 'NA') {
-            console.log(d.gene)
-            console.log(geneTip.data())
-            }
             geneTip
             .exit()
             .transition()
@@ -629,15 +763,6 @@ var GeCoViz = function(selector) {
             .attr('d', strokePath)
             .attr('class', strokeClass)
             .style('opacity', 0);
-            let geneName = d.name;
-            if(["", "NA", undefined].every(i => i != geneName)){
-                let size = +Math.floor(geneRect.w / 13.5);
-                let name = d.name;
-                if (size < name.length){
-                    name = name.slice(0, size);
-                }
-                geneName = name;
-            } else { geneName = " " }
             geneG
             .select('text.geneName')
             .attr('y', geneRect.h / 1.7)
@@ -645,12 +770,10 @@ var GeCoViz = function(selector) {
             .duration(duration)
             .delay(delay.update)
             .attr('x', geneRect.w/2 - geneRect.ph/2)
-            .style('opacity', () => options.showName ? 1 : 0)
-            .text(geneName);
-            // Tooltips
-            PopperCreate(selector, d);
-            // Hover rationale
-            hoverGene(selector, d);
+            .style('opacity', g => options.showName
+                && getShowName(g) != "."
+                    ? 1 : 0)
+            .text(getShowName);
         }
 
         updateData = function() {
@@ -667,7 +790,7 @@ var GeCoViz = function(selector) {
                 'translate(' +
                 (+d.pos + nSide) * geneRect.w +
                 "," +
-                anchors.indexOf(d.anchor) * geneRect.h +
+                getY(d) +
                 ")")
             .style('opacity', 0)
             .transition()
@@ -685,7 +808,7 @@ var GeCoViz = function(selector) {
                 'translate(' +
                 (+d.pos + nSide) * geneRect.w +
                 "," +
-                anchors.indexOf(d.anchor) * geneRect.h +
+                getY(d) +
                 ")")
             .each(updateGene)
             .each(updateGene);
@@ -696,8 +819,6 @@ var GeCoViz = function(selector) {
             .delay(delay.exit)
             .style('opacity', 0)
             .remove();
-            // Enable Popper trigger
-            PopperClick(selector);
         }
 
         updatePalette = function() {
@@ -708,8 +829,10 @@ var GeCoViz = function(selector) {
 
         var container = d3.select(this);
         var legendContainer,
+            graphContainer,
             contextG
         initChart(container);
+        parameterListener();
     });
   }
 
@@ -765,7 +888,7 @@ var GeCoViz = function(selector) {
     preUpdate(true);
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof drawLegend === 'function') drawLegend();
-    if (typeof updateData === 'function') updateData();
+    if (typeof updateNotation == 'function') updateNotation();
     return chart;
   };
 
@@ -774,11 +897,18 @@ var GeCoViz = function(selector) {
     if (exclude && !excludedNotation.includes(notationID))
       { excludedNotation.push(notationID) }
     else if (!exclude && excludedNotation.includes(notationID))
-      { excludedNotation.splice(excludedNotation.indexOf(notationID)) }
-    if (typeof updateData === 'function') updateData();
+      { excludedNotation = excludedNotation.filter(n => n != notationID) }
+    if (typeof updateNotation == 'function') updateNotation();
     return chart;
   }
 
-  PopperClick(selector);
+  chart.showName = function(field) {
+    if (!arguments.length) return showName;
+    showName = field;
+    if (typeof updateShowName == 'function') updateShowName();
+    return chart;
+  }
+
+  PopperClick(selector + ' .gcontext');
   return chart;
 }

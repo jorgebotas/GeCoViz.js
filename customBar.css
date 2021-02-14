@@ -1,0 +1,21 @@
+div.customBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  border: solid var(--dark-gray) 1px;
+  border-radius: 5px;
+  margin: 20px 10px;
+  padding: 10px;
+}
+
+div.customBar > div {
+    margin: auto;
+    padding: 5px;
+    padding-top: 0;
+    border-radius: 5px;
+}
+
+.customBar .checkbox {
+   display: inline-block;
+   margin: 10px 0 0 20px; 
+}

@@ -1,31 +1,27 @@
 /* GRAPH */
 div.GeCoViz {
-  display: flex;
   width: 100%;
-  /*width: 100%;*/
-  /*min-width: 1600px;*/
-  /*justify-content: center;*/
-  margin: 0 auto;
   font-size: .8em;
+  margin: 0 auto;
   visibility: hidden;
   opacity: 0;
   transition: opacity 1s;
 }
 
+div.graph-container {
+  display: flex;
+  width: 100%;
+  margin: 0 auto;
+}
+
 
 /*PHYLOGRAM*/
 div.phylogram {
-    /*display: inline-block;*/
-    /*width: 600px;*/
-    /*min-width: 600px;*/
     text-align: left;
-    /*height: 1000px;*/
     border: solid var(--dark-gray) 1px;
     border-radius: 5px;
-    /*margin: 10px 5px;*/
     overflow-x: scroll;
     overflow-y: hidden;
-    /*resize: horizontal;*/
 }
 
 svg.phylogram {
@@ -38,15 +34,10 @@ g.node {
 
 /*GENE CONTEXT*/
 div.gcontext {
-  /*display: inline-block;*/
-  /*padding: 0 50px 0 20px;*/
-  /*min-width: 730px;*/
   overflow-x: scroll;
   overflow-y: hidden;
-  /*resize: horizontal;*/
   border: solid var(--dark-gray) 1px;
   border-radius: 5px;
-  /*margin: 10px 5px;*/
 }
 
 svg.gcontext {
@@ -126,7 +117,6 @@ div.legend {
     display: flex;
     margin: 0;
     overflow: visible;
-    /*margin: 0 5px;*/
     font-size: .9em;
     background: transparent;
 }
@@ -135,7 +125,6 @@ div.sticky-legend {
     width: 100%;
     height: 1px;
     display: block;
-    /*margin: 0 10px 0 0;*/
     overflow: visible;
 }
 
@@ -176,13 +165,11 @@ div.split-legend > div {
     margin-bottom: 10px;
     width: 50%;
     max-height: 70px;
-    /*overflow: auto;*/
     overflow-x: hidden;
 }
 
 div.split-legend > div div {
     display: inline-block;
-    /*overflow: auto;*/
     overflow: hidden;
     width: 155px;
     padding-left: 5px;
