@@ -860,7 +860,7 @@ var GeCoViz = function(selector) {
 
     function swapStrands(unswapped) {
         let anchorToSwap = unswapped.map(d => {
-            if (d.pos == 9 && d.strand == '-') return d.anchor
+            if (d.pos == 0 && d.strand == '-') return d.anchor
         })
         let swapped = []
         unswapped.forEach(d => {
