@@ -624,15 +624,6 @@ var GeCoViz = function(selector) {
                             .map(n => 'c' + cleanString(n.id))
                             .join(' '))
             .style('opacity', 0);
-            let geneName = d.name;
-            if(["", "NA", undefined].every(i => i != geneName)){
-                let size = +Math.floor(geneRect.w / 13.5);
-                let name = d.name;
-                if (size < name.length){
-                    name = name.slice(0, size);
-                }
-                geneName = name;
-            } else { geneName = " " }
             geneG
             .append('text')
             .attr('class', 'geneName')
@@ -786,6 +777,8 @@ var GeCoViz = function(selector) {
             .append('g')
             .attr('class', d => {
                 let cl = 'gene'
+                console.log(d.anchor)
+                console.log(d.gene)
                 cl += d.anchor == d.gene
                     ? ' anchor'
                     : '';
