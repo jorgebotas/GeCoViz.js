@@ -579,7 +579,7 @@ var GeCoViz = function(selector) {
                 })
             container
                 .select('.shuffleColors')
-                .on('click', chart.shuffleColors());
+                .on('click', () => chart.shuffleColors());
         }
 
         function enterGene(d) {
@@ -909,6 +909,7 @@ var GeCoViz = function(selector) {
     if (!arguments.length) return notation;
     notation = not;
     notationLevel = level;
+    updatePalette()
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof drawLegend === 'function') drawLegend();
     if (typeof updateNotation == 'function') updateNotation();
