@@ -8,7 +8,7 @@ var PopperCreate = function(selector, d, URLs) {
                 && field.length > 0) {
                 fieldData = '<ul class="popper-ul">\
                     <li class="popper-ul-title">'
-                    + key
+                    + key.toUpperCase()
                     + '</li>';
                 field.forEach(f => {
                     url = URLs[key]
@@ -21,9 +21,18 @@ var PopperCreate = function(selector, d, URLs) {
                                     + ' target="_blank">'
                                     + f.id
                                     +'</a>';
-                    fieldData += f.level
-                            ? ' (level: ' + f.level + ')'
-                            : '';
+                    levelData = !f.level
+                            ? ''
+                            : f.leveDesc
+                            ? ' (level: '
+                                + f.level
+                                + ', description: '
+                                + d.levelDesc
+                                + ')'
+                            : ' (level: '
+                                + f.level
+                                + ')';
+                    fieldData += levelData
                     fieldData += '<br>' + f.description + '</li>';
                 })
                 fieldData += '</ul>';
