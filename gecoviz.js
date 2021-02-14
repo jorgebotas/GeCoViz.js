@@ -858,11 +858,11 @@ var GeCoViz = function(selector) {
       }
   }
 
-    function swapStrands(d) {
-        let anchorToSwap = unswapped.map(d => {
+    function swapStrands(arr) {
+        let anchorToSwap = arr.map(d => {
             if (d.pos == 9 && d.strand == '-') return d.anchor
         })
-        d.forEach(d => {
+        arr.forEach(d => {
             if (anchorToSwap.includes(d.anchor)) {
                 d.pos = (-1) * (+d.pos);
                 d.strand = d.strand == '+'
@@ -870,7 +870,7 @@ var GeCoViz = function(selector) {
                     : '+';
             }
         })
-        return d;
+        return arr;
     }
 
   chart.data = function(d) {
