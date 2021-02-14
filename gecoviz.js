@@ -44,7 +44,6 @@ var GeCoViz = function(selector) {
   var updateData,
         updateShowName,
         updateNotation,
-        updatePalette,
         drawLegend,
         updateWidth;
   var options = {
@@ -827,10 +826,10 @@ var GeCoViz = function(selector) {
             .remove();
         }
 
-        updatePalette = function(shuffle = false) {
-            buildDomain();
-            palette = buildPalette(domain, shuffle);
-        }
+        //updatePalette = function(shuffle = false) {
+            //buildDomain();
+            //palette = buildPalette(domain, shuffle);
+        //}
 
         var container = d3.select(this);
         var legendContainer,
@@ -853,6 +852,11 @@ var GeCoViz = function(selector) {
       domain = [...new Set(domain)]
   }
 
+    function updatePalette(shuffle=false) {
+        buildDomain();
+        palette = buildPalette(domain, shuffle);
+    }
+
   function preUpdate() {
       data = unfData.filter(d => Math.abs(+d.pos) <= nSide)
       anchors = [...new Set(data.map(d => d.anchor))];
@@ -870,8 +874,6 @@ var GeCoViz = function(selector) {
                 dCopy.strand = d.strand == '+'
                     ? '-'
                     : '+';
-                console.log(d)
-                console.log(dCopy)
             }
             swapped.push(dCopy);
         })

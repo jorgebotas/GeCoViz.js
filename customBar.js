@@ -104,6 +104,7 @@ var customBar = function(selector) {
         .append('div')
         .append('button')
         .attr('class', 'shuffleColors btn btn-secondary btn-sm')
+        .html('Shuffle colors')
 
     selectBox(selector);
 }
