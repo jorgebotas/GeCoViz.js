@@ -884,6 +884,7 @@ var GeCoViz = function(selector) {
     if (!arguments.length) return data;
     unfData = swapStrands(d);
     preUpdate();
+    updatePalette()
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof updateData === 'function') updateData();
     return chart;
