@@ -858,9 +858,24 @@ var GeCoViz = function(selector) {
       }
   }
 
+    function swapStrands(d) {
+        let anchorToSwap = unswapped.map(d => {
+            if (d.pos == 9 && d.strand == '-') return d.anchor
+        })
+        d.forEach(d => {
+            if (anchorToSwap.includes(d.anchor)) {
+                d.pos = (-1) * (+d.pos);
+                d.strand = d.strand == '+'
+                    ? '-'
+                    : '+';
+            }
+        })
+        return d;
+    }
+
   chart.data = function(d) {
     if (!arguments.length) return data;
-    unfData = d;
+    unfData = swapStrands(d);
     preUpdate(true);
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof updateData === 'function') updateData();
