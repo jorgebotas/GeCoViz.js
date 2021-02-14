@@ -333,11 +333,9 @@ var GeCoViz = function(selector) {
                 ? d[notation].filter(filterByLevel)
                 : [{id:d[notation]}])
                 .flat();
-            console.log(nots)
             let uniqueNotation = {};
             nots.forEach(n => uniqueNotation[n.id] = n);
             uniqueNotation = [...Object.values(uniqueNotation)]
-            console.log(uniqueNotation)
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
             splitLegend
