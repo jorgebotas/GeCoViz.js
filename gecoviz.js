@@ -696,14 +696,14 @@ var GeCoViz = function(selector) {
               .duration(duration)
               .delay(delay.update)
               .attr('x', (_, i) => x0 + i * barWidth)
-              .attr('width', barWidth)
-              .attr('fill', n => n.id == 'NA'
-                ? color.noData
-                : palette(n.id));
+              .attr('width', barWidth);
             mergedGeneRects
               .transition()
               .duration(duration)
               .delay(delay.enter)
+              .attr('fill', n => n.id == 'NA'
+                ? color.noData
+                : palette(n.id))
               .style('opacity', 1);
             geneRects
             .exit()
@@ -895,7 +895,7 @@ var GeCoViz = function(selector) {
 
   chart.tree = function(n, fields = ['name']) {
         if (!arguments.length) return newick;
-        newick = parseNewick(n, fields);
+        if (n) newick = parseNewick(n, fields);
         newickFields = fields;
         return chart;
   }
