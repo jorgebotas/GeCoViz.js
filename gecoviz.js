@@ -122,8 +122,10 @@ var GeCoViz = function(selector) {
             .append('div')
             .attr('class', 'row graph-container');
           if (newick) {
-                buildTree(selector + ' .graph-container',
+              buildTree(selector + ' .graph-container',
                   newick, newickFields)
+              d3.selectAll()
+
             }
           let contextContainer = graphContainer
                 .append('div')
@@ -576,6 +578,9 @@ var GeCoViz = function(selector) {
                         chart.notation(newNotation, notationLevelOption)
                     }
                 })
+            container
+                .select('.shuffleColors')
+                .on('click', chart.shuffleColors());
         }
 
         function enterGene(d) {
@@ -822,10 +827,9 @@ var GeCoViz = function(selector) {
             .remove();
         }
 
-        updatePalette = function() {
-            data = unfData.filter(d => Math.abs(+d.pos) <= nSide);
+        updatePalette = function(shuffle = false) {
             buildDomain();
-            palette = buildPalette(domain);
+            palette = buildPalette(domain, shuffle);
         }
 
         var container = d3.select(this);
@@ -849,16 +853,12 @@ var GeCoViz = function(selector) {
       domain = [...new Set(domain)]
   }
 
-  function preUpdate(palette=false) {
+  function preUpdate() {
       data = unfData.filter(d => Math.abs(+d.pos) <= nSide)
       anchors = [...new Set(data.map(d => d.anchor))];
-      if (palette) {
-          buildDomain();
-          palette = buildPalette(domain)
-      }
   }
 
-    function swapStrands(unswapped) {
+  function swapStrands(unswapped) {
         let anchorToSwap = unswapped.map(d => {
             if (d.pos == 0 && d.strand == '-') return d.anchor
         })
@@ -876,12 +876,12 @@ var GeCoViz = function(selector) {
             swapped.push(dCopy);
         })
         return swapped;
-    }
+  }
 
   chart.data = function(d) {
     if (!arguments.length) return data;
     unfData = swapStrands(d);
-    preUpdate(true);
+    preUpdate();
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof updateData === 'function') updateData();
     return chart;
@@ -906,7 +906,6 @@ var GeCoViz = function(selector) {
     if (!arguments.length) return notation;
     notation = not;
     notationLevel = level;
-    preUpdate(true);
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof drawLegend === 'function') drawLegend();
     if (typeof updateNotation == 'function') updateNotation();
@@ -928,6 +927,12 @@ var GeCoViz = function(selector) {
     showName = field;
     if (typeof updateShowName == 'function') updateShowName();
     return chart;
+  }
+
+  chart.shuffleColors = function() {
+    if (typeof updatePalette === 'function') updatePalette(true);
+    if (typeof drawLegend === 'function') drawLegend();
+    if (typeof updateNotation == 'function') updateNotation();
   }
 
   PopperClick(selector + ' .gcontext');

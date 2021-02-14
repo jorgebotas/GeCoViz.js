@@ -100,6 +100,10 @@ var customBar = function(selector) {
         .append('option')
         .attr('value', 2)
         .html('2: Bacteria')
+    container
+        .append('div')
+        .append('button')
+        .attr('class', 'shuffleColors btn btn-secondary btn-sm')
 
     selectBox(selector);
 }

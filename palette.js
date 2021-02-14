@@ -1,4 +1,4 @@
-var buildPalette = function(domain) {
+var buildPalette = function(domain, shuffle = false) {
     var colors = [
             "#abfdcb",
             "#c9b2fd",
@@ -36,7 +36,12 @@ var buildPalette = function(domain) {
             "#ff6200",
             "#406362"
               ]
+    if (shuffle) colors = shuffleColors(colors);
     return d3.scaleOrdinal()
             .domain(domain)
-            .range([...colors]);
+            .range(colors);
+}
+
+var shuffleColors = function(colors) {
+    return shuffle([...colors]);
 }
