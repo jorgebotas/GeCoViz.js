@@ -858,19 +858,24 @@ var GeCoViz = function(selector) {
       }
   }
 
-    function swapStrands(arr) {
-        let anchorToSwap = arr.map(d => {
+    function swapStrands(unswapped) {
+        let anchorToSwap = unswapped.map(d => {
             if (d.pos == 9 && d.strand == '-') return d.anchor
         })
-        arr.forEach(d => {
+        let swapped = []
+        unswapped.forEach(d => {
+            let dCopy = Object.assign({}, d)
             if (anchorToSwap.includes(d.anchor)) {
-                d.pos = (-1) * (+d.pos);
-                d.strand = d.strand == '+'
+                dCopy.pos = (-1) * (+d.pos);
+                dCopy.strand = d.strand == '+'
                     ? '-'
                     : '+';
+                console.log(d)
+                console.log(dCopy)
             }
+            swapped.push(dCopy);
         })
-        return arr;
+        return swapped;
     }
 
   chart.data = function(d) {
