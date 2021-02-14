@@ -56,6 +56,7 @@ var GeCoViz = function(selector) {
       noData: 'var(--nodata)',
       highlight : 'var(--highlight)',
       black : 'var(--black)',
+      white : 'var(--white)',
       darkGray : 'var(--dark-gray)',
       sand : 'var(--sand)',
       darkPurple : 'var(--dark-purple)',
@@ -475,7 +476,7 @@ var GeCoViz = function(selector) {
                 stroke
                  .style('opacity', 0);
                 geneName
-                 .style('fill', color.sand);
+                 .style('fill', color.white);
                 // Highlight tree
                 leafCircle
                     .style('stroke', leafColor.stroke)
@@ -840,6 +841,13 @@ var GeCoViz = function(selector) {
             contextG
         initChart(container);
         parameterListener();
+        container
+            .select('.gcontext')
+            .attr('height', container
+                .select('.phylogram')
+                .node()
+                .getBoundingClientRect().height)
+
     });
   }
 

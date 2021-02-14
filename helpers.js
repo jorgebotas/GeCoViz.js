@@ -58,6 +58,7 @@ var addLabel = function(g,
     let label = g.append('label')
         .attr('class', 'form-label')
         .style('font-size', '1em')
+        .style('font-weight', 'bold')
         .html(html);
     return label
 }
