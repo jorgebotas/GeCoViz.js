@@ -25,7 +25,7 @@ var draw_protDomains = function(selector,
                          domains ,
                          palette,
                          urlRoot=undefined) {
-        var legend = select(selector)
+        var legend = d3.select(selector)
          .append("div")
          .attr("class", "dom-legend");
         var doms = new Set();
@@ -81,7 +81,7 @@ var draw_protDomains = function(selector,
             .attr("height", height)
             .attr("fill", d => palette(d.class));
     }
-    var g = select(selector)
+    var g = d3.select(selector)
               .append('svg:svg')
               .attr("width", width)
               .attr("height", height)
