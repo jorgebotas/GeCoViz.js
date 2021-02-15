@@ -429,6 +429,7 @@ var GeCoViz = function(selector) {
                   .attr("class", "w-100")
                   .style("display", "block")
                   .style("max-height", "35px")
+                  .style("height", "35px")
                   .html(n.description);
             })
         }
