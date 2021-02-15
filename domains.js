@@ -1,4 +1,4 @@
-export function draw_protDomains (selector,
+var draw_protDomains = function(selector,
                     domains,
                     lenseq,
                     width,
