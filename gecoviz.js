@@ -322,7 +322,7 @@ var GeCoViz = function(selector) {
                 .duration(duration)
                 .delay(delay.enter)
                 .style('opacity', 1);
-            let factor = 40;
+            let factor = 50;
             // Sticky legend
             let stickyLegend = legendContainer.append('div')
                         .attr('class', 'sticky-legend sticky')
