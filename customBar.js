@@ -15,6 +15,7 @@ var customBar = function(selector) {
         .append('div');
     let nSideSliderLabel = addLabel(nSideSlider,
         'Genes up/downstream')
+        .style('opacity', 0);
     nSideSlider = nSideSlider
         .append('div')
         .style('width', '200px');
@@ -107,7 +108,7 @@ var customBar = function(selector) {
         .append('div');
     addLabel(buttonDiv,
         'Shuffle colors')
-        .attr('opacity', 0);
+        .style('opacity', 0);
     buttonDiv
         .append('button')
         .attr('class', 'shuffleColors btn btn-secondary btn-sm')
