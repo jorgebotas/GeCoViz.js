@@ -3,7 +3,10 @@ var customBar = function(selector) {
     let container = vis.append('div')
             .attr('class', 'customBar col-md-10 mx-auto');
 
-    addCheckbox(container.append('div'),
+    let treeToggler = container.append('div');
+    addLabel(treeToggler, 'Toggle phylogeny')
+        .attr('opacity', 0);
+    addCheckbox(treeToggler,
         'Tree',
         'tree',
         true);
@@ -100,11 +103,15 @@ var customBar = function(selector) {
         .append('option')
         .attr('value', 2)
         .html('2: Bacteria')
-    container
-        .append('div')
+    let buttonDiv = container
+        .append('div');
+    addLabel(buttonDiv,
+        'Shuffle colors')
+        .attr('opacity', 0);
+    buttonDiv
         .append('button')
         .attr('class', 'shuffleColors btn btn-secondary btn-sm')
-        .html('Shuffle colors')
+        .html('Shuffle colors');
 
     selectBox(selector);
 }
