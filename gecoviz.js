@@ -846,7 +846,7 @@ var GeCoViz = function(selector) {
             .attr('height', graphContainer
                 .select('.phylogram')
                 .node()
-                .getBoundingClientRect().height)
+                .getBoundingClientRect().height - 13)
 
     });
   }
