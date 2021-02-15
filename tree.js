@@ -342,8 +342,9 @@ var buildTree = function(selector,
         // LINKS
         var link = vis.selectAll('path.link')
             .data(treeRoot.links(nodes), d =>  d.target.data.id);
-        link
-            .enter()
+        let linkEnter = link
+            .enter();
+        linkEnter
             .insert('svg:path', 'g')
             .attr('class', 'link')
             .attr('d', () => {
@@ -355,6 +356,7 @@ var buildTree = function(selector,
             .transition()
             .duration(transitionDuration)
             .attr('d', diagonal)
+        linkEnter
             .insert('svg:line', 'g')
             .attr('x1', n.target.y - n.target.dotted)
             .attr('y1', n.target.x)
