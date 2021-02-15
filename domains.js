@@ -30,8 +30,8 @@ var draw_protDomains = function(selector,
          .attr("class", "dom-legend");
         var doms = new Set();
         domains.forEach(d => {
-            if (d.class && d.class != "") {
-                doms.add(d.class)
+            if (d.id && d.id != "") {
+                doms.add(d.id)
             }
         })
         doms = [...doms]
@@ -73,7 +73,7 @@ var draw_protDomains = function(selector,
             .attr("r", 4)
             .attr("cx", d => scale(+d.c, lenseq, width))
             .attr("cy", height/2)
-            .attr("fill", d => palette(d.class));
+            .attr("fill", d => palette(d.id));
         g.selectAll('rect')
             .data(domains.filter(d => d.shape == "rect"))
             .enter().append('rect')
@@ -81,7 +81,7 @@ var draw_protDomains = function(selector,
             .attr("y", 0)
             .attr("width", d =>  scale(+d.end - +d.start, lenseq, width))
             .attr("height", height)
-            .attr("fill", d => palette(d.class));
+            .attr("fill", d => palette(d.id));
     }
     var g = d3.select(selector)
               .append('svg:svg')
