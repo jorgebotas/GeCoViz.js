@@ -199,11 +199,11 @@ var buildTree = function(selector,
         var nodeLengths = nodes.map(n => n.data.length);
         var yscale = d3.scaleLinear()
             .domain([0, d3.max(nodeLengths)])
-            .range([0, 30]);
+            .range([0, 33]);
         visitPreOrder(nodes[0], function(node) {
-          node.y = 30 * (node.depth);
+          node.y = 33 * (node.depth);
             if (node.data.length != undefined) {
-              node.dotted = 30 - yscale(node.data.length);
+              node.dotted = 33 - yscale(node.data.length);
             } else {
                 node.dotted = 0;
             }
