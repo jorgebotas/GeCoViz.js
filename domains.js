@@ -68,18 +68,18 @@ var draw_protDomains = function(selector,
                           palette) {
         console.log(domains)
         g.selectAll('circle')
-            .data(domains.filter(d => d.shape == "circle" ))
+            .data(domains.filter(d => d.shape == "circle"))
             .enter().append('circle')
             .attr("r", 4)
             .attr("cx", d => scale(+d.c, lenseq, width))
             .attr("cy", height/2)
             .attr("fill", d => palette(d.class));
         g.selectAll('rect')
-            .data(domains.filter(d => d.shape == "rect" ))
+            .data(domains.filter(d => d.shape == "rect"))
             .enter().append('rect')
-            .attr("x", d => scale(+d.start, lenseq, width))
+            .attr("x", d => { return scale(+d.start, lenseq, width) })
             .attr("y", 0)
-            .attr("width", d =>  scale(+d.end - +d.start, lenseq, width))
+            .attr("width", d =>  { return scale(+d.end - +d.start, lenseq, width) })
             .attr("height", height)
             .attr("fill", d => palette(d.class));
     }
