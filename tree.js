@@ -355,6 +355,15 @@ var buildTree = function(selector,
             .transition()
             .duration(transitionDuration)
             .attr('d', diagonal)
+            .insert('svg:line', 'g')
+            .attr('x1', n.target.y - n.target.dotted)
+            .attr('y1', n.target.x)
+            .attr('x2', n.target.y)
+            .attr('y2', n.target.x)
+            .attr("stroke", "var(--sand)")
+            .attr("stroke-width", "2px")
+            .attr("stroke-dasharray", "3,3");
+
         // Transition links to new position
         link
             .transition()
