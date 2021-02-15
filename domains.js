@@ -34,6 +34,7 @@ var draw_protDomains = function(selector,
                 doms.add(d.class)
             }
         })
+        console.log(doms)
         doms.forEach(d => {
             let l = legend.append("div")
                      .attr('class', 'd-inline px-2');
