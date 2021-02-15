@@ -34,7 +34,7 @@ var draw_protDomains = function(selector,
                 doms.add(d.class)
             }
         })
-        console.log(doms)
+        doms = [...doms]
         doms.forEach(d => {
             let l = legend.append("div")
                      .attr('class', 'd-inline px-2');
@@ -66,6 +66,7 @@ var draw_protDomains = function(selector,
                           width,
                           height,
                           palette) {
+        console.log(domains)
         g.selectAll('circle')
             .data(domains.filter(d => d.shape == "circle" ))
             .enter().append('circle')
