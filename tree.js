@@ -202,7 +202,7 @@ var buildTree = function(selector,
             .range([0, 30]);
         visitPreOrder(nodes[0], function(node) {
           node.y = 30 * (node.depth);
-            if (node.length != undefined) {
+            if (node.data.length != undefined) {
               node.dotted = 30 - yscale(node.length);
             } else {
                 node.dotted = 0;
