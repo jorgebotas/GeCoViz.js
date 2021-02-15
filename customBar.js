@@ -5,7 +5,7 @@ var customBar = function(selector) {
 
     let treeToggler = container.append('div');
     addLabel(treeToggler, 'Toggle phylogeny')
-        .attr('opacity', 0);
+        .style('opacity', 0);
     addCheckbox(treeToggler,
         'Tree',
         'tree',
