@@ -392,10 +392,10 @@ var GeCoViz = function(selector) {
                                 .attr('class', 'lgnd' + cleanString(n.id))
                                 .style("outline", "none")
                                 .style("display", "flex");
-                let strokes = graphContainer
-                    .selectAll('path.stroke.c' + n.id);
                 div.on('mouseover', () => {
                     console.log('over')
+                    let strokes = graphContainer
+                        .selectAll('path.stroke.c' + n.id);
                     strokes.style('opacity', 1)
                 })
                 div.on('mouseleave', () => strokes.style('opacity', 0))
