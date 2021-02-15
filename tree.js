@@ -358,10 +358,7 @@ var buildTree = function(selector,
             .attr('d', diagonal)
         linkEnter
             .insert('svg:line', 'g')
-            .attr('x1', n => {
-                console.log(n.target)
-                return n.target.y - n.target.dotted
-            })
+            .attr('x1', n => n.target.y - n.target.dotted)
             .attr('y1', n => n.target.x)
             .attr('x2', n => n.target.y)
             .attr('y2', n => n.target.x)
