@@ -394,7 +394,10 @@ var GeCoViz = function(selector) {
                                 .style("display", "flex");
                 let strokes = graphContainer
                     .selectAll('path.stroke.c' + n.id);
-                div.on('mouseover', () => strokes.style('opacity', 1))
+                div.on('mouseover', () => {
+                    console.log('over')
+                    strokes.style('opacity', 1)
+                })
                 div.on('mouseleave', () => strokes.style('opacity', 0))
                 div.append("svg")
                    .attr("width", 40)
