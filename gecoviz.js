@@ -841,9 +841,9 @@ var GeCoViz = function(selector) {
             contextG
         initChart(container);
         parameterListener();
-        container
-            .select('.gcontext')
-            .attr('height', container
+        graphContainer
+            .select('.gcontextSVG')
+            .attr('height', graphContainer
                 .select('.phylogram')
                 .node()
                 .getBoundingClientRect().height)
