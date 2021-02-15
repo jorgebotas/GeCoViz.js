@@ -355,7 +355,7 @@ var GeCoViz = function(selector) {
                               .attr("class", "pl-3")
                               .style("display", "flex"),
                         "Select all",
-                        "lgnd-toggleAll");
+                        "form-check-legend lgnd-toggleAll");
             // Toggle checkboxes if clicked
             let legendSwitch = $(selector + " .lgnd-toggleAll");
             legendSwitch = [...legendSwitch]
@@ -413,7 +413,8 @@ var GeCoViz = function(selector) {
                             + URLs[notation].a
                             + '" target="_blank" style="outline:none;">'
                             + n.id+'</a>';
-                addCheckbox(t, title, "lgnd-switch lgnd" + cleanString(n.id));
+                addCheckbox(t, title, "form-check-legend lgnd-switch lgnd"
+                                        + cleanString(n.id));
                 let cbox = $(selector
                     + " .lgnd" + cleanString(n.id)
                     + " .lgnd-switch");

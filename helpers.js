@@ -29,7 +29,7 @@ var addCheckbox = function(g,
                      .attr("class", containerClass);
     container.append("input")
              .attr("class",
-                 "mt-0 form-check-input form-check-legend rounded-pill "
+                 "mt-0 form-check-input rounded-pill "
                  + className)
              .attr("type", "checkbox")
              .attr("checked", "")
