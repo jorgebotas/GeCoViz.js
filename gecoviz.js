@@ -393,12 +393,15 @@ var GeCoViz = function(selector) {
                                 .style("outline", "none")
                                 .style("display", "flex");
                 div.on('mouseover', () => {
-                    console.log('over')
-                    let strokes = graphContainer
-                        .selectAll('path.stroke.c' + n.id);
-                    strokes.style('opacity', 1)
+                    graphContainer
+                        .selectAll('path.stroke.c' + n.id)
+                        .style('opacity', 1)
                 })
-                div.on('mouseleave', () => strokes.style('opacity', 0))
+                div.on('mouseleave', () => {
+                    graphContainer
+                        .selectAll('path.stroke.c' + n.id)
+                        .style('opacity', 0)
+                })
                 div.append("svg")
                    .attr("width", 40)
                    .attr("height", 40)
