@@ -15,7 +15,6 @@ var customBar = function(selector) {
         .append('div');
     let nSideSliderLabel = addLabel(nSideSlider,
         'Genes up/downstream')
-        .style('opacity', 0);
     nSideSlider = nSideSlider
         .append('div')
         .style('width', '200px');
