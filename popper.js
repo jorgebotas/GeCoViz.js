@@ -148,7 +148,7 @@ var PopperCreate = function(selector, d, URLs) {
                         .range(colors);
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
                          d.domains,
-                         d.size,
+                         Math.abs((+d.end) - (+d.start)),
                          250,
                          7,
                          palette,
