@@ -66,7 +66,6 @@ var draw_protDomains = function(selector,
                           width,
                           height,
                           palette) {
-        console.log(lenseq)
         g.selectAll('circle')
             .data(domains.filter(d => d.shape == "circle"))
             .enter().append('circle')

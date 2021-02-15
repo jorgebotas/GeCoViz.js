@@ -88,8 +88,16 @@ var customBar = function(selector) {
         .html('Gene name')
     notationSelect
         .append('option')
+        .attr('value', 'domains')
+        .html('Pfam domains')
+    notationSelect
+        .append('option')
         .attr('value', 'taxonomy')
         .html('Taxonomy')
+    notationSelect
+        .append('option')
+        .attr('value', 'taxonomic prediction')
+        .html('Taxonomic prediction')
 
     let levelSelect = container
         .append('div');

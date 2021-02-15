@@ -146,8 +146,6 @@ var PopperCreate = function(selector, d, URLs) {
         var palette = d3.scaleOrdinal()
                         .domain(doms)
                         .range(colors);
-        console.log(d.start)
-        console.log(d.end)
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
                          d.domains,
                          1000,
