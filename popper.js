@@ -143,7 +143,7 @@ var PopperCreate = function(selector, d, URLs) {
             '#ff6200',
             '#406362'
               ];
-        var palette = d3.scale.ordinal()
+        var palette = d3.scaleOrdinal()
                         .domain(doms)
                         .range(colors);
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
