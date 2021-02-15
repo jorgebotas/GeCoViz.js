@@ -358,10 +358,10 @@ var buildTree = function(selector,
             .attr('d', diagonal)
         linkEnter
             .insert('svg:line', 'g')
-            .attr('x1', n.target.y - n.target.dotted)
-            .attr('y1', n.target.x)
-            .attr('x2', n.target.y)
-            .attr('y2', n.target.x)
+            .attr('x1', n => n.target.y - n.target.dotted)
+            .attr('y1', n => n.target.x)
+            .attr('x2', n => n.target.y)
+            .attr('y2', n => n.target.x)
             .attr("stroke", "var(--sand)")
             .attr("stroke-width", "2px")
             .attr("stroke-dasharray", "3,3");
