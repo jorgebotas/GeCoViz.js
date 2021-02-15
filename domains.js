@@ -67,6 +67,9 @@ var draw_protDomains = function(selector,
                           height,
                           palette) {
         console.log(domains)
+        console.log(lenseq)
+        console.log(width)
+        console.log(scale(20, lenseq, width))
         g.selectAll('circle')
             .data(domains.filter(d => d.shape == "circle"))
             .enter().append('circle')
@@ -77,9 +80,9 @@ var draw_protDomains = function(selector,
         g.selectAll('rect')
             .data(domains.filter(d => d.shape == "rect"))
             .enter().append('rect')
-            .attr("x", d => { return scale(+d.start, lenseq, width) })
+            .attr("x", d => scale(+d.start, lenseq, width))
             .attr("y", 0)
-            .attr("width", d =>  { return scale(+d.end - +d.start, lenseq, width) })
+            .attr("width", d =>  scale(+d.end - +d.start, lenseq, width))
             .attr("height", height)
             .attr("fill", d => palette(d.class));
     }
