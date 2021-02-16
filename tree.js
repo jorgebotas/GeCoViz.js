@@ -1,30 +1,37 @@
 var buildTree = function(selector,
                     root,
                     fields = ['name'],
+                    enterCallback,
+                    exitCallback,
                     options = {width : 700,
-                               height : 800}) {
+                        height : 800}){
     var margin = {
         top : 5,
         right : 5,
         bottom : 25,
         left : 10
     }
-    var treeRoot = d3.hierarchy(root)
+    var treeRootHierarchy = d3.hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
     var w = +options.width - margin.left - margin.right;
-    var h = treeRoot.leaves().length * 20;
+    var h = treeRootHierarchy.leaves().length * 20;
+    //console.log(Math.max(treeRoot.leaves().map(l => {
+        //l.depth;
+    //})))
     var tree = d3.cluster()
             .size([h, w])
             .separation(() => 1);
-    treeRoot = tree(treeRoot)
+    var treeRoot = tree(treeRootHierarchy)
     var vis = d3.select(selector)
         .append('div')
         .attr('class', 'col-md-4 p-1')
         .append('div')
         .attr('class', 'phylogram')
+    var visSVG = vis
         .append('svg:svg')
         .attr('width', w + margin.left + margin.right)
         .attr('height', h + margin.top + margin.bottom)
+    vis = visSVG
         .append('svg:g')
             .attr('transform',
                 'translate('
@@ -225,9 +232,18 @@ var buildTree = function(selector,
     }
 
     function update(source) {
+        // compute the new height
+        var newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
+        visSVG
+            .transition()
+            .duration(transitionDuration)
+            .attr('height', newHeight + 50)
+        tree.size([newHeight, w])
+        treeRoot = tree(treeRootHierarchy);
         var nodes = treeRoot.descendants();
         // Scale branches by length
         scaleBranchLength(nodes)
+
         var transitionDuration = 750;
         // ENTERING NODES
         var node = vis.selectAll('g.node')
@@ -293,6 +309,8 @@ var buildTree = function(selector,
             .attr('id', n => 'leaf'
                 + cleanString(n.data.name))
         nodeLeafEnter
+            .each(l => enterCallback(l))
+        nodeLeafEnter
             .append('text')
             .attr('dx', 10)
             .attr('dy', 3)
@@ -319,6 +337,7 @@ var buildTree = function(selector,
                         'col-md-2 col-sm-4')
                 })
         }
+
 
         // UPDATING NODES
         // Transition nodes to their new position.
@@ -352,6 +371,9 @@ var buildTree = function(selector,
         nodeExit
             .selectAll('text')
             .style('fill-opacity', 1e-6)
+        nodeExit
+            .filter('.leaf')
+            .each(l => exitCallback(l))
 
         // LINKS
         var link = vis.selectAll('path.link')

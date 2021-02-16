@@ -15,6 +15,7 @@ var GeCoViz = function(selector) {
   var notation = "";
   var notationLevel;
   var excludedNotation = [];
+  var excludedAnchors = [];
   var URLs = {
       kegg : {
           b : 'https://www.kegg.jp/dbget-bin/www_bget?map',
@@ -45,7 +46,7 @@ var GeCoViz = function(selector) {
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
   var domain = [];
   var palette = buildPalette(domain);
-  var updateData,
+  var updateGenes,
         updateShowName,
         updateNotation,
         updateLegend,
@@ -120,6 +121,14 @@ var GeCoViz = function(selector) {
                 .text(getShowName);
         }
 
+        function treeLeafEnter(l) {
+            chart.excludeAnchor(l.data.name, false)
+        }
+
+        function treeLeafExit(l) {
+            chart.excludeAnchor(l.data.name, true)
+        }
+
         function initChart(container) {
           customBar(selector, data);
           graphContainer = container
@@ -127,9 +136,8 @@ var GeCoViz = function(selector) {
             .attr('class', 'row graph-container');
           if (newick) {
               buildTree(selector + ' .graph-container',
-                  newick, newickFields)
-              d3.selectAll()
-
+                  newick, newickFields,
+                  treeLeafEnter, treeLeafExit);
             }
           let contextContainer = graphContainer
                 .append('div')
@@ -189,7 +197,7 @@ var GeCoViz = function(selector) {
                 .duration(duration)
                 .delay(delay.enter)
                 .style('opacity', 1)
-                .each(enterGene);
+                .each(enterGene)
         }
 
         function getArrow(d, x0, rectWidth, tipWidth) {
@@ -629,11 +637,8 @@ var GeCoViz = function(selector) {
                 .on('click', () => chart.shuffleColors());
         }
 
-        function treeListener() {
-
-        }
-
         function enterGene(d) {
+            console.log(d)
             let geneG = d3.select(this);
             let {
                 unfNots,
@@ -826,7 +831,7 @@ var GeCoViz = function(selector) {
             .text(getShowName);
         }
 
-        updateData = function() {
+        updateGenes = function() {
             // Update data-dependant variables
             var update = contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
@@ -848,11 +853,11 @@ var GeCoViz = function(selector) {
                 getY(d) +
                 ")")
             .style('opacity', 0)
+            .each(enterGene)
             .transition()
             .duration(duration)
             .delay(delay.enter)
             .style('opacity', 1)
-            .each(enterGene);
 
             update
             .merge(update)
@@ -882,7 +887,6 @@ var GeCoViz = function(selector) {
             contextG
         initChart(container);
         parameterListener();
-        treeListener();
         graphContainer
             .select('.gcontextSVG')
             .attr('height', graphContainer
@@ -905,13 +909,20 @@ var GeCoViz = function(selector) {
       domain = [...new Set(domain)]
   }
 
-    function updatePalette(shuffle=false) {
+  function updatePalette(shuffle=false) {
         buildDomain();
         palette = buildPalette(domain, shuffle);
-    }
+  }
 
-  function preUpdate() {
-      data = unfData.filter(d => Math.abs(+d.pos) <= nSide)
+  function filterAnchor(a) {
+      return !excludedAnchors.includes(a)
+            ? true
+            : false
+  }
+
+  function updateData() {
+      data = unfData.filter(d => Math.abs(+d.pos) <= nSide
+                        && filterAnchor(d.anchor))
       anchors = [...new Set(data.map(d => d.anchor))];
   }
 
@@ -936,9 +947,10 @@ var GeCoViz = function(selector) {
   chart.data = function(d) {
     if (!arguments.length) return data;
     unfData = swapStrands(d);
-    preUpdate();
+    updateData();
     if (typeof updatePalette === 'function') updatePalette();
-    if (typeof updateData === 'function') updateData();
+    if (typeof updateGenes === 'function') updateGenes();
+    if (typeof updateGenes === 'function') updateGenes();
     return chart;
   };
 
@@ -952,10 +964,10 @@ var GeCoViz = function(selector) {
   chart.nSide = function(d) {
     if (!arguments.length) return nSide;
     nSide = d;
-    preUpdate()
+    updateData()
     if (typeof updateWidth === 'function') updateWidth();
     if (typeof updateLegend === 'function') updateLegend();
-    if (typeof updateData === 'function') updateData();
+    if (typeof updateGenes === 'function') updateGenes();
     return chart;
   };
 
@@ -976,6 +988,17 @@ var GeCoViz = function(selector) {
     else if (!exclude && excludedNotation.includes(notationID))
       { excludedNotation = excludedNotation.filter(n => n != notationID) }
     if (typeof updateNotation == 'function') updateNotation();
+    return chart;
+  }
+
+  chart.excludeAnchor = function(anchor, exclude=true) {
+    if (!arguments.length) return excludedAnchors;
+    if (exclude && !excludedAnchors.includes(anchor))
+      { excludedAnchors.push(anchor) }
+    else if (!exclude && excludedAnchors.includes(anchor))
+      { excludedAnchors = excludedAnchors.filter(a => a!= anchor) }
+    if (typeof updateData == 'function') updateData();
+    try {if (typeof updateGenes == 'function') updateGenes();} catch {}
     return chart;
   }
 
