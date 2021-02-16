@@ -103,8 +103,8 @@ var customBar = function(selector, data) {
     let notationOptionEnter = notationOption
         .enter()
         .append('option')
-        .attr('selected', '')
         .attr('class', 'notationOption')
+    console.log(notationOptionEnter)
     notationOption
         .merge(notationOptionEnter)
         .attr('value', d => d)

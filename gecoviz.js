@@ -308,7 +308,6 @@ var GeCoViz = function(selector) {
 
         updateNotation = function() {
             contextG.selectAll('g.gene')
-                .each(updateGene)
                 .each(updateGene);
         }
 
@@ -350,20 +349,13 @@ var GeCoViz = function(selector) {
                 .style("outline", "none")
                 .style("display", "flex");
             legendEntryEnter
-                .on('mouseover', (_, n) => {
-                    console.log(`c${cleanString(n.id)}`)
-                    console.log(graphContainer
-                        .selectAll(`path.stroke.c${cleanString(n.id)}`))
-                    graphContainer
+                .on('mouseover', (_, n) => graphContainer
                         .selectAll(`path.stroke.c${cleanString(n.id)}`)
-                        .style('opacity', 1)
-                })
+                        .style('opacity', 1));
             legendEntryEnter
-                .on('mouseleave', (_, n) => {
-                    graphContainer
+                .on('mouseleave', (_, n) => graphContainer
                         .selectAll(`path.stroke.c${cleanString(n.id)}`)
-                        .style('opacity', 0)
-                })
+                        .style('opacity', 0));
             legendEntryEnter
                 .append('svg')
                 .attr("width", 40)
@@ -401,8 +393,8 @@ var GeCoViz = function(selector) {
                 .style("max-height", "35px")
                 .style("height", "35px");
 
-            let legendEntryMerge = legendEntry
-                .merge(legendEntryEnter)
+            let legendEntryMerge = legendEntryEnter
+                .merge(legendEntry)
                 .attr('class', n => 'lgnd-entry '
                         + `lgnd${cleanString(n.id)}`)
             legendEntryMerge
@@ -427,7 +419,7 @@ var GeCoViz = function(selector) {
             legendEntryMerge
                 .select('.lgnd-entry-description')
                 .html(n => n.description);
-            legendEntry
+            legendEntryMerge
                 .exit()
                 .transition()
                 .duration(duration)
@@ -443,19 +435,6 @@ var GeCoViz = function(selector) {
         }
 
         function drawLegend() {
-            // Empty pre-existing legend
-            //legendContainer
-                //.selectAll('*')
-                //.transition()
-                //.duration(duration)
-                //.style('opacity', 0)
-                //.remove();
-            //legendContainer
-                //.style('opacity', 0)
-                //.transition()
-                //.duration(duration)
-                //.delay(delay.enter)
-                //.style('opacity', 1);
             // Sticky legend
             let stickyLegend = legendContainer.append('div')
                         .attr('class', 'sticky-legend sticky')
@@ -697,9 +676,9 @@ var GeCoViz = function(selector) {
             .append('path')
             .attr('d', strokePath)
             .attr('class', 'stroke '
-                            + unfNots.filter(filterByLevel)
-                            .map(n => `c${cleanString(n.id)}`)
-                            .join(' '))
+                        + unfNots.filter(filterByLevel)
+                        .map(n => `c${cleanString(n.id)}`)
+                        .join(' '))
             .style('opacity', 0);
             geneG
             .append('text')
@@ -737,7 +716,7 @@ var GeCoViz = function(selector) {
             let geneRects = geneG
                 .selectAll('rect.gene-rect')
                 .data(nots, n => n.id);
-            geneRects
+            let geneRectsEnter = geneRects
             .enter()
               .insert('rect', 'path')
               .attr('class', 'gene-rect')
@@ -749,16 +728,12 @@ var GeCoViz = function(selector) {
               .attr('width', 0)
               .attr('height', geneRect.h - geneRect.pv)
               .style('opacity', 0)
-              .each((_d, _i, rects) => {
-                  let newRects = [...new Set(rects)].filter(n => n != undefined);
-                  newRects.forEach(r => {
-                      r.addEventListener('click', popperShow)
-                      r.addEventListener('mouseover', mouseOver);
-                      r.addEventListener('mouseleave', mouseLeave);
-                  })
-              })
+            geneRectsEnter
+              .on('mouseover', () => mouseOver())
+              .on('mouseleave', () => mouseLeave())
+              .on('click', () => popperShow())
             // Updating gene rects
-            let mergedGeneRects = geneRects
+            let mergedGeneRects = geneRectsEnter
             .merge(geneRects);
             mergedGeneRects
               .transition()
@@ -788,23 +763,23 @@ var GeCoViz = function(selector) {
                             ? [nots[0]]
                             : [nots[nots.length-1]],
                   n => n.id);
-            let enterGeneTip = geneTip
+            let geneTipEnter = geneTip
             .enter()
             .insert('path', 'path.light-stroke')
             .attr('class', 'gene-tip');
-            enterGeneTip
+            geneTipEnter
             .attr('fill', n => n.id == 'NA'
                           ? color.noData
                           : palette(n.id))
             .style('opacity', 0);
-            let mergedGeneTip = geneTip
+            let geneTipMerged = geneTipEnter
             .merge(geneTip);
-            mergedGeneTip
+            geneTipMerged
             .transition()
             .duration(duration)
             .delay(delay.update)
             .attr('d', tipPath);
-            mergedGeneTip
+            geneTipMerged
             .transition()
             .duration(duration)
             .delay(delay.enter)
@@ -826,14 +801,14 @@ var GeCoViz = function(selector) {
             .attr('d', strokePath)
             geneG
             .select('path.stroke')
+            .attr('d', strokePath)
+            .attr('class', 'stroke '
+                        + unfNots.filter(filterByLevel)
+                        .map(n => `c${cleanString(n.id)}`)
+                        .join(' '))
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('d', strokePath)
-            .attr('class', 'stroke '
-                    + unfNots.filter(filterByLevel)
-                        .map(n => `c${cleanString(n.id)}`)
-                        .join(' '))
             .style('opacity', 0);
             geneG
             .select('text.geneName')
@@ -850,7 +825,6 @@ var GeCoViz = function(selector) {
 
         updateData = function() {
             // Update data-dependant variables
-            preUpdate();
             var update = contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
 
@@ -888,7 +862,6 @@ var GeCoViz = function(selector) {
                 "," +
                 getY(d) +
                 ")")
-            .each(updateGene)
             .each(updateGene);
 
             update.exit()
@@ -898,11 +871,6 @@ var GeCoViz = function(selector) {
             .style('opacity', 0)
             .remove();
         }
-
-        //updatePalette = function(shuffle = false) {
-            //buildDomain();
-            //palette = buildPalette(domain, shuffle);
-        //}
 
         var container = d3.select(this);
         var legendContainer,
@@ -965,7 +933,6 @@ var GeCoViz = function(selector) {
     if (!arguments.length) return data;
     unfData = swapStrands(d);
     preUpdate();
-    updatePalette()
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof updateData === 'function') updateData();
     return chart;
@@ -981,7 +948,9 @@ var GeCoViz = function(selector) {
   chart.nSide = function(d) {
     if (!arguments.length) return nSide;
     nSide = d;
+    preUpdate()
     if (typeof updateWidth === 'function') updateWidth();
+    if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateData === 'function') updateData();
     return chart;
   };
@@ -990,7 +959,6 @@ var GeCoViz = function(selector) {
     if (!arguments.length) return notation;
     notation = not;
     notationLevel = level;
-    updatePalette()
     if (typeof updatePalette === 'function') updatePalette();
     if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateNotation == 'function') updateNotation();
