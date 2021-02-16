@@ -520,7 +520,7 @@ var GeCoViz = function(selector) {
                 ? [{id:'NA'}]
                 : typeof n == 'object'
                 ? n
-                : [n];
+                : [{id:n}];
             let nots = unfNots.filter(filterNotation);
             nots = nots.length == 0
                 ? [{id:'NA'}]
