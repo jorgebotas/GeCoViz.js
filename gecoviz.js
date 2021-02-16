@@ -155,7 +155,7 @@ var GeCoViz = function(selector) {
                 .append('div')
                 .attr('class', 'col-md-2 p-1')
                 .append('div')
-                .attr('class', 'legend w-100');
+                .attr('class', 'legend w-100 h-100');
           drawLegend();
           let contextSVG = contextContainer
             .append('svg')
