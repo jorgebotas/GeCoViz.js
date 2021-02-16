@@ -1,4 +1,10 @@
-var customBar = function(selector) {
+var customBar = function(selector, data) {
+
+    let dataKeys = data.reduce((maxKeys, d) => {
+        maxKeys = Math.max(maxKeys, Object.keys(d))
+    });
+
+    console.log(dataKeys)
     let vis = d3.select(selector);
     let container = vis.append('div')
             .attr('class', 'customBar col-md-10 mx-auto');

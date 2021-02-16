@@ -288,8 +288,7 @@ var PopperClick = function(selector) {
                       //.style('left', refbound.left+'px')
                       //.style('right', '');
               /*}*/
-            popper.setAttribute('data-show', '');
-          }
-
+            try { popper.setAttribute('data-show', '') } catch {}
+        }
     });
 }
