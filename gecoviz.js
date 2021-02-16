@@ -393,16 +393,16 @@ var GeCoViz = function(selector) {
                 .style("max-height", "35px")
                 .style("height", "35px");
 
-            let legendEntryMerge = legendEntryEnter
+            let legendEntryMerged = legendEntryEnter
                 .merge(legendEntry)
                 .attr('class', n => 'lgnd-entry '
                         + `lgnd${cleanString(n.id)}`)
-            legendEntryMerge
+            legendEntryMerged
                 .select('circle')
                 .transition()
                 .duration(duration)
                 .style("fill", n => palette(n.id));
-            legendEntryMerge
+            legendEntryMerged
                 .select('input')
                 .attr('class', n => 'mt-0 form-check-input rounded-pill '
                     + `form-check-legend lgnd-switch lgnd${cleanString(n.id)}`)
@@ -416,10 +416,10 @@ var GeCoViz = function(selector) {
                         + URLs[notation].a
                         + '" target="_blank" style="outline:none;">'
                         + String(n.id)+'</a>');
-            legendEntryMerge
+            legendEntryMerged
                 .select('.lgnd-entry-description')
                 .html(n => n.description);
-            legendEntryMerge
+            legendEntry
                 .exit()
                 .transition()
                 .duration(duration)
