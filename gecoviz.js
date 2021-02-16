@@ -406,7 +406,7 @@ var GeCoViz = function(selector) {
                 .select('input')
                 .attr('class', n => 'mt-0 form-check-input rounded-pill '
                     + `form-check-legend lgnd-switch lgnd${cleanString(n.id)}`)
-            legendEntryMerge
+            legendEntryMerged
                 .select('span')
                 .html(n => !URLs[notation]
                     ? `<em>${n.id}</em>`
