@@ -4,7 +4,7 @@ var cleanString = function(s) {
     dirt.forEach(d => {
         clean = clean.replaceAll(d, "");
     })
-    return clean;
+    return String(clean)
 }
 
 var shuffle = function(a) {
@@ -65,4 +65,23 @@ var addLabel = function(g,
         .style('font-weight', 'bold')
         .html(html);
     return label
+}
+
+var nonEmptyArray = function(a) {
+    return Array.isArray(a)
+        && a.length > 0
+}
+
+var triggerEvent = function(el, type) {
+    // IE9+ and other modern browsers
+    if ('createEvent' in document) {
+        var e = document.createEvent('HTMLEvents');
+        e.initEvent(type, false, true);
+        el.dispatchEvent(e);
+    } else {
+        // IE8
+        var e = document.createEventObject();
+        e.eventType = type;
+        el.fireEvent('on' + e.eventType, e);
+    }
 }

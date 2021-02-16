@@ -3,9 +3,7 @@ var PopperCreate = function(selector, d, URLs) {
         let arrayData = []
         Object.entries(d).forEach(([key, field]) => {
             let fieldData = "";
-            if (typeof field === 'object'
-                && typeof field[Symbol.iterator] === 'function'
-                && field.length > 0) {
+            if (nonEmptyArray(field)) {
                 fieldData = '<ul class="popper-ul">\
                     <li class="popper-ul-title">'
                     + key.toUpperCase()

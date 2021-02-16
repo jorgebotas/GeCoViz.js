@@ -11,8 +11,8 @@ var GeCoViz = function(selector) {
       top : 10,
       left : 10,
   }
-  var showName = "showName";
-  var notation = "kegg";
+  var showName = "";
+  var notation = "";
   var notationLevel;
   var excludedNotation = [];
   var URLs = {
@@ -48,7 +48,7 @@ var GeCoViz = function(selector) {
   var updateData,
         updateShowName,
         updateNotation,
-        drawLegend,
+        updateLegend,
         updateWidth;
   var options = {
       showName : true,
@@ -312,32 +312,15 @@ var GeCoViz = function(selector) {
                 .each(updateGene);
         }
 
-        drawLegend = function() {
-            // Empty pre-existing legend
-            legendContainer
-                .selectAll('*')
+        updateLegend = function() {
+            // Update title
+            splitLegend.select('.legend-title')
+                .style('opacity', 0)
+                .html(notation.toUpperCase())
                 .transition()
                 .duration(duration)
-                .style('opacity', 0)
-                .remove();
-            legendContainer
-                .style('opacity', 0)
-                .transition()
-                .duration(duration)
-                .delay(delay.enter)
                 .style('opacity', 1);
-            let factor = 50;
-            // Sticky legend
-            let stickyLegend = legendContainer.append('div')
-                        .attr('class', 'sticky-legend sticky')
-            // Legend is split to optimize space
-            let splitLegend = stickyLegend
-                        .append('div')
-                        .attr('class', 'split-legend notation-legend');
-            // Legend title
-            splitLegend.append('div')
-                       .attr('class', 'legend-title')
-                       .html(notation.toUpperCase());
+
             let nots = data.map(d =>
                 !d[notation]
                 ? []
@@ -348,31 +331,147 @@ var GeCoViz = function(selector) {
             let uniqueNotation = {};
             nots.forEach(n => uniqueNotation[n.id] = n);
             uniqueNotation = [...Object.values(uniqueNotation)]
+            let factor = 50;
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
             splitLegend
+                .transition()
+                .duration(duration)
+                .delay(delay.update)
                 .style("height",
                     Math.min(window.innerHeight - 50,
                              legendHeight + 100) + "px");
+            let legendEntry = splitLegend
+                .selectAll('.lgnd-entry')
+                .data(uniqueNotation);
+            let legendEntryEnter = legendEntry
+                .enter()
+                .append('div')
+                .style("outline", "none")
+                .style("display", "flex");
+            legendEntryEnter
+                .on('mouseover', (_, n) => {
+                    console.log(`c${cleanString(n.id)}`)
+                    console.log(graphContainer
+                        .selectAll(`path.stroke.c${cleanString(n.id)}`))
+                    graphContainer
+                        .selectAll(`path.stroke.c${cleanString(n.id)}`)
+                        .style('opacity', 1)
+                })
+            legendEntryEnter
+                .on('mouseleave', (_, n) => {
+                    graphContainer
+                        .selectAll(`path.stroke.c${cleanString(n.id)}`)
+                        .style('opacity', 0)
+                })
+            legendEntryEnter
+                .append('svg')
+                .attr("width", 40)
+                .attr("height", 40)
+                .style("display", "inline-block")
+                .style("margin-top", "6px")
+                .append("circle")
+                 .attr("r", 6)
+                 .attr("cx", 20)
+                 .attr("cy", 6.5)
+            let checkboxDivEnter = legendEntryEnter
+                .append("div")
+                .style("display", "inline-block")
+                .style("outline", "none");
+            let checkboxLabelEnter = checkboxDivEnter
+                .append('label')
+                .attr('class', 'form-check m-1 ml-2');
+            checkboxLabelEnter
+                .append('input')
+                .attr("type", "checkbox")
+                .attr("checked", "")
+                .attr("style", "margin-top:0 !important;")
+                .on('change', (e, n) => {
+                    e.target.checked
+                        ? chart.excludeNotation(n.id, false)
+                        : chart.excludeNotation(n.id, true)
+                })
+            checkboxLabelEnter
+                .append('span')
+                .attr("class", "form-check-label");
+            checkboxDivEnter
+                .append("div")
+                .attr("class", "w-100 lgnd-entry-description")
+                .style("display", "block")
+                .style("max-height", "35px")
+                .style("height", "35px");
+
+            let legendEntryMerge = legendEntry
+                .merge(legendEntryEnter)
+                .attr('class', n => 'lgnd-entry '
+                        + `lgnd${cleanString(n.id)}`)
+            legendEntryMerge
+                .select('circle')
+                .transition()
+                .duration(duration)
+                .style("fill", n => palette(n.id));
+            legendEntryMerge
+                .select('input')
+                .attr('class', n => 'mt-0 form-check-input rounded-pill '
+                    + `form-check-legend lgnd-switch lgnd${cleanString(n.id)}`)
+            legendEntryMerge
+                .select('span')
+                .html(n => !URLs[notation]
+                    ? `<em>${n.id}</em>`
+                    : '<a href="'
+                        + URLs[notation].b
+                        + String(n.id)
+                        + URLs[notation].a
+                        + '" target="_blank" style="outline:none;">'
+                        + String(n.id)+'</a>');
+            legendEntryMerge
+                .select('.lgnd-entry-description')
+                .html(n => n.description);
+            legendEntry
+                .exit()
+                .transition()
+                .duration(duration)
+                .style('opacity', 0)
+                .remove();
+            splitLegend
+                .selectAll('div')
+                .style('opacity', 0)
+                .transition()
+                .duration(duration)
+                .delay(delay.enter)
+                .style('opacity', 1);
+        }
+
+        function drawLegend() {
+            // Empty pre-existing legend
+            //legendContainer
+                //.selectAll('*')
+                //.transition()
+                //.duration(duration)
+                //.style('opacity', 0)
+                //.remove();
+            //legendContainer
+                //.style('opacity', 0)
+                //.transition()
+                //.duration(duration)
+                //.delay(delay.enter)
+                //.style('opacity', 1);
+            // Sticky legend
+            let stickyLegend = legendContainer.append('div')
+                        .attr('class', 'sticky-legend sticky')
+            // Legend is split to optimize space
+            splitLegend = stickyLegend
+                        .append('div')
+                        .attr('class', 'split-legend notation-legend');
+            // Legend title
+            splitLegend.append('div')
+                       .attr('class', 'legend-title');
             // Select-all checkbox
             addCheckbox(splitLegend.append("div")
                               .attr("class", "pl-3")
                               .style("display", "flex"),
                         "Select all",
                         "form-check-legend lgnd-toggleAll");
-            // Toggle checkboxes if clicked
-            let legendSwitch = $(selector + " .lgnd-toggleAll");
-            legendSwitch = [...legendSwitch]
-            legendSwitch = legendSwitch[legendSwitch.length - 1]
-            legendSwitch.addEventListener('change', () => {
-                let switches = $(selector + " .lgnd-switch");
-                if (legendSwitch.checked) {
-                    switches.prop("checked", true);
-                } else {
-                    switches.prop("checked", false);
-                }
-                switches.trigger("change");
-            })
             // No data legend entry
             let noData = splitLegend.append("div")
                             .style("outline", "none")
@@ -391,60 +490,15 @@ var GeCoViz = function(selector) {
                .style("display", "inline-block")
                .style("outline", "none")
                .html("No data");
-            uniqueNotation.forEach(n => {
-                let div = splitLegend.append("div")
-                                .attr('class', 'lgnd' + cleanString(n.id))
-                                .style("outline", "none")
-                                .style("display", "flex");
-                div.on('mouseover', () => {
-                    graphContainer
-                        .selectAll('path.stroke.c' + n.id)
-                        .style('opacity', 1)
-                })
-                div.on('mouseleave', () => {
-                    graphContainer
-                        .selectAll('path.stroke.c' + n.id)
-                        .style('opacity', 0)
-                })
-                div.append("svg")
-                   .attr("width", 40)
-                   .attr("height", 40)
-                   .style("display", "inline-block")
-                   .style("margin-top", "6px")
-                   .append("circle")
-                     .attr("r", 6)
-                     .attr("cx", 20)
-                     .attr("cy", 6.5)
-                     .style("fill", palette(n.id));
-                let t = div.append("div")
-                         .style("display", "inline-block")
-                         .style("outline", "none");
-                let title = !URLs[notation]
-                        ? "<em>" + n.id + "</em>"
-                        : '<a href="'
-                            + URLs[notation].b
-                            + n.id
-                            + URLs[notation].a
-                            + '" target="_blank" style="outline:none;">'
-                            + n.id+'</a>';
-                addCheckbox(t, title, "form-check-legend lgnd-switch lgnd"
-                                        + cleanString(n.id));
-                let cbox = $(selector
-                    + " .lgnd" + cleanString(n.id)
-                    + " .lgnd-switch");
-                cbox.change(() => {
-                    if (cbox.is(":checked")) {
-                        chart.excludeNotation(n.id, false);
-                    } else {
-                        chart.excludeNotation(n.id, true);
-                    }
-                })
-                t.append("div")
-                  .attr("class", "w-100")
-                  .style("display", "block")
-                  .style("max-height", "35px")
-                  .style("height", "35px")
-                  .html(n.description);
+            updateLegend(splitLegend);
+            // Toggle checkboxes if clicked
+            let legendSwitch = splitLegend.select('.lgnd-toggleAll')
+            legendSwitch.on('change', () => {
+                let switches = splitLegend.selectAll('.lgnd-switch');
+                legendSwitch.property('checked')
+                    ? switches.property('checked', true)
+                    : switches.property('checked', false)
+                switches.nodes().forEach(s => triggerEvent(s, 'change'))
             })
         }
 
@@ -479,8 +533,7 @@ var GeCoViz = function(selector) {
                 nots.filter(filterByLevel).forEach(n => {
                     // Highlight legend
                     let div = graphContainer
-                        .select(".lgnd"
-                        + cleanString(n.id))
+                        .select(`.lgnd${cleanString(n.id)}`);
                     let t = div.select('a');
                     t = t.nodes().length == 0
                         ? div.select('em')
@@ -503,9 +556,8 @@ var GeCoViz = function(selector) {
                 if (typeof nots != 'object') nots = [{id:nots}];
                 nots.filter(filterByLevel).forEach(n => {
                     // Highlight legend
-                    let div = d3.select(selector
-                        + " .lgnd"
-                        + cleanString(n.id))
+                    let div = graphContainer
+                        .select(`.lgnd${cleanString(n.id)}`);
                     let t = div.select('a');
                     t = t.nodes().length == 0
                         ? div.select('em')
@@ -615,7 +667,7 @@ var GeCoViz = function(selector) {
             geneRects
             .enter()
               .append('rect')
-              .attr('class', n => 'gene-rect ' + cleanString(n.id))
+              .attr('class', 'gene-rect')
               .attr('fill', n => n.id == 'NA'
                 ? color.noData
                 : palette(n.id))
@@ -646,7 +698,7 @@ var GeCoViz = function(selector) {
             .attr('d', strokePath)
             .attr('class', 'stroke '
                             + unfNots.filter(filterByLevel)
-                            .map(n => 'c' + cleanString(n.id))
+                            .map(n => `c${cleanString(n.id)}`)
                             .join(' '))
             .style('opacity', 0);
             geneG
@@ -688,7 +740,7 @@ var GeCoViz = function(selector) {
             geneRects
             .enter()
               .insert('rect', 'path')
-              .attr('class', n => 'gene-rect ' + cleanString(n.id))
+              .attr('class', 'gene-rect')
               .attr('fill', n => n.id == 'NA'
                 ? color.noData
                 : palette(n.id))
@@ -730,8 +782,6 @@ var GeCoViz = function(selector) {
             .remove();
 
             let { tipPath, strokePath } = getArrow(d, x0, geneRect.w, tipWidth);
-            let strokeClass = "stroke "
-                + unfNots.map(n => "c" + cleanString(n.id)).join(" ");
             let geneTip = geneG
             .selectAll('path.gene-tip')
             .data(d => d.strand == '-'
@@ -780,7 +830,10 @@ var GeCoViz = function(selector) {
             .duration(duration)
             .delay(delay.update)
             .attr('d', strokePath)
-            .attr('class', strokeClass)
+            .attr('class', 'stroke '
+                    + unfNots.filter(filterByLevel)
+                        .map(n => `c${cleanString(n.id)}`)
+                        .join(' '))
             .style('opacity', 0);
             geneG
             .select('text.geneName')
@@ -853,6 +906,7 @@ var GeCoViz = function(selector) {
 
         var container = d3.select(this);
         var legendContainer,
+            splitLegend,
             graphContainer,
             contextG
         initChart(container);
@@ -938,7 +992,7 @@ var GeCoViz = function(selector) {
     notationLevel = level;
     updatePalette()
     if (typeof updatePalette === 'function') updatePalette();
-    if (typeof drawLegend === 'function') drawLegend();
+    if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateNotation == 'function') updateNotation();
     return chart;
   };
@@ -962,7 +1016,7 @@ var GeCoViz = function(selector) {
 
   chart.shuffleColors = function() {
     if (typeof updatePalette === 'function') updatePalette(true);
-    if (typeof drawLegend === 'function') drawLegend();
+    if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateNotation == 'function') updateNotation();
   }
 
