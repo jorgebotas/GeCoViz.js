@@ -169,7 +169,20 @@ var buildTree = function(selector,
     }
 
     function toggleAll(d) {
-        if (d.children) { d.children.forEach(toggleAll); toggle(d); }
+        if (d._children) {
+            openAll(d)
+        } else if (d.children) {
+            closeAll(d)
+        }
+    }
+
+    function closeAll(d) {
+        if (d._children) {
+            d._children.forEach(closeAll);
+        } else if (d.children) {
+            d.children.forEach(closeAll);
+            toggle(d);
+        }
     }
 
     function openAll(d) {
@@ -234,7 +247,7 @@ var buildTree = function(selector,
                         + source.x0
                         + ')')
                 .on('click', (event, d) => {
-                    if (event.altKey) { openAll(d) }
+                    if (event.altKey) { toggleAll(d) }
                     else { toggle(d) }
                     update(d);
                 });
@@ -275,10 +288,11 @@ var buildTree = function(selector,
             //.attr('class', n => 'leaf'
                 //+ n.leaves().map(l => cleanString(l.data.name))
                     //.join(' leaf'))
-        var nodeLeafEnter = nodeEnter.filter('.leaf');
+        var nodeLeafEnter = nodeEnter.filter('.leaf')
         nodeLeafEnter
             .attr('id', n => 'leaf'
                 + cleanString(n.data.name))
+        nodeLeafEnter
             .append('text')
             .attr('dx', 10)
             .attr('dy', 3)

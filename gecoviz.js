@@ -346,6 +346,7 @@ var GeCoViz = function(selector) {
             let legendEntryEnter = legendEntry
                 .enter()
                 .append('div')
+                .attr('class', 'lgnd-entry')
                 .style("outline", "none")
                 .style("display", "flex");
             legendEntryEnter
@@ -421,8 +422,6 @@ var GeCoViz = function(selector) {
                 .html(n => n.description);
             legendEntry
                 .exit()
-                .transition()
-                .duration(duration)
                 .style('opacity', 0)
                 .remove();
             splitLegend
@@ -628,6 +627,10 @@ var GeCoViz = function(selector) {
             container
                 .select('.shuffleColors')
                 .on('click', () => chart.shuffleColors());
+        }
+
+        function treeListener() {
+
         }
 
         function enterGene(d) {
@@ -879,6 +882,7 @@ var GeCoViz = function(selector) {
             contextG
         initChart(container);
         parameterListener();
+        treeListener();
         graphContainer
             .select('.gcontextSVG')
             .attr('height', graphContainer
