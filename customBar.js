@@ -1,9 +1,9 @@
 var customBar = function(selector, data) {
 
-    let dataKeys = data.reduce((maxKeys, d) => {
-        maxKeys = Math.max(maxKeys, Object.keys(d))
-    });
-
+    let dataKeys = data.reduce((maxKeys, d) => maxKeys.length
+                                            <  Object.keys(d).length
+                                                ? Object.keys(d)
+                                                : maxKeys, []);
     console.log(dataKeys)
     let vis = d3.select(selector);
     let container = vis.append('div')
@@ -67,7 +67,7 @@ var customBar = function(selector, data) {
         .html('Taxonomy')
 
     let notationSelect = container
-        .append('div');
+        .append('div')
     addLabel(notationSelect,
         'Color genes by')
         .style('text-align', 'center');
@@ -75,35 +75,19 @@ var customBar = function(selector, data) {
             150,
             'notation',
             'notation')
-    notationSelect
-        .append('option')
-        .attr('value', 'kegg')
-        .html('KEGG')
-    notationSelect
+     let notationOption = notationSelect
+        .selectAll('option.notationOption')
+        .data(dataKeys)
+    let notationOptionEnter = notationOption
+        .enter()
         .append('option')
         .attr('selected', '')
-        .attr('value', 'kegg')
-        .html('KEGG')
-    notationSelect
-        .append('option')
-        .attr('value', 'eggnog')
-        .html('eggNOG')
-    notationSelect
-        .append('option')
-        .attr('value', 'showName')
-        .html('Gene name')
-    notationSelect
-        .append('option')
-        .attr('value', 'domains')
-        .html('Pfam domains')
-    notationSelect
-        .append('option')
-        .attr('value', 'taxonomy')
-        .html('Taxonomy')
-    notationSelect
-        .append('option')
-        .attr('value', 'taxonomic prediction')
-        .html('Taxonomic prediction')
+        .attr('class', 'notationOption')
+    notationOption
+        .merge(notationOptionEnter)
+        .attr('value', d => d)
+        .html(capitalize)
+
 
     let levelSelect = container
         .append('div');

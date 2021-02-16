@@ -19,6 +19,10 @@ var shuffle = function(a) {
 
 }
 
+var capitalize = function(string) {
+    return string.trim().replace(/^\w/, c => c.toUpperCase());
+}
+
 var addCheckbox = function(g,
                     label,
                     className,

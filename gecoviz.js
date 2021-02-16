@@ -121,7 +121,7 @@ var GeCoViz = function(selector) {
         }
 
         function initChart(container) {
-          customBar(selector);
+          customBar(selector, data);
           graphContainer = container
             .append('div')
             .attr('class', 'row graph-container');
