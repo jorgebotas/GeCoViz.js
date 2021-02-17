@@ -137,7 +137,7 @@ var GeCoViz = function(selector) {
           customBar(selector, data);
           graphContainer = container
             .append('div')
-            .attr('class', 'row graph-container');
+            .attr('class', 'graph-container');
           if (newick) {
               buildTree(selector + ' .graph-container',
                   newick, newickFields,
