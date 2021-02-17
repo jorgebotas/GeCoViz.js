@@ -159,7 +159,6 @@ var GeCoViz = function(selector) {
           legendContainer = graphContainer
                 .append('div')
                 .attr('class', 'p-1')
-                .style('width', '350px')
                 .append('div')
                 .attr('class', 'legend w-100 h-100');
           drawLegend();
@@ -446,7 +445,8 @@ var GeCoViz = function(selector) {
             // Legend is split to optimize space
             splitLegend = stickyLegend
                         .append('div')
-                        .attr('class', 'split-legend notation-legend');
+                        .attr('class', 'split-legend notation-legend')
+                        .style('width', '300px')
             // Legend title
             splitLegend.append('div')
                        .attr('class', 'legend-title');
