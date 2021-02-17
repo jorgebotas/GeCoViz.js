@@ -19,9 +19,10 @@ var buildTree = function(selector,
             .size([h, w])
             .separation(() => 1);
     var treeRoot = tree(treeRootHierarchy)
-    var vis = d3.select(selector)
+    var visContainer = d3.select(selector)
         .append('div')
-        .attr('class', 'col-md-4 p-1')
+        //.attr('class', 'col-md-4 p-1')
+    var vis = visContainer
         .append('div')
         .attr('class', 'phylogram')
     var visSVG = vis
@@ -334,6 +335,7 @@ var buildTree = function(selector,
                         popperContent,
                         'col-md-2 col-sm-4')
                 })
+
         }
 
 
@@ -419,6 +421,15 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
+        let newWidth = d3.max(treeRoot.leaves().map(l => l.x)) + 200;
+        visSVG
+        .transition()
+        .duration(500)
+        .attr('width', newWidth)
+        visContainer
+        .transition()
+        .duration(500)
+        .style('width', newWidth + 100 + 'px')
     }
     // Enable pop-up interactivity
     PopperClick(selector + ' .phylogram');
