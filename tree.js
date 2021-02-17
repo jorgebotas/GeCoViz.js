@@ -157,6 +157,7 @@ var buildTree = function(selector,
     }
 
     var diagonal = rightAngleDiagonal();
+    var transitionDuration = 750;
 
     // Initialize root's initial position
     treeRoot.x0 = h / 2;
@@ -244,7 +245,6 @@ var buildTree = function(selector,
         // Scale branches by length
         scaleBranchLength(nodes)
 
-        var transitionDuration = 750;
         // ENTERING NODES
         var node = vis.selectAll('g.node')
             .data(nodes, n => n.data.id);

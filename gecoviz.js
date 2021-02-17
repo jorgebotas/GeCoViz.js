@@ -870,6 +870,7 @@ var GeCoViz = function(selector) {
                 "," +
                 getY(d) +
                 ")")
+            .style('opacity', 1)
             .each(updateGene);
 
             update.exit()
