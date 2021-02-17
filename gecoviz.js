@@ -529,7 +529,7 @@ var GeCoViz = function(selector) {
                 stroke
                  .style('opacity', 0);
                 geneName
-                 .style('fill', color.darkGray);
+                 .style('fill', color.white);
                 // Highlight tree
                 leafCircle
                     .style('stroke', leafColor.stroke)
