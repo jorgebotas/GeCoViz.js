@@ -74,11 +74,16 @@ var customBar = function(selector, data) {
             150,
             'showName',
             'showName')
+    //showNameSelect
+        //.append('option')
+        //.attr('selected', '')
+        //.attr('value', '')
+        //.html('Gene name')
     showNameSelect
         .append('option')
         .attr('selected', '')
         .attr('value', '')
-        .html('Gene name')
+        .html('Gene text')
     showNameSelect
         .append('option')
         .attr('value', 'showName')
