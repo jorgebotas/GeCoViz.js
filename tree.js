@@ -418,7 +418,7 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
-        let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 100;
+        let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 150;
         visSVG
         .transition()
         .duration(500)
