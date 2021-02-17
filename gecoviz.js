@@ -638,8 +638,10 @@ var GeCoViz = function(selector) {
         updateWidth = function() {
             width = contextContainer
                 .node()
-                .getBoundingClientRect()
-                .width - 5;
+                .clientWidth - 7;
+            contextContainer
+                .select('.gcontextSVG')
+                .attr('width', width)
             geneRect.w = width / (2 * nSide + 1)
         }
 
