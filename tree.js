@@ -15,9 +15,6 @@ var buildTree = function(selector,
             .sort(node => node.children ? node.children.length : -1);
     var w = +options.width - margin.left - margin.right;
     var h = treeRootHierarchy.leaves().length * 20;
-    //console.log(Math.max(treeRoot.leaves().map(l => {
-        //l.depth;
-    //})))
     var tree = d3.cluster()
             .size([h, w])
             .separation(() => 1);

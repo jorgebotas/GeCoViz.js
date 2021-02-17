@@ -81,14 +81,17 @@ var GeCoViz = function(selector) {
                 cleaned = cleaned.replaceAll('_', '');
                 y = d3.select(selector
                             + ' #leaf'
-                            + cleanString(d.anchor))
-                        .node()
-                        .getBoundingClientRect()
-                        .top
-                    - d3.select(selector + ' .phylogram')
-                        .node()
-                        .getBoundingClientRect()
-                        .top;
+                            + cleanString(d.anchor)).node().__data__.x
+                //y = d3.select(selector
+                            //+ ' #leaf'
+                            //+ cleanString(d.anchor))
+                        //.node()
+                        //.getBoundingClientRect()
+                        //.top
+                    //- d3.select(selector + ' .phylogram')
+                        //.node()
+                        //.getBoundingClientRect()
+                        //.top;
                 return y - 11;
             }
             catch {}
@@ -830,10 +833,65 @@ var GeCoViz = function(selector) {
             .text(getShowName);
         }
 
-        exitGenes = function() {
-            var exit = contextG.selectAll('g.gene')
+        enterGenes = function() {
+            let genes = contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
-            exit.exit()
+            genes
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .attr('transform', d =>
+                'translate(' +
+                (+d.pos + nSide) * geneRect.w +
+                "," +
+                getY(d) +
+                ")")
+            genes
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
+            .style('opacity', 1);
+
+            genes.enter()
+            .append('g')
+            .attr('class', d => {
+                let cl = 'gene'
+                cl += d.pos == 0
+                    ? ' anchor'
+                    : '';
+                return cl
+            })
+            .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
+            .attr('transform', d =>
+                'translate(' +
+                (+d.pos + nSide) * geneRect.w +
+                "," +
+                getY(d) +
+                ")")
+            .style('opacity', 0)
+            .each(enterGene)
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
+            .style('opacity', 1)
+
+        }
+
+        exitGenes = function() {
+            let genes = contextG.selectAll('g.gene')
+                .data(data, d => d.anchor + d.pos);
+            genes
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .attr('transform', d =>
+                'translate(' +
+                (+d.pos + nSide) * geneRect.w +
+                "," +
+                getY(d) +
+                ")")
+            genes
+            .exit()
             .transition()
             .duration(duration)
             .delay(delay.exit)
@@ -1014,7 +1072,7 @@ var GeCoViz = function(selector) {
       {
         excludedAnchors = excludedAnchors.filter(a => a!= anchor)
         if (typeof updateData == 'function') updateData();
-        try {if (typeof updateGenes == 'function') updateGenes();} catch {}
+        if (typeof enterGenes == 'function') enterGenes();
       }
     return chart;
   }
