@@ -372,6 +372,7 @@ var GeCoViz = function(selector) {
                  .attr("r", 6)
                  .attr("cx", 20)
                  .attr("cy", 6.5)
+                .style("fill", n => palette(n.id));
             let checkboxDivEnter = legendEntryEnter
                 .append("div")
                 .style("display", "inline-block")
@@ -465,7 +466,7 @@ var GeCoViz = function(selector) {
                .attr("height", 40)
                .style("display", "inline-block");
             noDataSVG
-             .append("circle")
+             .append('circle')
              .attr("r", 6)
              .attr("cx", 20)
              .attr("cy", 6.5)

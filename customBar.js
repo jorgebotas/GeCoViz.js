@@ -127,6 +127,19 @@ var customBar = function(selector, data) {
         .append('option')
         .attr('value', 2)
         .html('2: Bacteria')
+    let levelOption = levelSelect
+        .selectAll('option.levelOption')
+        .data(dataComplexFields.eggnog, d => d)
+    let levelOptionEnter = levelOption
+        .enter()
+        .append('option')
+        .attr('class', 'levelOption')
+    levelOption
+        .merge(levelOptionEnter)
+        .attr('value', d => d)
+        .html(capitalize)
+
+
     let buttonDiv = container
         .append('div');
     addLabel(buttonDiv,
