@@ -638,7 +638,6 @@ var GeCoViz = function(selector) {
         }
 
         function enterGene(d) {
-            console.log(d)
             let geneG = d3.select(this);
             let {
                 unfNots,
@@ -647,7 +646,7 @@ var GeCoViz = function(selector) {
             let nRect = +nots.length;
             let barWidth = (geneRect.w - geneRect.ph) / nRect;
             let tipWidth = (2 * geneRect.ph) / 5;
-            let x0, xf;
+            let x0 //, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
             let geneRects = geneG.selectAll('rect.gene-rect')
                                  .data(nots, n => n.id);
@@ -831,6 +830,17 @@ var GeCoViz = function(selector) {
             .text(getShowName);
         }
 
+        exitGenes = function() {
+            var exit = contextG.selectAll('g.gene')
+                .data(data, d => d.anchor + d.pos);
+            exit.exit()
+            .transition()
+            .duration(duration)
+            .delay(delay.exit)
+            .style('opacity', 0)
+            .remove();
+        }
+
         updateGenes = function() {
             // Update data-dependant variables
             var update = contextG.selectAll('g.gene')
@@ -995,11 +1005,17 @@ var GeCoViz = function(selector) {
   chart.excludeAnchor = function(anchor, exclude=true) {
     if (!arguments.length) return excludedAnchors;
     if (exclude && !excludedAnchors.includes(anchor))
-      { excludedAnchors.push(anchor) }
+      {
+        excludedAnchors.push(anchor)
+        if (typeof updateData == 'function') updateData();
+        if (typeof exitGenes == 'function') exitGenes();
+      }
     else if (!exclude && excludedAnchors.includes(anchor))
-      { excludedAnchors = excludedAnchors.filter(a => a!= anchor) }
-    if (typeof updateData == 'function') updateData();
-    try {if (typeof updateGenes == 'function') updateGenes();} catch {}
+      {
+        excludedAnchors = excludedAnchors.filter(a => a!= anchor)
+        if (typeof updateData == 'function') updateData();
+        try {if (typeof updateGenes == 'function') updateGenes();} catch {}
+      }
     return chart;
   }
 
