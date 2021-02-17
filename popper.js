@@ -96,7 +96,7 @@ var PopperCreate = function(selector, d, URLs) {
              .html(popperHTML);
     if (d.pfam) {
         var doms = new Set();
-        d.domains.forEach(d => {
+        d.pfam.forEach(d => {
             if (d.class && d.class != '') {
                 doms.add(d.class)
             }
@@ -145,7 +145,7 @@ var PopperCreate = function(selector, d, URLs) {
                         .domain(doms)
                         .range(colors);
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
-                         d.domains,
+                         d.pfam,
                          1000,
                          //Math.abs((+d.end) - (+d.start)),
                          250,
