@@ -9,16 +9,15 @@ var PopperCreate = function(selector, d, URLs) {
                     + key.toUpperCase()
                     + '</li>';
                 field.forEach(f => {
-                    url = URLs[key]
-                        ? URLs[key]
-                        : { b:"", a:"" };
-                    fieldData += '<li><a href='
-                                    + url.b
-                                    + f.id
-                                    + url.a
-                                    + ' target="_blank">'
-                                    + f.id
-                                    +'</a>';
+                    fieldData += !URLs[key]
+                    ? `<em>${f.id}</em>`
+                    : '<a href="'
+                        + URLs[key].b
+                        + String(f.id)
+                        + URLs[key].a
+                        + '" target="_blank" style="outline:none;">'
+                        + String(f.id)+'</a>';
+;
                     levelData = !f.level
                             ? ''
                             : f.leveDesc
