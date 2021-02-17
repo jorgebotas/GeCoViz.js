@@ -638,11 +638,11 @@ var GeCoViz = function(selector) {
         updateWidth = function() {
             width = contextContainer
                 .node()
-                .clientWidth - 7;
+                .clientWidth;
             contextContainer
                 .select('.gcontextSVG')
                 .attr('width', width)
-            geneRect.w = width / (2 * nSide + 1)
+            geneRect.w = (width - 7) / (2 * nSide + 1)
         }
 
         updateHeight = function() {
@@ -896,6 +896,7 @@ var GeCoViz = function(selector) {
         exitGenes = function() {
             let genes = contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
+
             genes
             .transition()
             .duration(duration)
