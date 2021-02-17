@@ -12,16 +12,20 @@ var customBar = function(selector, data) {
             if (typeof v != 'object'
                 && !dataSimpleFields.includes(k)) dataSimpleFields.push(k)
             else if (nonEmptyArray(v)) {
-                if (dataComplexFields[k]) {
-                    if (v.level
-                        && !dataComplexFields[k].includes(v.level)) {
-                        dataComplexFields[k].push(v.level)
+                v.forEach(v => {
+                    if (dataComplexFields[v.id]) {
+                        console.log(v)
+                        if (v.level
+                            && !dataComplexFields[k].includes(v.level)) {
+                            dataComplexFields[k].push(v.level)
+                        }
+                    } else {
+                        dataComplexFields[k] = v.level
+                                ? [v.level]
+                                : []
                     }
-                } else {
-                    dataComplexFields[k] = v.level
-                            ? [v.level]
-                            : []
-                }
+
+                })
             }
         })
     })
@@ -73,7 +77,7 @@ var customBar = function(selector, data) {
     showNameSelect
         .append('option')
         .attr('selected', '')
-        .attr('value', 'showName')
+        .attr('value', '')
         .html('Gene name')
     showNameSelect
         .append('option')
@@ -97,6 +101,11 @@ var customBar = function(selector, data) {
             150,
             'notation',
             'notation')
+    notationSelect
+        .append('option')
+        .attr('value', '')
+        .attr('selected', '')
+        .html('Color')
      let notationOption = notationSelect
         .selectAll('option.notationOption')
         .data(dataKeys)

@@ -597,7 +597,8 @@ var GeCoViz = function(selector) {
                     newShowName = showOptions
                         .options[showOptions.selectedIndex]
                         .value;
-                    if(newShowName != showName) chart.showName(newShowName)
+                    if(newShowName != ''
+                    && newShowName != showName) chart.showName(newShowName)
                 })
             // Notation level
             let notationLevelOptions = container
@@ -623,7 +624,8 @@ var GeCoViz = function(selector) {
                     let newNotation = notationOptions
                         .options[notationOptions.selectedIndex]
                         .value;
-                    if(newNotation != notation) {
+                    if(newNotation != ''
+                    && newNotation != notation) {
                         let notationLevelOption = notationLevelOptions
                         .options[notationLevelOptions.selectedIndex]
                         .value;
