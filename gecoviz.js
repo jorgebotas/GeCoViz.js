@@ -145,7 +145,7 @@ var GeCoViz = function(selector) {
             }
           contextContainer = graphContainer
                 .append('div')
-                .attr('class', 'col-md-6 p-1')
+                .attr('class', 'w-50 p-1')
                 .append('div')
                 .attr('class', 'gcontext')
                 .style('opacity', 0);
@@ -158,7 +158,8 @@ var GeCoViz = function(selector) {
           updateWidth();
           legendContainer = graphContainer
                 .append('div')
-                .attr('class', 'col-md-2 p-1')
+                .attr('class', 'p-1')
+                .style('width', '350px')
                 .append('div')
                 .attr('class', 'legend w-100 h-100');
           drawLegend();
