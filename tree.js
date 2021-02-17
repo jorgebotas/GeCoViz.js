@@ -233,8 +233,9 @@ var buildTree = function(selector,
         // compute the new height
         var newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
         visSVG
+        .attr('target-height', newHeight + 50)
         .transition()
-        .duration(transitionDuration)
+        .duration(500)
         .attr('height', newHeight + 50)
         tree.size([newHeight, w])
         treeRoot = tree(treeRootHierarchy);

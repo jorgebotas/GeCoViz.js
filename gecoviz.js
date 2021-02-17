@@ -50,7 +50,8 @@ var GeCoViz = function(selector) {
         updateShowName,
         updateNotation,
         updateLegend,
-        updateWidth;
+        updateWidth,
+        updateHeight;
   var options = {
       showName : true,
       showTree : true,
@@ -142,7 +143,7 @@ var GeCoViz = function(selector) {
                   newick, newickFields,
                   treeLeafEnter, treeLeafExit);
             }
-          let contextContainer = graphContainer
+          contextContainer = graphContainer
                 .append('div')
                 .attr('class', 'col-md-6 p-1')
                 .append('div')
@@ -154,13 +155,6 @@ var GeCoViz = function(selector) {
             .duration(duration)
             .delay(delay.enter)
             .style('opacity', 1);
-
-          updateWidth = function() {
-              width = contextContainer.node()
-                .getBoundingClientRect()
-                .width - 5;
-              geneRect.w = width / (2 * nSide + 1)
-          }
           updateWidth();
           legendContainer = graphContainer
                 .append('div')
@@ -640,6 +634,24 @@ var GeCoViz = function(selector) {
                 .on('click', () => chart.shuffleColors());
         }
 
+        updateWidth = function() {
+            width = contextContainer
+                .node()
+                .getBoundingClientRect()
+                .width - 5;
+            geneRect.w = width / (2 * nSide + 1)
+        }
+
+        updateHeight = function() {
+            graphContainer
+                .select('.gcontextSVG')
+                .transition()
+                .duration(duration)
+                .attr('height', graphContainer
+                    .select('.phylogram svg')
+                    .attr('target-height'))
+        }
+
         function enterGene(d) {
             let geneG = d3.select(this);
             let {
@@ -875,6 +887,7 @@ var GeCoViz = function(selector) {
             .delay(delay.enter)
             .style('opacity', 1)
 
+            updateHeight();
         }
 
         exitGenes = function() {
@@ -897,6 +910,8 @@ var GeCoViz = function(selector) {
             .delay(delay.exit)
             .style('opacity', 0)
             .remove();
+
+            updateHeight();
         }
 
         updateGenes = function() {
@@ -953,16 +968,11 @@ var GeCoViz = function(selector) {
         var legendContainer,
             splitLegend,
             graphContainer,
+            contextContainer,
             contextG
         initChart(container);
         parameterListener();
-        graphContainer
-            .select('.gcontextSVG')
-            .attr('height', graphContainer
-                .select('.phylogram')
-                .node()
-                .getBoundingClientRect().height - 13)
-
+        updateHeight();
     });
   }
 
