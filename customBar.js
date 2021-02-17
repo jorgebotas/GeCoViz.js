@@ -5,16 +5,12 @@ var customBar = function(selector, data) {
                                                 ? Object.keys(d)
                                                 : maxKeys, []);
     // Extract complex and simple data fields
-    let dataSimpleFields = []
     let dataComplexFields = {}
     data.forEach(d => {
         Object.entries(d).forEach(([k, v]) =>{
-            if (typeof v != 'object'
-                && !dataSimpleFields.includes(k)) dataSimpleFields.push(k)
-            else if (nonEmptyArray(v)) {
+            if (nonEmptyArray(v)) {
                 v.forEach(v => {
-                    if (dataComplexFields[v.id]) {
-                        console.log(v)
+                    if (dataComplexFields[k]) {
                         if (v.level
                             && !dataComplexFields[k].includes(v.level)) {
                             dataComplexFields[k].push(v.level)
@@ -29,8 +25,8 @@ var customBar = function(selector, data) {
             }
         })
     })
-    console.log(dataSimpleFields)
-    console.log(dataComplexFields)
+    let dataSimpleFields = dataKeys
+        .filter(d => !Object.keys(dataComplexFields).includes(d));
     let vis = d3.select(selector);
     let container = vis.append('div')
             .attr('class', 'customBar col-md-10 mx-auto');
@@ -73,29 +69,23 @@ var customBar = function(selector, data) {
     showNameSelect = addCustomSelect(showNameSelect,
             150,
             'showName',
-            'showName')
-    //showNameSelect
-        //.append('option')
-        //.attr('selected', '')
-        //.attr('value', '')
-        //.html('Gene name')
+            'showName');
     showNameSelect
         .append('option')
         .attr('selected', '')
         .attr('value', '')
-        .html('Gene text')
-    showNameSelect
+        .html('Gene text');
+    let showNameOption = showNameSelect
+        .selectAll('option.showNameOption')
+        .data(dataSimpleFields)
+    let showNameOptionEnter = showNameOption
+        .enter()
         .append('option')
-        .attr('value', 'showName')
-        .html('Gene name')
-    showNameSelect
-        .append('option')
-        .attr('value', 'gene')
-        .html('Gene id')
-    showNameSelect
-        .append('option')
-        .attr('value', 'taxonomy')
-        .html('Taxonomy')
+        .attr('class', 'showNameOption')
+    showNameOptionEnter
+        .merge(showNameOption)
+        .attr('value', d => d)
+        .html(capitalize)
 
     let notationSelect = container
         .append('div')
