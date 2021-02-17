@@ -94,7 +94,7 @@ var PopperCreate = function(selector, d, URLs) {
     popperD3.append('div')
              .attr('class', 'popper-content')
              .html(popperHTML);
-    if (d.domains) {
+    if (d.pfam) {
         var doms = new Set();
         d.domains.forEach(d => {
             if (d.class && d.class != '') {
