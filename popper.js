@@ -59,7 +59,7 @@ var PopperCreate = function(selector, d, URLs) {
         if (d.nContig) {
             popperHTML += 'Analysed contigs: ' + d.nContig + '<br>';
         }
-        if (d.domains) {
+        if (d.pfam) {
              let dom_id = 'dom' + cleanString(d.anchor + d.pos);
              popperHTML += '<div class="py-2" id=' + dom_id + '></div>'
         }
