@@ -145,7 +145,7 @@ var GeCoViz = function(selector) {
             }
           contextContainer = graphContainer
                 .append('div')
-                .attr('class', 'w-50 p-1')
+                .attr('class', 'w-100 p-1')
                 .append('div')
                 .attr('class', 'gcontext')
                 .style('opacity', 0);
