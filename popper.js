@@ -9,6 +9,7 @@ var PopperCreate = function(selector, d, URLs) {
                     + key.toUpperCase()
                     + '</li>';
                 field.forEach(f => {
+                    fieldData += '<li>';
                     fieldData += !URLs[key]
                     ? `<em>${f.id}</em>`
                     : '<a href="'
