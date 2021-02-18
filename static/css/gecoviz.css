@@ -34,6 +34,7 @@ g.node {
 
 /*GENE CONTEXT*/
 div.gcontext {
+  min-width: 500px;
   overflow-x: scroll;
   overflow-y: hidden;
   border: solid var(--dark-gray) 1px;
@@ -62,7 +63,8 @@ svg.scale g {
 }
 
 text.geneName {
-  fill: var(--sand);
+  fill: var(--white);
+  font-weight: bold;
   transition: fill 0.3s;
   font-size: 1em;
   text-align: center;
@@ -74,7 +76,7 @@ text.geneName {
 path.stroke {
   fill: none;
   stroke: var(--black);
-  stroke-width: 2px;
+  stroke-width: 2.3px;
   z-index: 3;
   outline: none;
   transition: opacity 0.3s;
@@ -88,9 +90,11 @@ path.light-stroke {
   outline: none;
 }
 
-.anchor .light-stroke {
-    stroke-width: 1.5px;
+.anchor path.light-stroke {
+  stroke: var(--black);
+    stroke-width: 2px;
 }
+
 
 /*TREE*/
 .leaf.node text {
