@@ -36,6 +36,7 @@ var buildPalette = function(domain, shuffle = false) {
             "#ff6200",
             "#406362"
               ]
+    var colors = colors269;
     if (shuffle) colors = shuffleColors(colors);
     return d3.scaleOrdinal()
             .domain(domain)
