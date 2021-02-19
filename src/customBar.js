@@ -127,9 +127,8 @@ var customBar = function(selector, data) {
         .append('option')
         .attr('value', 2)
         .html('2: Bacteria')
-    console.log(dataComplexFields)
     let eggnog = dataComplexFields.eggnog || dataComplexFields.eggNOG;
-    console.log(eggnog)
+    try {
     let levelOption = levelSelect
         .selectAll('option.levelOption')
         .data(eggnog, d => d)
@@ -141,6 +140,8 @@ var customBar = function(selector, data) {
         .merge(levelOptionEnter)
         .attr('value', d => d)
         .html(capitalize)
+
+    } catch {}
 
     let shuffleColors = container
         .append('div');
