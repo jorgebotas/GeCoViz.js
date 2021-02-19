@@ -636,6 +636,9 @@ var GeCoViz = function(selector) {
             container
                 .select('.shuffleColors')
                 .on('click', () => chart.shuffleColors());
+            container
+                .select('.downloadPng')
+                .on('click', () => chart.toPng());
         }
 
         updateWidth = function() {
@@ -1105,6 +1108,13 @@ var GeCoViz = function(selector) {
     if (typeof updatePalette === 'function') updatePalette(true);
     if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateNotation == 'function') updateNotation();
+  }
+
+  chart.toPng = function() {
+    html2canvas(document.querySelector('.graph-container'))
+        .then(canvas => {
+            canvas.toBlob(blob => saveAs(blob, 'GeCoViz.png'))
+        });
   }
 
   PopperClick(selector + ' .gcontext');

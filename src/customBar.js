@@ -139,16 +139,25 @@ var customBar = function(selector, data) {
         .attr('value', d => d)
         .html(capitalize)
 
-
-    let buttonDiv = container
+    let shuffleColors = container
         .append('div');
-    addLabel(buttonDiv,
+    addLabel(shuffleColors,
         'Shuffle colors')
         .style('opacity', 0);
-    buttonDiv
+    shuffleColors
         .append('button')
         .attr('class', 'shuffleColors btn btn-secondary btn-sm')
         .html('Shuffle colors');
+
+    let downloadPng = container
+        .append('div');
+    addLabel(downloadPng,
+        'Download graph as PNG')
+        .style('opacity', 0);
+    downloadPng
+        .append('button')
+        .attr('class', 'downloadPng btn btn-secondary btn-sm')
+        .html('Download graph');
 
     selectBox(selector);
 }
