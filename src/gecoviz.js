@@ -652,13 +652,14 @@ var GeCoViz = function(selector) {
         }
 
         updateHeight = function() {
-            graphContainer
+            let targetHeight = graphContainer
+                    .select('.phylogram svg')
+                    .attr('target-height');
+            if (targetHeight) graphContainer
                 .select('.gcontextSVG')
                 .transition()
                 .duration(duration)
-                .attr('height', graphContainer
-                    .select('.phylogram svg')
-                    .attr('target-height'))
+                .attr('height', targetHeight)
         }
 
         function enterGene(d) {
