@@ -671,6 +671,7 @@ var GeCoViz = function(selector) {
             .select('.gcontextSVG')
             .transition()
             .duration(duration)
+            .delay(delay.update)
             .attr('height', targetHeight)
         }
 

@@ -422,11 +422,13 @@ var buildTree = function(selector,
         visSVG
         .transition()
         .duration(500)
+        .delay(500)
         .attr('width', newWidth)
         .attr('height', newHeight + 50)
         visContainer
         .transition()
         .duration(500)
+        .delay(500)
         .style('width', newWidth + 10 + 'px')
     }
     // Enable pop-up interactivity
