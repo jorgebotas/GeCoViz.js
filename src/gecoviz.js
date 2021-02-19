@@ -1111,7 +1111,16 @@ var GeCoViz = function(selector) {
   }
 
   chart.toPng = function() {
-    html2canvas(document.querySelector('.graph-container'))
+      let toDownload = document.querySelector('.graph-container');
+      let dimensions = toDownload.getBoundingClientRect();
+      let scrollX = $(document).scrollLeft();
+      let scrollY = $(document).scrollTop();
+      html2canvas(toDownload, {
+          width : dimensions.width,
+          height : dimensions.height,
+          scrollX : - scrollX,
+          scrollY : - scrollY,
+      })
         .then(canvas => {
             canvas.toBlob(blob => saveAs(blob, 'GeCoViz.png'))
         });
