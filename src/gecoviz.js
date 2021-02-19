@@ -664,7 +664,8 @@ var GeCoViz = function(selector) {
                 .selectAll('g.gene')
                 .nodes()
                 .map(n => n.getBoundingClientRect().top))
-                - graphContainer.node().getBoundingClientRect().top;
+                - graphContainer.node().getBoundingClientRect().top
+                + geneRect.h + 10;
             }
             graphContainer
             .select('.gcontextSVG')
