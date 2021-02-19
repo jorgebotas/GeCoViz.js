@@ -127,9 +127,12 @@ var customBar = function(selector, data) {
         .append('option')
         .attr('value', 2)
         .html('2: Bacteria')
+    console.log(dataComplexFields)
+    let eggnog = dataComplexFields.eggnog || dataComplexFields.eggNOG;
+    console.log(eggnog)
     let levelOption = levelSelect
         .selectAll('option.levelOption')
-        .data(dataComplexFields.eggnog || dataComplexFields.eggNOG, d => d)
+        .data(eggnog, d => d)
     let levelOptionEnter = levelOption
         .enter()
         .append('option')
