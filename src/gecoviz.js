@@ -653,14 +653,25 @@ var GeCoViz = function(selector) {
 
         updateHeight = function() {
             // Avoid errors when tree is not present
+            let targetHeight;
             try {
-            graphContainer
-                .select('.gcontextSVG')
-                .transition()
-                .duration(duration)
-                .attr('height', targetHeight)
+                targetHeight = graphContainer
+                    .select('.phylogram svg')
+                    .attr('target-height');
 
-            } catch {}
+            } catch {
+                targetHeight = d3.max(graphContainer
+                .selectAll('g.gene')
+                .nodes()
+                .getBBox()
+                .y)
+                console.log(targetHeight)
+            }
+            graphContainer
+            .select('.gcontextSVG')
+            .transition()
+            .duration(duration)
+            .attr('height', targetHeight)
         }
 
         function enterGene(d) {
