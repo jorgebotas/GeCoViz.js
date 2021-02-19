@@ -663,8 +663,7 @@ var GeCoViz = function(selector) {
                 targetHeight = d3.max(graphContainer
                 .selectAll('g.gene')
                 .nodes()
-                .getBoundingClientRect()
-                .y)
+                .map(n => n.getBoundingClientRect().top))
                 console.log(targetHeight)
             }
             graphContainer
