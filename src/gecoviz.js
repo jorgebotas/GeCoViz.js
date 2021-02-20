@@ -211,30 +211,30 @@ var GeCoViz = function(selector) {
                       exitEach : treeLeafExit,
                   });
           } else {}
-              contextG.selectAll('g.gene')
-                .data(data, d => d.anchor + d.pos)
-                .enter()
-                    .append('g')
-                    .attr('class', d => {
-                        let cl = 'gene'
-                        cl += d.pos == 0
-                            ? ' anchor'
-                            : '';
-                        return cl
-                    })
-                    .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-                    .attr('transform', d => 'translate(' +
-                        (+d.pos + nSide) * geneRect.w
-                        + ","
-                        + getY(d)
-                        + ")")
-                    .transition()
-                    .duration(duration)
-                    .delay(delay.enter)
-                    .style('opacity', 1)
-                    .each(enterGene)
-
           updateWidth();
+          contextG.selectAll('g.gene')
+            .data(data, d => d.anchor + d.pos)
+            .enter()
+                .append('g')
+                .attr('class', d => {
+                    let cl = 'gene'
+                    cl += d.pos == 0
+                        ? ' anchor'
+                        : '';
+                    return cl
+                })
+                .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
+                .attr('transform', d => 'translate(' +
+                    (+d.pos + nSide) * geneRect.w
+                    + ","
+                    + getY(d)
+                    + ")")
+                .transition()
+                .duration(duration)
+                .delay(delay.enter)
+                .style('opacity', 1)
+                .each(enterGene)
+
         }
 
         function getArrow(d, x0, rectWidth, tipWidth) {
