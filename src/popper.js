@@ -206,7 +206,6 @@ var addPopper = function(selector,
 }
 
 var PopperClick = function(selector) {
-
     $(document).click(e => {
         // Helper function
         function lookForParent(element,

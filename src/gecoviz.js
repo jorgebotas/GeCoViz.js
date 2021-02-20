@@ -211,7 +211,10 @@ var GeCoViz = function(selector) {
                       exitEach : treeLeafExit,
                   });
           } else {}
+
           updateWidth();
+          contextSVG
+            .attr('width', width);
           contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos)
             .enter()
