@@ -175,6 +175,10 @@ div.split-legend {
     padding-bottom: 5px;
 }
 
+.lgn-entry-description {
+    font-size: .8em;
+}
+
 div.split-legend > div {
     cursor: default;
     display: inline-block;
