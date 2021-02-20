@@ -163,11 +163,11 @@ var buildTree = function(selector,
     }
 
     var diagonal = rightAngleDiagonal();
-    var duration = 500;
+    var duration = 1000;
     var delay = {
-      enter : duration * 2,
-      update : duration,
-      exit: duration,
+      enter : duration*1.5,
+      update : 0,
+      exit: 0,
     }
 
     // Initialize root's initial position
