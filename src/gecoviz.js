@@ -663,12 +663,16 @@ var GeCoViz = function(selector) {
                 //.duration(duration)
                 //.delay(delay.enter)
                 //.attr('width', width)
+            let totalWidth = +graphContainer
+                .node()
+                .clientWidth;
             let treeWidth = 0;
             if (newick) treeWidth = +graphContainer
                     .select('.phylogram svg')
                     .attr('target-width');
-            //contextAndLegend
-                //.style('width', `calc(100% - ${treeWidth}px)`)
+            treeWidth = Math.min(.4*totalWidth, treeWidth);
+            contextAndLegend
+                .style('width', `calc(100% - ${treeWidth}px)`)
             width = contextContainer
                 .node()
                 .clientWidth;
