@@ -1,10 +1,18 @@
 var buildTree = function(selector,
-                    root,
-                    fields = ['name'],
-                    enterCallback,
-                    exitCallback,
-                    options = {width : 700,
-                        height : 800}){
+    root,
+    fields = ['name'],
+    callbacks = {
+        enterEach : (_) => undefined,
+        enterMouseOver : (_e,_) => undefined,
+        enterMouseLeave : (_e,_) => undefined,
+        enterClick : (_e,_) => undefined,
+        exitEach : (_) => undefined,
+    },
+    options = {
+        width : 700,
+        height : 800
+    }){
+
     var margin = {
         top : 5,
         right : 5,
@@ -310,7 +318,10 @@ var buildTree = function(selector,
             .attr('id', n => 'leaf'
                 + cleanString(n.data.name))
         nodeLeafEnter
-            .each(l => enterCallback(l))
+            .on('mouseover', (e, l) => callbacks.enterMouseOver(e, l))
+            .on('mouseleave', (e, l) => callbacks.enterMouseLeave(e, l))
+            .on('click', (e, l) => callbacks.enterClick(e, l))
+            .each(l => callbacks.enterEach(l))
         nodeLeafEnter
             .append('text')
             .attr('dx', 10)
@@ -376,7 +387,7 @@ var buildTree = function(selector,
             .style('fill-opacity', 1e-6)
         nodeExit
             .filter('.leaf')
-            .each(l => exitCallback(l))
+            .each(l => callbacks.exitEach(l))
 
         // LINKS
         var link = vis.selectAll('path.link')
@@ -427,7 +438,7 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
-        let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 200;
+        let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 150;
         visSVG
         .attr('target-width', newWidth)
         .transition()

@@ -133,6 +133,33 @@ var GeCoViz = function(selector) {
             chart.excludeAnchor(l.data.name, true)
         }
 
+        function treeLeafMouseOver(_, l) {
+            let anchor = cleanString(l.data.name);
+            let genes = graphContainer
+                .selectAll(`[id^="gene${anchor}"]`)
+            genes
+                .select('.stroke')
+                .style('opacity', 1);
+        }
+
+        function treeLeafMouseLeave(_, l) {
+            let anchor = cleanString(l.data.name);
+            let genes = graphContainer
+                .selectAll(`[id^="gene${anchor}"]`)
+            genes
+                .select('.stroke')
+                .style('opacity', 0);
+        }
+
+        function treeLeafClick(event, l) {
+            if (event.altKey) {
+                let name = l.data.name;
+                let excluded = excludedAnchors.includes(name);
+                console.log(excluded)
+                chart.excludeAnchor(l.data.name, !excluded);
+            }
+        }
+
         function initChart(container) {
           customBar(selector, data);
           graphContainer = container
@@ -174,7 +201,13 @@ var GeCoViz = function(selector) {
           if (newick) {
               buildTree(selector + ' .phylogramContainer',
                   newick, newickFields,
-                  treeLeafEnter, treeLeafExit);
+                  {
+                      enterEach : treeLeafEnter,
+                      enterMouseOver : treeLeafMouseOver,
+                      enterMouseLeave : treeLeafMouseLeave,
+                      enterClick : treeLeafClick,
+                      exitEach : treeLeafExit,
+                  });
           } else {
               contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos)

@@ -222,32 +222,35 @@ var PopperClick = function(selector) {
             }
             return undefined;
         }
-        var poppers = document.querySelectorAll(selector + ' .popper')
+        let poppers = document.querySelectorAll(selector + ' .popper')
         poppers.forEach(popper => {
             popper.removeAttribute('data-show');
         });
-        var targetID;
-        ['gene', 'leaf', 'popper'].forEach(c => {
-            try { targetID = lookForParent(e.target, c).id } catch {};
-        })
-        targetID = !targetID ? e.target.id : targetID;
-        targetID = targetID.trim()
-        if (['gene',  'leaf', 'popr'].indexOf(targetID.slice(0,4)) > -1){
-            targetID = targetID.slice(4);
-            var popper = document.querySelector(selector + ' .popper#popr'+targetID);
-            /*var refbound = document.querySelector(selector + ' g.gene#gene'+targetID)*/
-                                   //.getBoundingClientRect();
-              //if (refbound.right+195 > window.innerWidth){
-                  //d3.select(selector + ' .popper#popr'+targetID)
-                      //.select(selector + ' .popper-arrow')
-                      //.style('right', window.innerWidth-refbound.right+'px');
-              //} else if(refbound.left < 195) {
-                  //d3.select(selector + ' .popper#popr'+targetID)
-                      //.select(selector + ' .popper-arrow')
-                      //.style('left', refbound.left+'px')
-                      //.style('right', '');
-              /*}*/
-            try { popper.setAttribute('data-show', '') } catch {}
+        if (!e.altKey) {
+            let targetID;
+            ['gene', 'leaf', 'popper'].forEach(c => {
+                try { targetID = lookForParent(e.target, c).id } catch {};
+            })
+            targetID = !targetID ? e.target.id : targetID;
+            targetID = targetID.trim()
+            if (['gene',  'leaf', 'popr'].indexOf(targetID.slice(0,4)) > -1){
+                targetID = targetID.slice(4);
+                let popper = document.querySelector(selector + ' .popper#popr'+targetID);
+                //let popperDims = popper.getBoundingClientRect();
+                //let refbound = document.querySelector(selector + ' g.gene#gene'+targetID)
+                                       //.getBoundingClientRect();
+                  //if (refbound.right+popperDims.width/2 > window.innerWidth){
+                      //d3.select(selector + ' .popper#popr'+targetID)
+                          //.select(selector + ' .popper-arrow')
+                          //.style('right', window.innerWidth-refbound.right+'px');
+                  //} else if(refbound.left < popperDims.width/2) {
+                      //d3.select(selector + ' .popper#popr'+targetID)
+                          //.select(selector + ' .popper-arrow')
+                          //.style('left', refbound.left+'px')
+                          //.style('right', '');
+                  //}
+                try { popper.setAttribute('data-show', '') } catch {}
+            }
         }
     });
 }
