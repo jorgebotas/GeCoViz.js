@@ -211,7 +211,6 @@ var GeCoViz = function(selector) {
                       exitEach : treeLeafExit,
                   });
           } else {}
-          updateWidth();
           contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos)
             .enter()
@@ -234,6 +233,7 @@ var GeCoViz = function(selector) {
                 .delay(delay.enter)
                 .style('opacity', 1)
                 .each(enterGene)
+          updateWidth();
 
         }
 
@@ -780,7 +780,10 @@ var GeCoViz = function(selector) {
             geneG
             .append('text')
             .attr('class', 'geneName')
-            .attr('x', geneRect.w/2 - geneRect.ph/2)
+            .attr('x', geneRect.w/2 - geneRect.ph/2
+                + (d.strand == '-'
+                    ? tipWidth
+                    : 0))
             .attr('y', geneRect.h / 1.7)
             .style('opacity', g => options.showName
                 && getShowName(g) != "."
@@ -913,7 +916,10 @@ var GeCoViz = function(selector) {
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('x', geneRect.w/2 - geneRect.ph/2)
+            .attr('x', geneRect.w/2 - geneRect.ph/2
+                + (d.strand == '-'
+                    ? tipWidth
+                    : 0))
             .style('opacity', g => options.showName
                 && getShowName(g) != "."
                     ? 1 : 0)
