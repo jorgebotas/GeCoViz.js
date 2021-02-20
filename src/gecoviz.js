@@ -211,6 +211,7 @@ var GeCoViz = function(selector) {
                       exitEach : treeLeafExit,
                   });
           } else {}
+          updateWidth();
           contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos)
             .enter()
@@ -233,7 +234,6 @@ var GeCoViz = function(selector) {
                 .delay(delay.enter)
                 .style('opacity', 1)
                 .each(enterGene)
-          updateWidth();
 
         }
 
