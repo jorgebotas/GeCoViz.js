@@ -42,7 +42,7 @@ g.node {
 
 div.gcontextAndLegend {
     display: flex;
-    width: 100%
+    width: calc(100% - 320px)
 }
 
 div.gcontext {
