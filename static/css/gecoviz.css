@@ -175,8 +175,8 @@ div.split-legend {
     padding-bottom: 5px;
 }
 
-.lgn-entry-description {
-    font-size: .8em;
+.lgnd-entry-description {
+    font-size: 90%;
 }
 
 div.split-legend > div {
