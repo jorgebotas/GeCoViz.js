@@ -127,10 +127,12 @@ var GeCoViz = function(selector) {
 
         function treeLeafEnter(l) {
             chart.excludeAnchor(l.data.name, false)
+            updateWidth()
         }
 
         function treeLeafExit(l) {
             chart.excludeAnchor(l.data.name, true)
+            updateWidth()
         }
 
         function treeLeafMouseOver(_, l) {
@@ -919,7 +921,8 @@ var GeCoViz = function(selector) {
         }
 
         enterGenes = function() {
-            let genes = contextG.selectAll('g.gene')
+            let genes = contextG
+                .selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
             genes
             .transition()
