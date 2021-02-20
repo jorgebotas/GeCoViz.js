@@ -138,11 +138,9 @@ var GeCoViz = function(selector) {
           graphContainer = container
             .append('div')
             .attr('class', 'graph-container');
-          if (newick) {
-              buildTree(selector + ' .graph-container',
-                  newick, newickFields,
-                  treeLeafEnter, treeLeafExit);
-            }
+          graphContainer
+                .append('div')
+                .attr('class', 'phylogramContainer p-1')
           contextAndLegend = graphContainer
                 .append('div')
                 .attr('class', 'gcontextAndLegend')
@@ -156,7 +154,6 @@ var GeCoViz = function(selector) {
             .duration(duration)
             .delay(delay.enter*1.5)
             .style('opacity', 1);
-          updateWidth();
           legendContainer = contextAndLegend
                 .append('div')
                 .attr('class', 'p-1 pt-0 legendContainer')
@@ -174,28 +171,35 @@ var GeCoViz = function(selector) {
                     + margin.left
                     + ','
                     + margin.top + ')');
-          contextG.selectAll('g.gene')
-            .data(data, d => d.anchor + d.pos)
-            .enter()
-                .append('g')
-                .attr('class', d => {
-                    let cl = 'gene'
-                    cl += d.pos == 0
-                        ? ' anchor'
-                        : '';
-                    return cl
-                })
-                .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-                .attr('transform', d => 'translate(' +
-                    (+d.pos + nSide) * geneRect.w
-                    + ","
-                    + getY(d)
-                    + ")")
-                .transition()
-                .duration(duration)
-                .delay(delay.enter)
-                .style('opacity', 1)
-                .each(enterGene)
+          if (newick) {
+              buildTree(selector + ' .phylogramContainer',
+                  newick, newickFields,
+                  treeLeafEnter, treeLeafExit);
+          } else {
+              contextG.selectAll('g.gene')
+                .data(data, d => d.anchor + d.pos)
+                .enter()
+                    .append('g')
+                    .attr('class', d => {
+                        let cl = 'gene'
+                        cl += d.pos == 0
+                            ? ' anchor'
+                            : '';
+                        return cl
+                    })
+                    .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
+                    .attr('transform', d => 'translate(' +
+                        (+d.pos + nSide) * geneRect.w
+                        + ","
+                        + getY(d)
+                        + ")")
+                    .transition()
+                    .duration(duration)
+                    .delay(delay.enter)
+                    .style('opacity', 1)
+                    .each(enterGene)
+          }
+          updateWidth();
         }
 
         function getArrow(d, x0, rectWidth, tipWidth) {
@@ -643,26 +647,6 @@ var GeCoViz = function(selector) {
         }
 
         updateWidth = function() {
-            //let totalWidth = graphContainer
-                //.node()
-                //.clientWidth;
-            //let treeWidth = 0;
-            //if (newick) treeWidth = +graphContainer
-                    //.select('.phylogram svg')
-                    //.attr('target-width');
-            //let contextAndLegendWidth = totalWidth - treeWidth;
-            //width = contextAndLegendWidth - 320;
-            //contextAndLegend
-                //.transition()
-                //.duration(duration)
-                //.delay(delay.enter)
-                //.style('width', contextAndLegendWidth + 'px');
-            //contextContainer
-                //.select('.gcontextSVG')
-                //.transition()
-                //.duration(duration)
-                //.delay(delay.enter)
-                //.attr('width', width)
             let totalWidth = +graphContainer
                 .node()
                 .clientWidth;
@@ -671,12 +655,14 @@ var GeCoViz = function(selector) {
                     .select('.phylogram svg')
                     .attr('target-width');
             treeWidth = Math.min(.4*totalWidth, treeWidth);
-            contextAndLegend
+            graphContainer
+                .select('.gcontextAndLegend')
                 .style('width', `calc(100% - ${treeWidth}px)`)
-            width = contextContainer
+            width = graphContainer
+                .select('.gcontext')
                 .node()
                 .clientWidth;
-            contextContainer
+            graphContainer
                 .select('.gcontextSVG')
                 .attr('width', width)
             geneRect.w = (width - 7) / (2 * nSide + 1)

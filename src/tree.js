@@ -20,8 +20,6 @@ var buildTree = function(selector,
             .separation(() => 1);
     var treeRoot = tree(treeRootHierarchy)
     var visContainer = d3.select(selector)
-        .append('div')
-        .attr('class', 'phylogranContainer p-1')
         .attr('width', w)
     var vis = visContainer
         .append('div')
@@ -108,7 +106,8 @@ var buildTree = function(selector,
             .selectAll('text')
             .style('fill-opacity', 1)
             .transition()
-            .duration(1000)
+            .duration(duration)
+            .delay(delay.update)
         // Inner nodes have classes that represent all children
         // Hovering over clade will highlight descendants
         function childrenName(node) {
@@ -156,7 +155,12 @@ var buildTree = function(selector,
     }
 
     var diagonal = rightAngleDiagonal();
-    var transitionDuration = 750;
+    var duration = 500;
+    var delay = {
+      enter : duration * 2,
+      update : duration,
+      exit: duration,
+    }
 
     // Initialize root's initial position
     treeRoot.x0 = h / 2;
@@ -341,7 +345,8 @@ var buildTree = function(selector,
         var nodeUpdate = nodeEnter
             .merge(node)
             .transition()
-            .duration(transitionDuration)
+            .duration(duration)
+            .delay(delay.update)
             .attr('transform', d => 'translate(' + d.y + ',' + d.x + ')');
         nodeUpdate.select('circle')
             .attr('r', 4)
@@ -354,7 +359,8 @@ var buildTree = function(selector,
         // EXITING NODES
         var nodeExit = node.exit()
             .transition()
-            .duration(transitionDuration)
+            .duration(duration)
+            .delay(delay.exit)
             .attr('transform',
                   'translate('
                     + source.y
@@ -387,7 +393,8 @@ var buildTree = function(selector,
                                  target : oldPos})
             })
             .transition()
-            .duration(transitionDuration)
+            .duration(duration)
+            .delay(delay.update)
             .attr('d', diagonal)
         linkEnter
             .insert('svg:line', 'g')
@@ -402,13 +409,15 @@ var buildTree = function(selector,
         // Transition links to new position
         link
             .transition()
-            .duration(transitionDuration)
+            .duration(duration)
+            .delay(delay.update)
             .attr('d', diagonal)
         // Transition exiting nodes to parent's new position
         link
             .exit()
             .transition()
-            .duration(transitionDuration)
+            .duration(duration)
+            .delay(delay.exit)
             .attr('d', () => {
                 let newPos = {x : source.x,
                               y : source.y}
@@ -422,14 +431,14 @@ var buildTree = function(selector,
         visSVG
         .attr('target-width', newWidth)
         .transition()
-        .duration(500)
-        .delay(500)
+        .duration(duration)
+        .delay(delay.update)
         .attr('width', newWidth)
         .attr('height', newHeight + 50)
         visContainer
         .transition()
-        .duration(500)
-        .delay(500)
+        .duration(duration)
+        .delay(delay.update)
         .style('width', newWidth + 10 + 'px')
     }
     // Enable pop-up interactivity
