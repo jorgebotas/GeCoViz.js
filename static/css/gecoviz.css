@@ -16,6 +16,12 @@ div.graph-container {
 
 
 /*PHYLOGRAM*/
+
+div.phylogranContainer {
+    max-width: 40%;
+    float: left;
+}
+
 div.phylogram {
     text-align: left;
     border: solid var(--dark-gray) 1px;
@@ -33,8 +39,15 @@ g.node {
 }
 
 /*GENE CONTEXT*/
+
+div.gcontextAndLegend {
+    display: flex;
+    width: 100%
+}
+
 div.gcontext {
   min-width: 500px;
+  width: 100%;
   overflow-x: scroll;
   overflow-y: hidden;
   border: solid var(--dark-gray) 1px;
@@ -110,6 +123,12 @@ path.link {
 
 
 /*LEGEND*/
+
+.legendContainer {
+    width: 320px;
+    float: right;
+}
+
 div.legend {
     height: auto;
     padding: 0;

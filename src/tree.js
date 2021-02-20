@@ -21,7 +21,7 @@ var buildTree = function(selector,
     var treeRoot = tree(treeRootHierarchy)
     var visContainer = d3.select(selector)
         .append('div')
-        .attr('class', 'p-1')
+        .attr('class', 'phylogranContainer p-1')
         .attr('width', w)
     var vis = visContainer
         .append('div')
@@ -420,6 +420,7 @@ var buildTree = function(selector,
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
         let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 200;
         visSVG
+        .attr('target-width', newWidth)
         .transition()
         .duration(500)
         .delay(500)

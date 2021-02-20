@@ -143,27 +143,28 @@ var GeCoViz = function(selector) {
                   newick, newickFields,
                   treeLeafEnter, treeLeafExit);
             }
-          contextContainer = graphContainer
+          contextAndLegend = graphContainer
                 .append('div')
-                .attr('class', 'w-100 p-1')
-                .append('div')
-                .attr('class', 'gcontext')
+                .attr('class', 'gcontextAndLegend')
                 .style('opacity', 0);
+          contextContainer = contextAndLegend
+                .append('div')
+                .attr('class', 'gcontext m-1');
 
-          contextContainer
+          contextAndLegend
             .transition()
             .duration(duration)
-            .delay(delay.enter)
+            .delay(delay.enter*1.5)
             .style('opacity', 1);
           updateWidth();
-          legendContainer = graphContainer
+          legendContainer = contextAndLegend
                 .append('div')
-                .attr('class', 'p-1 pt-0')
+                .attr('class', 'p-1 pt-0 legendContainer')
                 .append('div')
                 .attr('class', 'legend w-100 h-100');
           drawLegend();
           let contextSVG = contextContainer
-            .append('svg')
+            .insert('svg', '.legendContainer')
             .attr('class', 'gcontextSVG')
             .attr('width', width)
             .attr('height', height);
@@ -642,6 +643,32 @@ var GeCoViz = function(selector) {
         }
 
         updateWidth = function() {
+            //let totalWidth = graphContainer
+                //.node()
+                //.clientWidth;
+            //let treeWidth = 0;
+            //if (newick) treeWidth = +graphContainer
+                    //.select('.phylogram svg')
+                    //.attr('target-width');
+            //let contextAndLegendWidth = totalWidth - treeWidth;
+            //width = contextAndLegendWidth - 320;
+            //contextAndLegend
+                //.transition()
+                //.duration(duration)
+                //.delay(delay.enter)
+                //.style('width', contextAndLegendWidth + 'px');
+            //contextContainer
+                //.select('.gcontextSVG')
+                //.transition()
+                //.duration(duration)
+                //.delay(delay.enter)
+                //.attr('width', width)
+            let treeWidth = 0;
+            if (newick) treeWidth = +graphContainer
+                    .select('.phylogram svg')
+                    .attr('target-width');
+            contextAndLegend
+                .style('width', `calc(100% - ${treeWidth}px)`)
             width = contextContainer
                 .node()
                 .clientWidth;
@@ -992,6 +1019,7 @@ var GeCoViz = function(selector) {
         var legendContainer,
             splitLegend,
             graphContainer,
+            contextAndLegend,
             contextContainer,
             contextG
         initChart(container);
