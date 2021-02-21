@@ -1197,6 +1197,13 @@ var GeCoViz = function(selector) {
           .height + 7;
       let scrollX = $(document).scrollLeft();
       let scrollY = $(document).scrollTop();
+      //['.phylogram',
+       //'.gcontext',
+       //'.split-legend'].forEach(d => {
+           //d3.select(selector)
+            //.select(d)
+            //.style('border-color', 'transparent');
+      //})
       let splitLegend = d3.select(selector).select('.split-legend');
       let legendEntries = splitLegend.selectAll('.lgnd-entry')
       splitLegend.select('.pl-3').style('display', 'none')
@@ -1213,6 +1220,13 @@ var GeCoViz = function(selector) {
             splitLegend.select('.pl-3').style('display', 'block')
             legendEntries.select('label').style('padding-left', '1.5rem')
             legendEntries.select('input').style('display', 'block')
+            //['.phylogram',
+             //'.gcontext',
+             //'.split-legend'].forEach(d => {
+               //d3.select(selector)
+                //.select(d)
+                //.style('border-color', 'var(--dark-gray)');
+            //})
         });
   }
 
