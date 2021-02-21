@@ -1192,7 +1192,9 @@ var GeCoViz = function(selector) {
       let dimensions = toDownload.getBoundingClientRect();
       let legendHeight = d3.select(selector)
           .select('.split-legend')
-          .getBoundingClientRect().height;
+          .node()
+          .getBoundingClientRect()
+          .height;
       let scrollX = $(document).scrollLeft();
       let scrollY = $(document).scrollTop();
       html2canvas(toDownload, {
