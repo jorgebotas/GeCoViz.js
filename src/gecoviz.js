@@ -1190,7 +1190,7 @@ var GeCoViz = function(selector) {
   chart.toPng = function() {
       let toDownload = document.querySelector('.graph-container');
       let dimensions = toDownload.getBoundingClientRect();
-      let legendHeight = graphContainer
+      let legendHeight = d3.select(selector)
           .select('.split-legend')
           .getBoundingClientRect().height;
       let scrollX = $(document).scrollLeft();
