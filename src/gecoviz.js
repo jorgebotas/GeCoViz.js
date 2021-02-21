@@ -1190,11 +1190,14 @@ var GeCoViz = function(selector) {
   chart.toPng = function() {
       let toDownload = document.querySelector('.graph-container');
       let dimensions = toDownload.getBoundingClientRect();
+      let legendHeight = graphContainer
+          .select('.split-legend')
+          .getBoundingClientRect().height;
       let scrollX = $(document).scrollLeft();
       let scrollY = $(document).scrollTop();
       html2canvas(toDownload, {
           width : dimensions.width,
-          height : dimensions.height,
+          height : Math.max(dimensions.height, legendHeight),
           scrollX : - scrollX,
           scrollY : - scrollY,
       })
