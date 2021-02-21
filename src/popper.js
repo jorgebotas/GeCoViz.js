@@ -49,54 +49,14 @@ var PopperCreate = function(selector, d, URLs) {
             }
             if (fieldData) arrayData.push(fieldData)
         })
-        var popperHTML = '';
-        console.log(d)
+        var popperHTML = '<strong>Gene information</strong><br>';
         showFields.forEach(f => {
-            if (d[f]) popperHTML += `${f}: ${d[f]}<br>`
+            if (d[f]) popperHTML += `${capitalize(f)}: ${d[f]}<br>`
         })
-        //if (d.gene) {
-            //popperHTML += '<strong>Gene</strong><br>' +
-                            //d.gene + '<br>';
-        //}
-        //if (d.showName) {
-            //popperHTML += 'Gene name: ' + d.showName + '<br>'
-        //}
-        //if (d.start && d.end) {
-            //popperHTML += 'Length: ' + Math.abs(+d.end - +d.start) + 'bp<br>';
-            //popperHTML += 'Start: ' + d.start + 'bp<br>' +
-                           //'End: ' + d.end + 'bp<br>';
-        //}
-        //if (d.strand) {
-             //popperHTML += 'Strand: ' + d.strand + '<br>';
-         //}
-        //if(d.frequency) {
-            //popperHTML += 'Frequency: ' + d.frequency + '<br>';
-        //}
-        //if (d.nContig) {
-            //popperHTML += 'Analysed contigs: ' + d.nContig + '<br>';
-        //}
-        //if (d.pfam) {
-             //let dom_id = 'dom' + cleanString(d.anchor + d.pos);
-             //popperHTML += '<div class="py-2" id=' + dom_id + '></div>'
-        //}
-        //if (d.GMGFam) {
-            //popperHTML += '<br><strong>GMGFam</strong><br>' +
-                                     //d.GMGFam + '<br><br>';
-        //}
-        //if (d.taxonomy
-            //&& d.taxonomy.length
-            //&& !nonEmptyArray(d.taxonomy)){
-            //popperHTML += '<strong>Taxonomic assignation</strong><br>';
-            //popperHTML += d.taxonomy + '<br>' //.join('<br>')
-        //}
         if (arrayData.length > 0) popperHTML +=
             '<div class="popper-uls">'
                 + arrayData.reduce((t, d) => t + d)
                 +'</div>'
-         //if (d.metadata) {
-            //popperHTML += '<br><br><strong>Metadata</strong><br>' +
-                        //d.metadata
-         //}
         return popperHTML
     }
 
