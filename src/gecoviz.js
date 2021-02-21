@@ -127,12 +127,10 @@ var GeCoViz = function(selector) {
 
         function treeLeafEnter(l) {
             chart.excludeAnchor(l.data.name, false)
-            updateWidth()
         }
 
         function treeLeafExit(l) {
             chart.excludeAnchor(l.data.name, true)
-            updateWidth()
         }
 
         function treeLeafMouseOver(_, l) {
