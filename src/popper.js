@@ -154,6 +154,7 @@ var addPopper = function(selector,
                     id,
                     popperHTML,
                     popperClass) {
+    console.log(id)
     var popperD3 = d3.select(selector)
                     .append('div')
                     .attr('class', 'popper ' + popperClass)
