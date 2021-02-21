@@ -67,7 +67,9 @@ var PopperCreate = function(selector, d, URLs) {
             popperHTML += '<br><strong>GMGFam</strong><br>' +
                                      d.GMGFam + '<br><br>';
         }
-        if (d.taxonomy && d.taxonomy.length){
+        if (d.taxonomy
+            && d.taxonomy.length
+            && !nonEmptyArray(n.taxonomy)){
             popperHTML += '<strong>Taxonomic assignation</strong><br>';
             popperHTML += d.taxonomy + '<br>' //.join('<br>')
         }
