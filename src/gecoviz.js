@@ -1188,15 +1188,20 @@ var GeCoViz = function(selector) {
   }
 
   chart.toPng = function() {
-      let toDownload = document.querySelector('.graph-container');
+      let toDownload = document.querySelector(selector + ' .graph-container');
       let dimensions = toDownload.getBoundingClientRect();
       let legendHeight = d3.select(selector)
           .select('.split-legend')
           .node()
           .getBoundingClientRect()
-          .height;
+          .height + 7;
       let scrollX = $(document).scrollLeft();
       let scrollY = $(document).scrollTop();
+      let splitLegend = d3.select(selector).select('.split-legend');
+      let legendEntries = splitLegend.selectAll('.lgnd-entry')
+      splitLegend.select('.pl-3').style('display', 'none')
+      legendEntries.select('label').style('padding-left', '.5rem')
+      legendEntries.select('input').style('display', 'none')
       html2canvas(toDownload, {
           width : dimensions.width,
           height : Math.max(dimensions.height, legendHeight),
@@ -1205,6 +1210,9 @@ var GeCoViz = function(selector) {
       })
         .then(canvas => {
             canvas.toBlob(blob => saveAs(blob, 'GeCoViz.png'))
+            splitLegend.select('.pl-3').style('display', 'block')
+            legendEntries.select('label').style('padding-left', '1.5rem')
+            legendEntries.select('input').style('display', 'block')
         });
   }
 
