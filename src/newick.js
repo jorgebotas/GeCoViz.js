@@ -32,6 +32,8 @@ var parseNewick = function(string, fields = ['name']) {
             tokenSplit = token.trim().split('.');
             tokenSplit.forEach(t => {
                 tSplit = t.split(':');
+                console.log(tSplit)
+                console.log(t)
                 if (tSplit.length > 1) tree[tSplit[0]] = tSplit[1];
             })
             fields.forEach((f, i) => {
