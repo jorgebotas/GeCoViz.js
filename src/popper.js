@@ -75,7 +75,7 @@ var PopperCreate = function(selector, d, URLs) {
              .attr('class', 'popper-content')
              .html(popperHTML);
     console.log(d.pfam)
-    if (d.pfam) {
+    if (nonEmptyArray(d.pfam)) {
         var doms = new Set();
         d.pfam.forEach(d => {
             if (d.class && d.class != '') {
@@ -86,6 +86,7 @@ var PopperCreate = function(selector, d, URLs) {
         var palette = d3.scaleOrdinal()
                         .domain(doms)
                         .range(colors);
+        console.log(d.pfam)
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
                          d.pfam,
                          1000,
