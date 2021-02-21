@@ -38,6 +38,7 @@ var PopperCreate = function(selector, d, URLs) {
             if (fieldData) arrayData.push(fieldData)
         })
         var popperHTML = '';
+        console.log(d)
         if (d.gene) {
             popperHTML += '<strong>Gene</strong><br>' +
                             d.gene + '<br>';
