@@ -335,6 +335,7 @@ var buildTree = function(selector,
             nodeLeafEnter
                 .each(n => {
                     let popperContent = '';
+                    console.log(n.data)
                     fields.forEach(f => {
                         popperContent += f != 'showName'
                             ? '<p>' + f + ': ' + n.data[f] + '</p>'
