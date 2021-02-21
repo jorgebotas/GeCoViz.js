@@ -30,8 +30,12 @@ var parseNewick = function(string, fields = ['name']) {
               }
           else if (x == '(' || x == ',') {
             tokenSplit = token.trim().split('.');
+            tokenSplit.forEach(t => {
+                tSplit = t.split(':');
+                if (tSplit.length > 1) tree[tSplit[0]] = tSplit[1];
+            })
             fields.forEach((f, i) => {
-                tree[f] = tokenSplit[i]
+                tree[f] = tokenSplit[i];
             })
             tree.id = counter;
             ++counter;
