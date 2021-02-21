@@ -55,6 +55,10 @@ var PopperCreate = function(selector, d, URLs) {
             if (d[f]) popperHTML += `${capitalize(f)}: ${d[f]}<br>`;
         })
         popperHTML += '</div>';
+        if (nonEmptyArray(d.pfam)) {
+             let dom_id = 'dom' + cleanString(d.anchor + d.pos);
+             popperHTML += '<div class="py-2" id=' + dom_id + '></div>'
+        }
         if (arrayData.length > 0) popperHTML +=
             '<div class="popper-uls">'
                 + arrayData.reduce((t, d) => t + d)
@@ -74,7 +78,6 @@ var PopperCreate = function(selector, d, URLs) {
     popperD3.append('div')
              .attr('class', 'popper-content')
              .html(popperHTML);
-    console.log(d.pfam)
     if (nonEmptyArray(d.pfam)) {
         var doms = new Set();
         d.pfam.forEach(d => {
@@ -86,7 +89,6 @@ var PopperCreate = function(selector, d, URLs) {
         var palette = d3.scaleOrdinal()
                         .domain(doms)
                         .range(colors);
-        console.log(d.pfam)
         draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
                          d.pfam,
                          1000,
