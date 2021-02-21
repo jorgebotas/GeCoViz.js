@@ -50,13 +50,15 @@ var PopperCreate = function(selector, d, URLs) {
             if (fieldData) arrayData.push(fieldData)
         })
         var popperHTML = '<br>'; //<strong>Gene information</strong>
+        popperHTML += '<div class="p-1">';
         showFields.forEach(f => {
-            if (d[f]) popperHTML += `${capitalize(f)}: ${d[f]}<br>`
+            if (d[f]) popperHTML += `${capitalize(f)}: ${d[f]}<br>`;
         })
+        popperHTML += '</div>';
         if (arrayData.length > 0) popperHTML +=
             '<div class="popper-uls">'
                 + arrayData.reduce((t, d) => t + d)
-                +'</div>'
+                +'</div>';
         return popperHTML
     }
 
