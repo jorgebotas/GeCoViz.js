@@ -69,7 +69,7 @@ var GeCoViz = function(selector) {
       purple : 'var(--purple)',
   }
   var leafColor = {
-      stroke : color.darkPurple,
+      stroke : color.purple,
       fill : color.sand,
   }
 

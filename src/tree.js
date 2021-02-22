@@ -55,7 +55,7 @@ var buildTree = function(selector,
         darkRed : 'var(--dark-red)'
     }
     var leafColor = {
-        stroke : color.darkPurple,
+        stroke : color.purple,
         full : color.purple,
         empty : color.sand,
     }
