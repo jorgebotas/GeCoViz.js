@@ -3,8 +3,8 @@ var PopperCreate = function(selector, d, URLs) {
         let arrayData = []
         let showFields = [
             'gene name',
-            'description',
             'gene',
+            'description',
             'anchor',
             'pos',
             'start',
