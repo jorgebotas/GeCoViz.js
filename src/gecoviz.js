@@ -1196,7 +1196,7 @@ var GeCoViz = function(selector) {
       let scrollX = $(document).scrollLeft();
       let scrollY = $(document).scrollTop();
       //['.phylogram',
-       //'.gcontext',
+      //'.gcontext',
        //'.split-legend'].forEach(d => {
            //d3.select(selector)
             //.select(d)

@@ -48,16 +48,18 @@ var buildTree = function(selector,
         noData: 'var(--nodata)',
         highlight : 'var(--highlight)',
         black : 'var(--black)',
+        gray : '#aaa',
         darkGray : 'var(--dark-gray)',
         sand : 'var(--sand)',
         darkPurple : 'var(--dark-purple)',
         purple : 'var(--purple)',
-        darkRed : 'var(--dark-red)'
+        darkRed : 'var(--dark-red)',
     }
     var leafColor = {
         stroke : color.purple,
         full : color.purple,
         empty : color.sand,
+        text : color.darkGray,
     }
     function rightAngleDiagonal() {
         function projection(d) {
@@ -101,7 +103,7 @@ var buildTree = function(selector,
             .attr('dy', +11)
             .attr('text-anchor', 'end')
             .attr('font-size', '0.8em')
-            .attr('fill', '#aaa')
+            .attr('fill', leafColor.text)
             .style('fill-opacity', 1e-6)
             .text(n => {
                 let length = (+n.data.length)
@@ -243,6 +245,19 @@ var buildTree = function(selector,
         return yscale
     }
 
+    function highlightLeaves(d, highlight=true) {
+        if (d.children) d.children.forEach(c => highlightLeaves(c, highlight))
+        else if (!d._children) {
+            let leaf = visSVG
+                .select(`#leaf${cleanString(d.data.name)}`);
+            leaf.select('text')
+                .style('fill', highlight ? color.highlight : leafColor.text);
+            highlight
+                ? callbacks.enterMouseOver(undefined, d)
+                : callbacks.enterMouseLeave(undefined, d);
+        }
+    }
+
     function update(source) {
         // compute the new height
         var newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
@@ -272,10 +287,10 @@ var buildTree = function(selector,
                         + source.x0
                         + ')')
                 .on('click', (event, d) => {
-                    if (event.altKey) { toggleAll(d) }
-                    else { toggle(d) }
+                    if (event.altKey) toggleAll(d)
+                    else toggle(d)
                     update(d);
-                });
+                })
         nodeEnter.append('svg:circle')
             .attr('r', 1e-6)
             .style('fill', d => {
@@ -298,7 +313,7 @@ var buildTree = function(selector,
             .attr('dy', +11)
             .attr('text-anchor', 'end')
             .attr('font-size', '0.8em')
-            .attr('fill', '#aaa')
+            .attr('fill', color.gray)
             .style('fill-opacity', 1e-6)
             .text(n => {
                 let length = (+n.data.length)
@@ -307,6 +322,9 @@ var buildTree = function(selector,
                     : length.toFixed(3)
                 return rounded ? rounded : n.data.length
             });
+        nodeInnerEnter
+            .on('mouseover', (_, d) => highlightLeaves(d, true))
+            .on('mouseleave', (_, d) => highlightLeaves(d, false));
         // Inner nodes have classes that represent all children
         // Hovering over clade will highlight descendants
         //nodeInnerEnter
