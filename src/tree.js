@@ -305,11 +305,13 @@ var buildTree = function(selector,
         // Scale branches by length
         let scale = scaleBranchLength(nodes)
         // Draw yscale legend
-        let scaleG = visDiv
-            .append('svg')
-            .attr('class', 'scale')
-            .append('g');
-        drawScale(scaleG, scale, 0, 0);
+        if (!visDiv.select('.scale').node()) {
+            let scaleG = visDiv
+                .append('svg')
+                .attr('class', 'scale')
+                .append('g');
+            drawScale(scaleG, scale, 0, 0);
+        }
 
         // ENTERING NODES
         let node = vis.selectAll('g.node')
@@ -495,7 +497,9 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
-        let newWidth = d3.max(treeRoot.leaves().map(l => l.y)) + 150;
+        let newWidth = d3.max(treeRoot
+            .leaves()
+            .map(l => l.y + (l.data.name ? l.data.name.length*6 : 0)));
         visSVG
         .attr('target-width', newWidth)
         .transition()
