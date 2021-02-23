@@ -499,7 +499,11 @@ var buildTree = function(selector,
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
         let newWidth = d3.max(treeRoot
             .leaves()
-            .map(l => l.y + (l.data.name ? l.data.name.length*6 : 0)));
+            .map(l => {
+                console.log(l.data.name)
+                console.log(l.data.name.length*6)
+                return l.y + (l.data.name ? l.data.name.length*6 : 0)
+            }));
         visSVG
         .attr('target-width', newWidth)
         .transition()
