@@ -29,14 +29,14 @@ var buildTree = function(selector,
     var treeRoot = tree(treeRootHierarchy)
     var visContainer = d3.select(selector)
         .attr('width', w)
-    var vis = visContainer
+    var visDiv = visContainer
         .append('div')
         .attr('class', 'phylogram')
-    var visSVG = vis
+    var visSVG = visDiv
         .append('svg:svg')
         .attr('width', w + margin.left + margin.right)
         .attr('height', h + margin.top + margin.bottom)
-    vis = visSVG
+    var vis = visSVG
         .append('svg:g')
             .attr('transform',
                 'translate('
@@ -258,22 +258,64 @@ var buildTree = function(selector,
         }
     }
 
+    function drawScale(vis, scale, x, y, units='') {
+        let ticks = scale.ticks(2);
+        ticks = [0, ticks[1] - ticks[0] || ticks[0]];
+        let sticks = [scale(ticks[0]), scale(ticks[1])];
+        vis.append('svg:line')
+            .attr('y1', y)
+            .attr('y2', y)
+            .attr('x1', x + sticks[0])
+            .attr('x2', x + sticks[1])
+            .attr("stroke", color.darkGray)
+            .attr("stroke-width", "1.5px");
+        vis.append('svg:line')
+            .attr('y1', y + 5)
+            .attr('y2', y - 5)
+            .attr('x1', x +  sticks[0])
+            .attr('x2', x + sticks[0])
+            .attr("stroke", color.darkGray)
+            .attr("stroke-width", "1.5px");
+        vis.append('svg:line')
+            .attr('y1', y + 5)
+            .attr('y2', y - 5)
+            .attr('x1', x + sticks[1])
+            .attr('x2', x + sticks[1])
+            .attr("stroke", color.darkGray)
+            .attr("stroke-width", "1.5px");
+        vis.append("svg:text")
+            .attr("class", "rule")
+            .attr("x", x + sticks[0]+(sticks[1]-sticks[0])/2)
+            .attr("y", y)
+            .attr("dy", -7)
+            .attr("text-anchor", "middle")
+            .attr('font-size', '0.9em')
+            .attr('fill', color.darkGray)
+            .text(ticks[1] + units);
+    }
+
     function update(source) {
         // compute the new height
-        var newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
+        let newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
         visSVG
         .attr('target-height', newHeight + 50)
         tree.size([newHeight, w])
         treeRoot = tree(treeRootHierarchy);
-        var nodes = treeRoot.descendants();
+        let nodes = treeRoot.descendants();
         // Scale branches by length
-        scaleBranchLength(nodes)
+        let scale = scaleBranchLength(nodes)
+        // Draw yscale legend
+        let scaleG = visDiv
+            .append('svg')
+            .attr('class', 'scale')
+            .append('g');
+        drawScale(scaleG, scale, 0, 0);
 
         // ENTERING NODES
-        var node = vis.selectAll('g.node')
+        let node = vis.selectAll('g.node')
             .data(nodes, n => n.data.id);
         // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node.enter()
+        let nodeEnter = node.enter()
                 .append('svg:g')
                 .attr('class', n =>
                     !n.parent ? 'root node' :
@@ -297,14 +339,14 @@ var buildTree = function(selector,
                 return d.data._children ? leafColor.full : leafColor.empty
             });
         // Style inner nodes
-        var nodeInnerEnter = nodeEnter.filter('.inner');
+        let nodeInnerEnter = nodeEnter.filter('.inner');
         nodeInnerEnter
             .append('text')
             .attr('dx', -3)
             .attr('dy', -3)
             .attr('text-anchor', 'end')
             .attr('font-size', '0.8em')
-            .attr('fill', 'var(--dark-red)')
+            .attr('fill', color.darkRed)
             .style('fill-opacity', 1e-6)
             .text(n => (+n.data.support).toFixed(1));
         nodeInnerEnter
@@ -322,16 +364,11 @@ var buildTree = function(selector,
                     : length.toFixed(3)
                 return rounded ? rounded : n.data.length
             });
+        // Hovering over clade will highlight descendants
         nodeInnerEnter
             .on('mouseover', (_, d) => highlightLeaves(d, true))
             .on('mouseleave', (_, d) => highlightLeaves(d, false));
-        // Inner nodes have classes that represent all children
-        // Hovering over clade will highlight descendants
-        //nodeInnerEnter
-            //.attr('class', n => 'leaf'
-                //+ n.leaves().map(l => cleanString(l.data.name))
-                    //.join(' leaf'))
-        var nodeLeafEnter = nodeEnter.filter('.leaf')
+        let nodeLeafEnter = nodeEnter.filter('.leaf')
         nodeLeafEnter
             .attr('id', n => 'leaf'
                 + cleanString(n.data.name))
@@ -373,7 +410,7 @@ var buildTree = function(selector,
 
         // UPDATING NODES
         // Transition nodes to their new position.
-        var nodeUpdate = nodeEnter
+        let nodeUpdate = nodeEnter
             .merge(node)
             .transition()
             .duration(duration)
@@ -388,7 +425,7 @@ var buildTree = function(selector,
             .style('fill-opacity', 1);
 
         // EXITING NODES
-        var nodeExit = node.exit()
+        let nodeExit = node.exit()
             .transition()
             .duration(duration)
             .delay(delay.exit)
@@ -410,7 +447,7 @@ var buildTree = function(selector,
             .each(l => callbacks.exitEach(l))
 
         // LINKS
-        var link = vis.selectAll('path.link')
+        let link = vis.selectAll('path.link')
             .data(treeRoot.links(nodes), d =>  d.target.data.id);
         let linkEnter = link
             .enter();
@@ -433,7 +470,7 @@ var buildTree = function(selector,
             .attr('y1', n => n.target.x)
             .attr('x2', n => n.target.y)
             .attr('y2', n => n.target.x)
-            .attr("stroke", "var(--sand)")
+            .attr("stroke", color.sand)
             .attr("stroke-width", "2px")
             .attr("stroke-dasharray", "3,3");
 
