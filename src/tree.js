@@ -141,7 +141,7 @@ var buildTree = function(selector,
             .attr('dx', 13)
             .attr('dy', 5)
             .attr('text-anchor', 'start')
-            .text(n => n.data.showName ? n.data.showName : n.data.name)
+            .text(getShowName)
         // Associate each leaf to pop-up
         // Display fields data
         if (fields) {
@@ -213,6 +213,14 @@ var buildTree = function(selector,
         } else if (d.children) {
             d.children.forEach(openAll);
         }
+    }
+
+    function getShowName(d) {
+        return d.data.showName
+            ? d.data.showName
+            : d.data.name
+            ? d.data.name
+            : ''
     }
 
     function scaleBranchLength(nodes) {
@@ -385,7 +393,7 @@ var buildTree = function(selector,
             .attr('dy', 3)
             .attr('text-anchor', 'start')
             .style('fill-opacity', 1e-6)
-            .text(n => n.data.showName ? n.data.showName : n.data.name)
+            .text(getShowName)
         // Associate each leaf to pop-up
         // Display fields data
         if (fields) {
@@ -499,11 +507,7 @@ var buildTree = function(selector,
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
         let newWidth = d3.max(treeRoot
             .leaves()
-            .map(l => {
-                console.log(l.data.name)
-                console.log(l.data.name.length*6)
-                return l.y + (l.data.name ? l.data.name.length*6 : 0)
-            }));
+            .map(l => l.y + (l.data.name ? getShowName(l).length*6 : 0)));
         visSVG
         .attr('target-width', newWidth)
         .transition()
