@@ -85,3 +85,15 @@ var triggerEvent = function(el, type) {
         el.fireEvent('on' + e.eventType, e);
     }
 }
+
+var counter = function(arr, attr) {
+    //let initial = new Map(map.map(d => [d.id, 0]));
+    let fn = (counter, d) => {
+        let a = d[attr]
+        counter[a] = counter[a]
+                    ? counter[a] + 1
+                    : 1;
+        return counter;
+    };
+    return arr.reduce(fn, {});
+}

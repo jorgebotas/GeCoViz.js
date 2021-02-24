@@ -155,7 +155,6 @@ var GeCoViz = function(selector) {
             if (event.altKey) {
                 let name = l.data.name;
                 let excluded = excludedAnchors.includes(name);
-                console.log(excluded)
                 chart.excludeAnchor(l.data.name, !excluded);
             }
         }
@@ -352,6 +351,28 @@ var GeCoViz = function(selector) {
                 : filterByLevel(n)
         }
 
+        function getUniqueNotation() {
+            let nots = data.map(d =>
+                !d[notation]
+                ? []
+                : typeof d[notation] == 'object'
+                ? d[notation].filter(filterByLevel)
+                : [{id:d[notation]}])
+                .flat();
+            let count = counter(nots, 'id')
+            let total = Object
+                .values(count)
+                .reduce((total, d) => total +d , 0)
+            let uniqueNotation = {};
+            nots.forEach(n => uniqueNotation[n.id] = n);
+            uniqueNotation = [...Object.values(uniqueNotation)]
+            uniqueNotation.forEach(n => {
+                n.score = +(count[n.id] / total).toFixed(3)
+            })
+            uniqueNotation.sort((a, b) => b.score - a.score)
+            return uniqueNotation
+        }
+
         updateNotation = function() {
             contextG.selectAll('g.gene')
                 .each(updateGene);
@@ -366,16 +387,7 @@ var GeCoViz = function(selector) {
                 .duration(duration)
                 .style('opacity', 1);
 
-            let nots = data.map(d =>
-                !d[notation]
-                ? []
-                : typeof d[notation] == 'object'
-                ? d[notation].filter(filterByLevel)
-                : [{id:d[notation]}])
-                .flat();
-            let uniqueNotation = {};
-            nots.forEach(n => uniqueNotation[n.id] = n);
-            uniqueNotation = [...Object.values(uniqueNotation)]
+            let uniqueNotation = getUniqueNotation()
             let factor = 50;
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
@@ -456,14 +468,15 @@ var GeCoViz = function(selector) {
                     + `form-check-legend lgnd-switch lgnd${cleanString(n.id)}`)
             legendEntryMerged
                 .select('span')
-                .html(n => !URLs[notation]
+                .html(n => (!URLs[notation]
                     ? `<em>${n.id}</em>`
                     : '<a href="'
                         + URLs[notation].b
                         + String(n.id)
                         + URLs[notation].a
                         + '" target="_blank" style="outline:none;">'
-                        + String(n.id)+'</a>');
+                        + String(n.id)+'</a>')
+                    + ` (${n.score})`);
             legendEntryMerged
                 .select('.lgnd-entry-description')
                 .html(n => n.description);
