@@ -513,13 +513,13 @@ var buildTree = function(selector,
         .transition()
         .duration(duration)
         .delay(delay.update)
-        .attr('width', newWidth + 10)
+        .attr('width', newWidth + 15)
         .attr('height', newHeight + 50)
         visContainer
         .transition()
         .duration(duration)
         .delay(delay.update)
-        .style('width', newWidth + 20 + 'px')
+        .style('width', newWidth + 25 + 'px')
     }
     // Enable pop-up interactivity
     PopperClick(selector + ' .phylogram');
