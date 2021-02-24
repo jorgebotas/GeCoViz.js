@@ -513,7 +513,7 @@ var buildTree = function(selector,
         .transition()
         .duration(duration)
         .delay(delay.update)
-        .attr('width', newWidth)
+        .attr('width', newWidth + 5)
         .attr('height', newHeight + 50)
         visContainer
         .transition()
