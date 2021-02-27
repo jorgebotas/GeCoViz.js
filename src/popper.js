@@ -9,6 +9,7 @@ var PopperCreate = function(selector, d, URLs) {
             'pos',
             'start',
             'end',
+            'length',
             'strand'
         ]
         Object.entries(d).forEach(([key, field]) => {
