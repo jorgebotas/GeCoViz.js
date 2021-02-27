@@ -52,11 +52,6 @@ var GeCoViz = function(selector) {
         updateLegend,
         updateWidth,
         updateHeight;
-  var treeLeafEnter,
-        treeLeafExit,
-        treeLeafMouseOver,
-        treeLeafMouseLeave,
-        treeLeafClick;
   var options = {
       showName : true,
       showTree : true,
@@ -130,15 +125,15 @@ var GeCoViz = function(selector) {
                 .text(getShowName);
         }
 
-        treeLeafEnter = function(l) {
+        function treeLeafEnter(l) {
             chart.excludeAnchor(l.data.name, false)
         }
 
-        treeLeafExit = function(l) {
+        function treeLeafExit(l) {
             chart.excludeAnchor(l.data.name, true)
         }
 
-        treeLeafMouseOver = function(_, l) {
+        function treeLeafMouseOver(_, l) {
             let anchor = cleanString(l.data.name);
             let genes = graphContainer
                 .selectAll(`[id^="gene${anchor}"]`)
@@ -147,7 +142,7 @@ var GeCoViz = function(selector) {
                 .style('opacity', 1);
         }
 
-        treeLeafMouseLeave = function(_, l) {
+        function treeLeafMouseLeave(_, l) {
             let anchor = cleanString(l.data.name);
             let genes = graphContainer
                 .selectAll(`[id^="gene${anchor}"]`)
@@ -156,7 +151,7 @@ var GeCoViz = function(selector) {
                 .style('opacity', 0);
         }
 
-        treeLeafClick = function(event, l) {
+        function treeLeafClick(event, l) {
             if (event.altKey) {
                 let name = l.data.name;
                 let excluded = excludedAnchors.includes(name);
@@ -228,6 +223,7 @@ var GeCoViz = function(selector) {
                 .delay(delay.enter)
                 .style('opacity', 1)
                 .each(enterGene)
+
         }
 
         function getArrow(d, x0, rectWidth, tipWidth) {
@@ -695,11 +691,9 @@ var GeCoViz = function(selector) {
                 .node()
                 .clientWidth;
             let treeWidth = 0;
-            if (newick && options.showTree) {
-                treeWidth = +graphContainer
+            if (newick) treeWidth = +graphContainer
                     .select('.phylogram svg')
                     .attr('target-width');
-            }
             treeWidth = Math.min(.4*totalWidth, treeWidth);
             graphContainer
                 .select('.gcontextAndLegend')
@@ -1136,8 +1130,8 @@ var GeCoViz = function(selector) {
   }
 
   chart.toggleTree = function(toggle=true) {
-      let phylogramContainer = d3.select(selector)
-                         .select('.phylogramContainer');
+      let phylogramContainer = d3.select(selector
+                         .select('.phylogramContainer'));
       if (newick && toggle) {
           buildTree(selector + ' .phylogramContainer',
               newick, newickFields,
@@ -1149,18 +1143,14 @@ var GeCoViz = function(selector) {
                   exitEach : treeLeafExit,
               });
           phylogramContainer
-            .style('opacity', 1);
-          chart.nSide(nSide);
+            .style('opacity', 1)
       } else {
           phylogramContainer
             .selectAll('*')
             .remove();
           phylogramContainer
             .style('opacity', 0)
-            .style('width', 0);
-          chart.nSide(nSide);
       }
-      updateWidth();
   }
 
   chart.nSide = function(d) {

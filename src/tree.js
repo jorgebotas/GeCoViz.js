@@ -509,7 +509,7 @@ var buildTree = function(selector,
             .leaves()
             .map(l => l.y + getShowName(l).length*6));
         visSVG
-        .attr('target-width', newWidth)
+        .attr('target-width', newWidth + 30)
         .transition()
         .duration(duration)
         .delay(delay.update)

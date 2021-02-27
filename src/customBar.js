@@ -36,7 +36,7 @@ var customBar = function(selector, data) {
         .style('opacity', 0);
     addCheckbox(treeToggler,
         'Tree',
-        'tree',
+        'toggleTree',
         true);
 
     let nSideSlider = container
