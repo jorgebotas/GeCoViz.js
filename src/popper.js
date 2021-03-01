@@ -42,7 +42,7 @@ var PopperCreate = function(selector, d, URLs) {
                                 + f.level
                                 + ')';
                     fieldData += levelData
-                    fieldData += '<br>' + f.description + '</li>';
+                    fieldData += '<br>' + (f.description || '') + '</li>';
                 })
                 fieldData += '</ul>';
             } else {
