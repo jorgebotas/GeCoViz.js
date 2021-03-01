@@ -471,7 +471,7 @@ var GeCoViz = function(selector) {
                         + String(n.id)+'</a>');
             legendEntryMerged
                 .select('.lgnd-entry-description')
-                .html(n => `conservation sc: ${n.score}<br>`
+                .html(n => `<strong>conservation: ${n.score}</strong><br>`
                         + n.description);
             legendEntry
                 .exit()
