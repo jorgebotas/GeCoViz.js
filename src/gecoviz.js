@@ -381,7 +381,7 @@ var GeCoViz = function(selector) {
                 .style('opacity', 1);
             let uniqueNotation = scoreNotation()
             console.log(uniqueNotation)
-            let factor = 50;
+            let factor = 60;
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
             splitLegend
@@ -443,8 +443,8 @@ var GeCoViz = function(selector) {
                 .append("div")
                 .attr("class", "w-100 lgnd-entry-description")
                 .style("display", "block")
-                .style("max-height", "35px")
-                .style("height", "35px");
+                .style("max-height", "45px")
+                .style("height", "45px");
 
             let legendEntryMerged = legendEntryEnter
                 .merge(legendEntry)

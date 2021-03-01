@@ -171,7 +171,7 @@ div.split-legend {
     display: block;
     width: 100%;
     text-align: center;
-    font-weight: bold;
+    font-weight: bold
     padding-bottom: 5px;
 }
 
@@ -185,7 +185,7 @@ div.split-legend > div {
     text-align: left;
     margin-bottom: 10px;
     width: 50%;
-    max-height: 70px;
+    max-height: 80px;
     overflow-x: hidden;
 }
 
