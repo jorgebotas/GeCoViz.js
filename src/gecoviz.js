@@ -474,7 +474,7 @@ var GeCoViz = function(selector) {
                 .html(n => `<strong class='font-weight-bold'>\
                         conservation: ${n.score}\
                         </strong><br>`
-                        + n.description);
+                        + (n.description || ''));
             legendEntry
                 .exit()
                 .style('opacity', 0)
