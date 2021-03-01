@@ -344,7 +344,7 @@ var GeCoViz = function(selector) {
                 : filterByLevel(n)
         }
 
-        function getUniqueNotation() {
+        function scoreNotation() {
             let nots = data.map(d =>
                 !d[notation]
                 ? []
@@ -379,7 +379,7 @@ var GeCoViz = function(selector) {
                 .transition()
                 .duration(duration)
                 .style('opacity', 1);
-            let uniqueNotation = getUniqueNotation()
+            let uniqueNotation = scoreNotation()
             console.log(uniqueNotation)
             let factor = 50;
             // Scale legend to fit all data
@@ -461,18 +461,18 @@ var GeCoViz = function(selector) {
                     + `form-check-legend lgnd-switch lgnd${cleanString(n.id)}`)
             legendEntryMerged
                 .select('span')
-                .html(n => (!URLs[notation]
+                .html(n => !URLs[notation]
                     ? `<em>${n.id}</em>`
                     : '<a href="'
                         + URLs[notation].b
                         + String(n.id)
                         + URLs[notation].a
                         + '" target="_blank" style="outline:none;">'
-                        + String(n.id)+'</a>')
-                    + ` (${n.score})`);
+                        + String(n.id)+'</a>');
             legendEntryMerged
                 .select('.lgnd-entry-description')
-                .html(n => n.description);
+                .html(n => `conservation sc: ${n.score}<br>`
+                        + n.description);
             legendEntry
                 .exit()
                 .style('opacity', 0)
