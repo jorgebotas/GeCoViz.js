@@ -499,7 +499,7 @@ var GeCoViz = function(selector) {
                         .style('width', '300px')
             // Legend title
             splitLegend.append('div')
-                       .attr('class', 'legend-title');
+                       .attr('class', 'legend-title font-weight-bold');
             // Select-all checkbox
             addCheckbox(splitLegend.append("div")
                               .attr("class", "pl-3")
