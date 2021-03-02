@@ -47,10 +47,11 @@ var PopperCreate = function(selector, d, URLs) {
                 fieldData += '</ul>';
             } else {
                 if (typeof field != 'object'
-                && !showFields.includes(field)) showFields.push(field)
+                && !showFields.includes(key)) showFields.push(key)
             }
             if (fieldData) arrayData.push(fieldData)
         })
+        console.log(showFields)
         var popperHTML = ''; //<strong>Gene information</strong>
         popperHTML += '<div class="p-2">';
         showFields.forEach(f => {
