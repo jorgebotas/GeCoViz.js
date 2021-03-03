@@ -109,10 +109,15 @@ path.light-stroke {
 
 
 /*TREE*/
+.leaf.node circle {
+    transition: fill .5s, stroke .5s;
+}
+
 .leaf.node text {
     cursor: pointer;
     font-size: .9em;
     fill: var(--dark-gray);
+    transition: fill .5s;
 }
 
 path.link {
