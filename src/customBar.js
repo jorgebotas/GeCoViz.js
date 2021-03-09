@@ -67,7 +67,7 @@ var customBar = function(selector, data) {
         'Show on gene')
         .style('text-align', 'center');
     showNameSelect = addCustomSelect(showNameSelect,
-            150,
+            170,
             'showName',
             'showName');
     showNameSelect
@@ -93,7 +93,7 @@ var customBar = function(selector, data) {
         'Color genes by')
         .style('text-align', 'center');
     notationSelect = addCustomSelect(notationSelect,
-            150,
+            170,
             'notation',
             'notation')
     notationSelect
@@ -120,7 +120,7 @@ var customBar = function(selector, data) {
         'eggNOG taxonomic level')
         .style('text-align', 'center');
     levelSelect = addCustomSelect(levelSelect,
-            150,
+            170,
             'notationLevel',
             'notationLevel')
     levelSelect
