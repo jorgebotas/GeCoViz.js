@@ -29,7 +29,7 @@ var customBar = function(selector, data) {
         .filter(d => !Object.keys(dataComplexFields).includes(d));
     let vis = d3.select(selector);
     let container = vis.append('div')
-            .attr('class', 'customBar col-md-10 mx-auto');
+            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
 
     let treeToggler = container.append('div');
     addLabel(treeToggler, 'Toggle phylogeny')
