@@ -50,7 +50,7 @@ var customBar = function(selector, data) {
     createSlider(nSideSlider,
         'nSideSlider',
         options = {
-            start : 2,
+            start : 10,
             step : 1,
             min : 0,
             max : 10
