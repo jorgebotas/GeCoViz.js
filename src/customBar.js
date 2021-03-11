@@ -32,13 +32,18 @@ var customBar = function(selector, data) {
     let container = vis.append('div')
             .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
 
-    let treeToggler = container.append('div');
-    addLabel(treeToggler, 'Toggle phylogeny')
-        .style('opacity', 0);
-    addCheckbox(treeToggler,
-        'Tree',
-        'toggleTree',
-        true);
+    //let treeToggler = container.append('div');
+    //addLabel(treeToggler, 'Toggle phylogeny')
+        //.style('opacity', 0);
+    //addCheckbox(treeToggler,
+        //'Tree',
+        //'toggleTree',
+        //true);
+    let selectItem = container
+        .append('div')
+    addLabel(selectItem, 'Tree toggler')
+        .style('opacity', 0)
+    addCheckButton(selectItem, 'Tree', 'toggleTree')
 
     let nSideSlider = container
         .append('div');

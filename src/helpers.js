@@ -44,6 +44,21 @@ var addCheckbox = function(g,
     return container;
 }
 
+var addCheckButton = function(g,
+    label,
+    className='') {
+    let container = g.append('label')
+        .attr('class', 'form-selectgroup-item')
+    let input = container.append('input')
+        .attr('type', 'checkbox')
+        .attr('class', 'form-selectgroup-input ' + className)
+        .attr('checked', '')
+    container.append('span')
+        .attr('class', 'form-selectgroup-label')
+        .html(label)
+    return input
+}
+
 var addCustomSelect = function(g,
             width,
             className,
