@@ -64,6 +64,7 @@ var GeCoViz = function(selector) {
   var options = {
       showName : true,
       showTree : true,
+      showLegend : true,
   }
   // Color variables
   var color = {
@@ -642,6 +643,15 @@ var GeCoViz = function(selector) {
                     ? chart.toggleTree(true)
                     : chart.toggleTree(false)
             })
+            // Legend toggler
+            let legendToggler = container
+                .select('input.toggleLegend');
+            legendToggler.on('change', () => {
+                options.showLegend = legendToggler.property('checked');
+                options.showLegend
+                    ? chart.toggleLegend(true)
+                    : chart.toggleLegend(false)
+            })
             // Show on gene
             let showOptions = container
                 .select('select.showName')
@@ -1143,7 +1153,7 @@ var GeCoViz = function(selector) {
 
   chart.toggleTree = function(toggle=true) {
       let phylogramContainer = d3.select(selector)
-                         .select('.phylogramContainer');
+                .select('.phylogramContainer');
       if (newick && toggle) {
           buildTree(selector + ' .phylogramContainer',
               newick, newickFields,
@@ -1156,7 +1166,6 @@ var GeCoViz = function(selector) {
               });
           phylogramContainer
             .style('opacity', 1);
-          chart.nSide(nSide);
       } else {
           phylogramContainer
             .selectAll('*')
@@ -1164,8 +1173,24 @@ var GeCoViz = function(selector) {
           phylogramContainer
             .style('opacity', 0)
             .style('width', 0);
-          chart.nSide(nSide);
       }
+      chart.nSide(nSide);
+      updateWidth();
+  }
+
+  chart.toggleLegend = function(toggle=true) {
+      let legendContainer = d3.select(selector)
+            .select('.legendContainer')
+      if (toggle) {
+          legendContainer.style('width', '320px');
+          legendContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
+            .style('opacity', 1);
+      }
+      else legendContainer.style('opacity', 0).style('width', 0);
+      chart.nSide(nSide);
       updateWidth();
   }
 

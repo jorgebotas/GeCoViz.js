@@ -39,11 +39,17 @@ var customBar = function(selector, data) {
         //'Tree',
         //'toggleTree',
         //true);
-    let selectItem = container
-        .append('div')
-    addLabel(selectItem, 'Tree toggler')
-        .style('opacity', 0)
-    addCheckButton(selectItem, 'Tree', 'toggleTree')
+    let checkButtons = [
+        { label : 'Tree', class : 'toggleTree' },
+        { label : 'Legend', class : 'toggleLegend' },
+    ]
+    checkButtons.forEach(cbutton => {
+        let selectItem = container
+            .append('div')
+        addLabel(selectItem, cbutton.label)
+            .style('opacity', 0)
+        addCheckButton(selectItem, cbutton.label, cbutton.class)
+    })
 
     let nSideSlider = container
         .append('div');
