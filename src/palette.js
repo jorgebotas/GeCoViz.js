@@ -50,7 +50,7 @@ class Palette {
     }
 
     shuffle() {
-        this.colors = shuffle([...colors]);
+        this.colors = shuffle([...this.colors]);
         buildPalette();
     }
 
