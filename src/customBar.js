@@ -27,6 +27,7 @@ var customBar = function(selector, data) {
     })
     let dataSimpleFields = dataKeys
         .filter(d => !Object.keys(dataComplexFields).includes(d));
+    console.log(dataComplexFields)
     let vis = d3.select(selector);
     let container = vis.append('div')
             .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');

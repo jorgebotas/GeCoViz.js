@@ -32,9 +32,13 @@ var GeCoViz = function(selector) {
           b : 'https://pfam.xfam.org/family/',
           a : ''
       },
+      //taxonomy : {
+          //b : 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=',
+          //a : '&&lvl=3&lin=f&keep=1&srchmode=1&unlock'
+      //}
       taxonomy : {
-          b : 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=',
-          a : '&&lvl=3&lin=f&keep=1&srchmode=1&unlock'
+          b : 'https://gtdb.ecogenomic.org/searches?s=al&q=',
+          a : ''
       }
   }
   var duration = 500;
