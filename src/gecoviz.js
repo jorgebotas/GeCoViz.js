@@ -45,7 +45,7 @@ var GeCoViz = function(selector) {
   }
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
   var domain = [];
-  var palette = buildPalette(domain);
+  var palette;
   var updateGenes,
         updateShowName,
         updateNotation,
@@ -418,7 +418,7 @@ var GeCoViz = function(selector) {
                  .attr("r", 6)
                  .attr("cx", 20)
                  .attr("cy", 6.5)
-                .style("fill", n => palette(n.id));
+                .style("fill", n => palette.get(n.id));
             let checkboxDivEnter = legendEntryEnter
                 .append("div")
                 .style("display", "inline-block")
@@ -454,7 +454,7 @@ var GeCoViz = function(selector) {
                 .select('circle')
                 .transition()
                 .duration(duration)
-                .style("fill", n => palette(n.id));
+                .style("fill", n => palette.get(n.id));
             legendEntryMerged
                 .select('input')
                 .attr('class', n => 'mt-0 form-check-input rounded-pill '
@@ -759,7 +759,7 @@ var GeCoViz = function(selector) {
               .attr('class', 'gene-rect')
               .attr('fill', n => n.id == 'NA'
                 ? color.noData
-                : palette(n.id))
+                : palette.get(n.id))
               .attr('x', (_, i) => x0 + i * barWidth)
               .attr('y', 0)
               .attr('width', barWidth)
@@ -777,7 +777,7 @@ var GeCoViz = function(selector) {
             .attr('class', 'gene-tip')
             .attr('fill', n => n.id == 'NA'
                 ? color.noData
-                : palette(n.id));
+                : palette.get(n.id));
             geneG
             .append('path')
             .attr('d', strokePath)
@@ -835,7 +835,7 @@ var GeCoViz = function(selector) {
               .attr('class', 'gene-rect')
               .attr('fill', n => n.id == 'NA'
                 ? color.noData
-                : palette(n.id))
+                : palette.get(n.id))
               .attr('x', (_, i) => x0 + i * barWidth)
               .attr('y', 0)
               .attr('width', 0)
@@ -860,7 +860,7 @@ var GeCoViz = function(selector) {
               .delay(delay.enter)
               .attr('fill', n => n.id == 'NA'
                 ? color.noData
-                : palette(n.id))
+                : palette.get(n.id))
               .style('opacity', 1);
             geneRects
             .exit()
@@ -883,7 +883,7 @@ var GeCoViz = function(selector) {
             geneTipEnter
             .attr('fill', n => n.id == 'NA'
                           ? color.noData
-                          : palette(n.id))
+                          : palette.get(n.id))
             .style('opacity', 0);
             let geneTipMerged = geneTipEnter
             .merge(geneTip);
@@ -898,7 +898,7 @@ var GeCoViz = function(selector) {
             .delay(delay.enter)
             .attr('fill', n => n.id == 'NA'
                           ? color.noData
-                          : palette(n.id))
+                          : palette.get(n.id))
             .style('opacity', 1);
             geneTip
             .exit()
@@ -1086,8 +1086,9 @@ var GeCoViz = function(selector) {
   }
 
   function updatePalette(shuffle=false) {
-        buildDomain();
-        palette = buildPalette(domain, shuffle);
+      buildDomain();
+      palette = new Palette(domain);
+      if (shuffle) palette.shuffle;
   }
 
   function filterAnchor(a) {
