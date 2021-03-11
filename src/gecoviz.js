@@ -380,7 +380,6 @@ var GeCoViz = function(selector) {
                 .duration(duration)
                 .style('opacity', 1);
             let uniqueNotation = scoreNotation()
-            console.log(uniqueNotation)
             let factor = 60;
             // Scale legend to fit all data
             let legendHeight = uniqueNotation.length * factor;
