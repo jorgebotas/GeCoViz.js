@@ -44,7 +44,7 @@ class Palette {
     }
 
     buildPalette() {
-        this.palette = scaleOrdinal()
+        this.palette = d3.scaleOrdinal()
             .domain(this.domain)
             .range(this.colors);
     }
