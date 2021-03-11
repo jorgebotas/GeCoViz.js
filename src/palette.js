@@ -40,6 +40,7 @@ class Palette {
         this.colors = colors269;
         this.domain;
         this.palette;
+        return this;
     }
 
     buildPalette(domain) {

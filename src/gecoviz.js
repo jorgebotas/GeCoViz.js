@@ -1087,7 +1087,7 @@ var GeCoViz = function(selector) {
 
   function updatePalette(shuffle=false) {
       buildDomain();
-      palette = palette.buildPalette(domain);
+      palette.buildPalette(domain);
       if (shuffle) palette.shuffle();
   }
 
