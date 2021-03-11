@@ -48,7 +48,7 @@ var addCheckButton = function(g,
     label,
     className='') {
     let container = g.append('label')
-        .attr('class', 'form-selectgroup-item')
+        .attr('class', 'form-selectgroup-item m-1')
     let input = container.append('input')
         .attr('type', 'checkbox')
         .attr('class', 'form-selectgroup-input ' + className)

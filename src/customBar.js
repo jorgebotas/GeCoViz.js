@@ -43,6 +43,9 @@ var customBar = function(selector, data) {
         .append('div')
     addLabel(checkButtonContainer, "Check buttons")
         .style('opacity', 0)
+    checkButtonContainer = checkButtonContainer
+        .append('div')
+        .attr('class', 'd-flex');
     let checkButtons = [
         { label : 'Tree', class : 'toggleTree' },
         { label : 'Legend', class : 'toggleLegend' },
