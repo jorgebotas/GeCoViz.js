@@ -1,5 +1,5 @@
 class Palette {
-    constructor(domain) {
+    constructor() {
         let colors = [
                 "#abfdcb",
                 "#c9b2fd",
@@ -38,12 +38,12 @@ class Palette {
                 "#406362"
                   ]
         this.colors = colors269;
-        this.domain = domain;
+        this.domain;
         this.palette;
-        this.buildPalette();
     }
 
-    buildPalette() {
+    buildPalette(domain) {
+        this.domain = domain;
         this.palette = d3.scaleOrdinal()
             .domain(this.domain)
             .range(this.colors);
@@ -51,7 +51,7 @@ class Palette {
 
     shuffle() {
         this.colors = shuffle([...this.colors]);
-        this.buildPalette();
+        this.buildPalette(this.domain);
     }
 
     get(query) {

@@ -45,7 +45,7 @@ var GeCoViz = function(selector) {
   }
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
   var domain = [];
-  var palette;
+  var palette = new Palette();
   var updateGenes,
         updateShowName,
         updateNotation,
@@ -1087,7 +1087,7 @@ var GeCoViz = function(selector) {
 
   function updatePalette(shuffle=false) {
       buildDomain();
-      palette = new Palette(domain);
+      palette = palette.buildPalette(domain);
       if (shuffle) palette.shuffle();
   }
 
