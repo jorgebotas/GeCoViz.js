@@ -51,7 +51,7 @@ class Palette {
 
     shuffle() {
         this.colors = shuffle([...this.colors]);
-        buildPalette();
+        this.buildPalette();
     }
 
     get(query) {
