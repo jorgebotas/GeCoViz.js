@@ -25,3 +25,11 @@ div.customBar > div {
 .noUi-target {
     color: var(--indigo) !important;
 }
+
+.choices__list--single {
+    width: 100px;
+}
+
+.choices__item {
+    font-size: .8em;
+}

@@ -60,22 +60,40 @@ var addCheckButton = function(g,
 }
 
 var addCustomSelect = function(g,
-            width,
-            className,
-            name) {
-    let cs = g.append('div')
-              .attr('class', 'custom-selectBox')
-              .style('width', width + 'px');
-    cs = cs.append('select')
-      .attr('class', className + ' custom-select')
-      .attr('name', name);
-    return cs
+    className,
+    name,
+    placeholder="hi") {
+    let select = g.append('select')
+        .attr('class', 'form-select form-control ' + className)
+        .attr('name', name)
+    let choices = activateSelect(select.node(), placeholder)
+    return choices
+}
+
+var activateSelect = function(select, placeholder) {
+    let choices = new Choices(select, {
+        classNames: {
+            containerInner: select.className,
+            input: 'form-control',
+            inputCloned: 'form-control-sm',
+            listDropdown: 'dropdown-menu',
+            itemChoice: 'dropdown-item',
+            activeState: 'show',
+            selectedState: 'active',
+            placeholder: 'choices__placeholder',
+        },
+        shouldSort: false,
+        searchEnabled: false,
+        placeholder: true,
+        placeholderValue: "EGG",
+    });
+    return choices;
 }
 
 var addLabel = function(g,
     html) {
     let label = g.append('label')
-        .attr('class', 'form-label')
+        .attr('class', 'form-label ml-2')
         .style('font-size', '1em')
         .style('font-weight', 'bold')
         .html(html);

@@ -50,6 +50,7 @@ var GeCoViz = function(selector) {
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
   var domain = [];
   var palette = new Palette();
+  var customBar;
   var updateGenes,
         updateShowName,
         updateNotation,
@@ -170,7 +171,9 @@ var GeCoViz = function(selector) {
         }
 
         function initChart(container) {
-          customBar(selector, data);
+          customBar = new CustomBar(selector, data);
+          customBar.drawBar();
+
           graphContainer = container
             .append('div')
             .attr('class', 'graph-container');
@@ -653,12 +656,11 @@ var GeCoViz = function(selector) {
                     : chart.toggleLegend(false)
             })
             // Show on gene
-            let showOptions = container
-                .select('select.showName')
-                .node();
-            container
-                .select('.showName + .select-selected')
-                .on('DOMSubtreeModified', () => {
+            let showSelect = container
+                .select('select.showName');
+            let showOptions = showSelect.node();
+            showSelect
+                .on('change', () => {
                     newShowName = showOptions
                         .options[showOptions.selectedIndex]
                         .value;
@@ -666,12 +668,12 @@ var GeCoViz = function(selector) {
                     && newShowName != showName) chart.showName(newShowName)
                 })
             // Notation level
-            let notationLevelOptions = container
-                .select('select.notationLevel')
+            let notationLevelSelect = container
+                .select('select.notationLevel');
+            let notationLevelOptions = notationLevelSelect
                 .node();
-            container
-                .select('.notationLevel + .select-selected')
-                .on('DOMSubtreeModified', () => {
+            notationLevelSelect
+                .on('change', () => {
                     let newNotationLevel = notationLevelOptions
                         .options[notationLevelOptions.selectedIndex]
                         .value;
@@ -680,17 +682,18 @@ var GeCoViz = function(selector) {
                     }
                 })
             // Notation options
-            let notationOptions = container
+            let notationSelect = container
                 .select('select.notation')
+            let notationOptions = notationSelect
                 .node();
-            container
-                .select('.notation + .select-selected')
-                .on('DOMSubtreeModified', () => {
+            notationSelect
+                .on('change', () => {
                     let newNotation = notationOptions
                         .options[notationOptions.selectedIndex]
                         .value;
                     if(newNotation != ''
                     && newNotation != notation) {
+                        customBar.updateLevels(newNotation);
                         let notationLevelOption = notationLevelOptions
                         .options[notationLevelOptions.selectedIndex]
                         .value;
@@ -1151,25 +1154,37 @@ var GeCoViz = function(selector) {
         return chart;
   }
 
-  chart.toggleTree = function(toggle=true) {
+  chart.toggleTree = async function(toggle=true) {
       let phylogramContainer = d3.select(selector)
                 .select('.phylogramContainer');
+      let phylogramSVG = phylogramContainer
+          .select('svg');
       if (newick && toggle) {
-          buildTree(selector + ' .phylogramContainer',
-              newick, newickFields,
-              {
+          if (!phylogramSVG.node()) {
+              buildTree(selector + ' .phylogramContainer',
+                  newick, newickFields,
+                  {
                   enterEach : treeLeafEnter,
                   enterMouseOver : treeLeafMouseOver,
                   enterMouseLeave : treeLeafMouseLeave,
                   enterClick : treeLeafClick,
                   exitEach : treeLeafExit,
-              });
+                  });
+          }
+          let targetWidth = phylogramContainer
+              .select('svg')
+              .attr('target-width');
           phylogramContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .style('width', `${targetWidth}px`);
+          phylogramContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
             .style('opacity', 1);
       } else {
-          phylogramContainer
-            .selectAll('*')
-            .remove();
           phylogramContainer
             .style('opacity', 0)
             .style('width', 0);
