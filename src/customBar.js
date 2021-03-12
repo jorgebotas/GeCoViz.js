@@ -56,11 +56,10 @@ class CustomBar {
 
         let checkButtonContainer = this.container
             .append('div')
-        addLabel(checkButtonContainer, "Check buttons")
-            .style('opacity', 0)
         checkButtonContainer = checkButtonContainer
             .append('div')
-            .attr('class', 'd-flex');
+            .attr('class', 'd-flex')
+            .style('margin-top', '12%');
         let checkButtons = [
             { label : 'Tree', class : 'toggleTree' },
             { label : 'Legend', class : 'toggleLegend' },
@@ -135,22 +134,18 @@ class CustomBar {
 
         let shuffleColors = this.container
             .append('div');
-        addLabel(shuffleColors,
-            'Shuffle colors')
-            .style('opacity', 0);
         shuffleColors
             .append('button')
             .attr('class', 'shuffleColors btn btn-secondary btn-sm')
+            .style('margin-top', '33px')
             .html('Shuffle colors');
 
         let downloadPng = this.container
             .append('div');
-        addLabel(downloadPng,
-            'Download graph as PNG')
-            .style('opacity', 0);
         downloadPng
             .append('button')
             .attr('class', 'downloadPng btn btn-secondary btn-sm')
+            .style('margin-top', '33px')
             .html('Download graph');
     }
 
