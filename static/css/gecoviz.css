@@ -14,6 +14,10 @@ div.graph-container {
   margin: 0 auto;
 }
 
+.GeCoViz em {
+    color: var(--indigo);
+}
+
 
 /*PHYLOGRAM*/
 
