@@ -678,9 +678,7 @@ var GeCoViz = function(selector) {
                     let newNotationLevel = notationLevelOptions
                         .options[notationLevelOptions.selectedIndex]
                         .value;
-                    if(newNotationLevel != notationLevel) {
-                        chart.notation(notation, newNotationLevel)
-                    }
+                    chart.notation(notation, newNotationLevel)
                 })
             // Notation options
             let notationSelect = container
@@ -692,14 +690,11 @@ var GeCoViz = function(selector) {
                     let newNotation = notationOptions
                         .options[notationOptions.selectedIndex]
                         .value;
-                    if(newNotation != ''
-                    && newNotation != notation) {
-                        customBar.updateLevels(newNotation);
-                        let notationLevelOption = notationLevelOptions
-                        .options[notationLevelOptions.selectedIndex]
-                        .value;
-                        chart.notation(newNotation, notationLevelOption)
-                    }
+                    customBar.updateLevels(newNotation);
+                    let notationLevelOption = notationLevelOptions
+                    .options[notationLevelOptions.selectedIndex]
+                    .value;
+                    chart.notation(newNotation, notationLevelOption)
                 })
             container
                 .select('.shuffleColors')
