@@ -36,8 +36,12 @@ div.customBar > div {
     background-color: var(--light-indigo);
 }
 
+.choices__list.dropdown-menu {
+    margin-top: 7px;
+}
+
 .choices__list--single {
-    width: 100px;
+    width: 120px;
 }
 
 .choices__item {
