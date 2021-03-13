@@ -26,6 +26,16 @@ div.customBar > div {
     color: var(--indigo) !important;
 }
 
+.choices.is-focused .form-select {
+    border-color: transparent;
+    box-shadow: 0 0 0 .25rem var(--light-indigo);
+}
+
+.choices .dropdown-menu .dropdown-item.is-highlighted {
+    color: var(--indigo);
+    background-color: var(--light-indigo);
+}
+
 .choices__list--single {
     width: 100px;
 }
