@@ -152,7 +152,10 @@ class CustomBar {
     updateLevels(notation) {
         let levels = this.dataComplexFields[notation] || [];
         this.levelSelect.clearChoices();
-        this.levelSelect.setChoices(levels.map(l => {
+        this.levelSelect.setChoices(levels.map((l, idx) => {
+            if (idx == 0) {
+                return { value: l, label: capitalize(l), selected: true }
+            }
             return { value: l, label: capitalize(l) }
         }))
         let levelSelect = this.container.select('select.notationLevel');
