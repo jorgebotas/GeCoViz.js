@@ -79,7 +79,7 @@ class CustomBar {
         createSlider(nSideSlider,
             'nSideSlider',
             {
-                start : 10,
+                start : 4,
                 step : 1,
                 min : 0,
                 max : 10
