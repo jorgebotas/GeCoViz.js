@@ -24,6 +24,7 @@ div.customBar > div {
 
 .noUi-target {
     color: var(--indigo) !important;
+    height: .25rem;
 }
 
 .choices.is-focused .form-select {
