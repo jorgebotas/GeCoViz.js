@@ -85,7 +85,7 @@ var activateSelect = function(select, placeholder) {
         shouldSort: false,
         searchEnabled: false,
         placeholder: true,
-        placeholderValue: "EGG",
+        placeholderValue: placeholder,
     });
     return choices;
 }

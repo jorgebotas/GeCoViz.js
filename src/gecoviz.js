@@ -173,6 +173,7 @@ var GeCoViz = function(selector) {
         function initChart(container) {
           customBar = new CustomBar(selector, data);
           customBar.drawBar();
+          customBar.updateLevels(notation);
 
           graphContainer = container
             .append('div')
