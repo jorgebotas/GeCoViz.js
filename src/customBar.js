@@ -75,7 +75,7 @@ class CustomBar {
         nSideSlider = nSideSlider
             .append('div')
             .style('width', '200px')
-            .style('margin-top', '1rem');
+            .style('margin-top', '1.5rem');
         createSlider(nSideSlider,
             'nSideSlider',
             {
