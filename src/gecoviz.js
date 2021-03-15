@@ -1164,9 +1164,8 @@ var GeCoViz = function(selector) {
                       d.vStart = d.vEnd - distScale(d.size);
                   }
               }
+              console.log(`pos${+d.pos} : ${dist} => ${distScale(dist)}`)
               console.log(`start ${d.vStart}  end ${d.vEnd}`)
-              console.log(`${dist} => ${distScale(dist)}`)
-              console.log(`start ${d.start}  end ${d.end}`)
               console.log(`start ${neigh.vStart}  end ${neigh.vEnd}`)
           } else {
               d.vSize = geneRect.w;
