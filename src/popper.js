@@ -9,8 +9,13 @@ var PopperCreate = function(selector, d, URLs) {
             'pos',
             'start',
             'end',
-            'length',
+            'size',
             'strand'
+        ]
+        let hideFields = [
+            'vStart',
+            'vEnd',
+            'vSize',
         ]
         Object.entries(d).forEach(([key, field]) => {
             let fieldData = "";
@@ -47,7 +52,8 @@ var PopperCreate = function(selector, d, URLs) {
                 fieldData += '</ul>';
             } else {
                 if (typeof field != 'object'
-                && !showFields.includes(key)) showFields.push(key)
+                && !showFields.includes(key)
+                && !hideFields.includes(key)) showFields.push(key)
             }
             if (fieldData) arrayData.push(fieldData)
         })

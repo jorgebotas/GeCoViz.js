@@ -4,6 +4,17 @@ class CustomBar {
         this.container;
         this.data = data;
         this.dataKeys;
+        this.hiddenKeys = [
+            'anchor',
+            'pos',
+            'start',
+            'end',
+            'size',
+            'strand',
+            'vStart',
+            'vEnd',
+            'vSize',
+        ]
         this.computeDataKeys();
         this.dataSimpleFields;
         this.dataComplexFields;
@@ -12,10 +23,11 @@ class CustomBar {
     }
 
     computeDataKeys() {
-        this.dataKeys = this.data
+        let dataKeys = this.data
             .reduce((maxKeys, d) => maxKeys.length < Object.keys(d).length
             ? Object.keys(d)
             : maxKeys, []);
+        this.dataKeys = dataKeys.filter(k => !this.hiddenKeys.includes(k));
     }
 
     computeFields() {
