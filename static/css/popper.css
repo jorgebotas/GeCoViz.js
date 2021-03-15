@@ -3,6 +3,7 @@
     background: var(--sand);
     color: var(--dark-gray);
     padding: 0;
+    text-align: left;
     font-size: 1em;
     border: solid var(--dark-gray) 1px;
     border-radius: 5px;
