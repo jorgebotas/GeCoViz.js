@@ -74,7 +74,7 @@ class CustomBar {
         let checkButtons = [
             { label: 'Tree', class: 'toggleTree', checked: true },
             { label: 'Legend', class: 'toggleLegend', checked: true },
-            { label: 'Scale', class: 'scaleDist', checked: false },
+            //{ label: 'Scale', class: 'scaleDist', checked: false },
         ]
         checkButtons.forEach(cbutton => {
             addCheckButton(checkButtonContainer,
