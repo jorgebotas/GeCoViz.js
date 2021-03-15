@@ -1147,6 +1147,7 @@ var GeCoViz = function(selector) {
               if (+d.pos == 0) {
                   d.vStart = (width - 7) / 2;
                   d.vEnd = d.vStart + distScale(d.size);
+                  neigh = d;
               } else {
                   if (+d.pos > 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
