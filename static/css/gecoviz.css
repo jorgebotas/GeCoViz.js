@@ -51,6 +51,7 @@ div.gcontextAndLegend {
 div.gcontext {
   min-width: 500px;
   width: 100%;
+  text-align: center;
   overflow-x: scroll;
   overflow-y: hidden;
   border: solid var(--dark-gray) 1px;

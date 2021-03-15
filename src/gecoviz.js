@@ -767,23 +767,22 @@ var GeCoViz = function(selector) {
             if (options.scaleDist) {
                 let farLeft = d3.min(data, d => +d.vStart);
                 let farRight = d3.max(data, d => +d.vEnd);
-                let svgWidth = Math.max(width, farRight - farLeft + 2*margin.left);
+                let newWidth = farRight - farLeft + 2*margin.left;
+                let svgWidth = Math.max(width, newWidth);
                 contextContainer
                     .select('.gcontextSVG')
                     .attr('width', svgWidth);
-                if (farLeft < 0) {
-                     contextG
-                        .attr('transform',
-                          `translate(${Math.abs(farLeft) + margin.left}, ${margin.top})`);
-                    container
-                        .select('.gene.anchor')
-                        .node()
-                        .scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'nearest',
-                            inline: 'center'
-                        });
-                }
+                contextG
+                    .attr('transform',
+                          `translate(${-farLeft + margin.left}, ${margin.top})`);
+                container
+                    .select('.gene.anchor')
+                    .node()
+                    .scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'center'
+                    });
             } else contextG
                 .attr('transform',
                   `translate(${margin.left}, ${margin.top})`);
