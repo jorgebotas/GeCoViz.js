@@ -9,7 +9,7 @@
     display: none;
     visibility: hidden;
     opacity: 0;
-    z-index: 5;
+    z-index: 11;
 }
 
 .popper-content {

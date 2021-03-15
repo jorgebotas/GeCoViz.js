@@ -135,7 +135,7 @@ path.link {
 .legendContainer {
     width: 320px;
     float: right;
-    z-index: 100;
+    z-index: 10;
 }
 
 div.legend {
