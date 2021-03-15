@@ -90,7 +90,7 @@ var GeCoViz = function(selector) {
   function chart(selection) {
     selection.each(function() {
         function getX(d) {
-            if (options.scaleDist && d.vStart) return +d.vStart;
+            if (options.scaleDist) return +d.vStart;
             else return (+d.pos + nSide) * geneRect.w
         }
 
