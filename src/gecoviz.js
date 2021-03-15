@@ -1249,16 +1249,24 @@ var GeCoViz = function(selector) {
 
   chart.toggleLegend = function(toggle=true) {
       let legendContainer = d3.select(selector)
-            .select('.legendContainer')
+            .select('.legendContainer');
+      let splitLegend = legendContainer.select('.split-legend');
       if (toggle) {
           legendContainer.style('width', '320px');
+          splitLegend.style('width', '300px');
           legendContainer
             .transition()
             .duration(duration)
             .delay(delay.enter)
             .style('opacity', 1);
       }
-      else legendContainer.style('opacity', 0).style('width', 0);
+      else {
+          legendContainer
+              .style('opacity', 0)
+              .style('width', 0)
+          splitLegend
+              .style('width', 0);
+      };
       chart.nSide(nSide);
   }
 

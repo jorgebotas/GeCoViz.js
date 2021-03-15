@@ -47,7 +47,6 @@ class CustomBar {
                                     ? [v.level]
                                     : []
                         }
-
                     })
                 }
             })
