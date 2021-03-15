@@ -100,7 +100,10 @@ class CustomBar {
                 min : 0,
                 max : 10
             })
-        nSideSlider = d3.select('.nSideSlider').node().noUiSlider;
+        nSideSlider = this.container
+            .select('.nSideSlider')
+            .node()
+            .noUiSlider;
         nSideSlider.on('update', () => {
             nSideSliderLabel.html('Genes up/downstream: '
                 + Math.round(nSideSlider.get()))
