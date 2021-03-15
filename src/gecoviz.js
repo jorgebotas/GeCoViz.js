@@ -4,6 +4,7 @@ var GeCoViz = function(selector) {
   var newick;
   var newickFields;
   var anchors = [];
+  var swappedAnchors = [];
   var nSide = 2;
   var width = 700;
   var height = 700;
@@ -48,6 +49,7 @@ var GeCoViz = function(selector) {
       exit: 0,
   }
   var geneRect = { w: width / (2 * nSide + 1), h: 17, ph: 20, pv: 5 };
+  var tipWidth = (2 * geneRect.ph) / 5;
   var domain = [];
   var palette = new Palette();
   var customBar;
@@ -66,6 +68,7 @@ var GeCoViz = function(selector) {
       showName : true,
       showTree : true,
       showLegend : true,
+      scaleDist : false,
   }
   // Color variables
   var color = {
@@ -86,6 +89,11 @@ var GeCoViz = function(selector) {
 
   function chart(selection) {
     selection.each(function() {
+        function getX(d) {
+            if (options.scaleDist && d.vStart) return +d.vStart;
+            else return (+d.pos + nSide) * geneRect.w
+        }
+
         function getY(d) {
             let y;
             try {
@@ -107,7 +115,7 @@ var GeCoViz = function(selector) {
                 return y - 11;
             }
             catch {}
-            return anchors.indexOf(d.anchor) * geneRect.h
+            return anchors.findIndex(a => a.anchor == d.anchor) * geneRect.h
         }
 
         function getShowName(d) {
@@ -227,11 +235,7 @@ var GeCoViz = function(selector) {
                     return cl
                 })
                 .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-                .attr('transform', d => 'translate(' +
-                    (+d.pos + nSide) * geneRect.w
-                    + ","
-                    + getY(d)
-                    + ")")
+                .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`)
                 .transition()
                 .duration(duration)
                 .delay(delay.enter)
@@ -656,6 +660,15 @@ var GeCoViz = function(selector) {
                     ? chart.toggleLegend(true)
                     : chart.toggleLegend(false)
             })
+            // Scale distance and gene width
+            let scaleDist = container
+                .select('input.scaleDist');
+            scaleDist.on('change', () => {
+                options.scaleDist = scaleDist.property('checked');
+                options.scaleDist
+                    ? chart.scaleDist(true)
+                    : chart.scaleDist(false)
+            })
             // Show on gene
             let showSelect = container
                 .select('select.showName');
@@ -758,9 +771,11 @@ var GeCoViz = function(selector) {
                 unfNots,
                 nots
             } = formatNotation(d[notation]);
-            let nRect = +nots.length;
-            let barWidth = (geneRect.w - geneRect.ph) / nRect;
-            let tipWidth = (2 * geneRect.ph) / 5;
+            let nRect = +nots.length > 0 ? +nots.length : 1;
+            let geneWidth;
+            if (options.scaleDist) geneWidth = d.vSize;
+            else geneWidth = geneRect.w;
+            let barWidth = (geneWidth - geneRect.ph )/ nRect;
             let x0 //, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
             let geneRects = geneG.selectAll('rect.gene-rect')
@@ -776,7 +791,7 @@ var GeCoViz = function(selector) {
               .attr('y', 0)
               .attr('width', barWidth)
               .attr('height', geneRect.h - geneRect.pv)
-            let { tipPath, strokePath } = getArrow(d, x0, geneRect.w, tipWidth);
+            let { tipPath, strokePath } = getArrow(d, x0, geneWidth, tipWidth);
             geneG
             .selectAll('path.gene-tip')
             .data(d => d.strand == '-'
@@ -805,7 +820,7 @@ var GeCoViz = function(selector) {
             geneG
             .append('text')
             .attr('class', 'geneName')
-            .attr('x', geneRect.w/2 - geneRect.ph/2
+            .attr('x', geneWidth/2 - geneRect.ph/2
                 + (d.strand == '-'
                     ? tipWidth
                     : 0))
@@ -834,9 +849,11 @@ var GeCoViz = function(selector) {
                 nots
             } = formatNotation(d[notation]);
             let nRect = +nots.length > 0 ? +nots.length : 1;
-            let barWidth = (geneRect.w - geneRect.ph) / nRect;
-            let tipWidth = (2 * geneRect.ph) / 5;
-            let x0, xf;
+            let geneWidth;
+            if (options.scaleDist) geneWidth = d.vSize;
+            else geneWidth = geneRect.w;
+            let barWidth = (geneWidth - geneRect.ph )/ nRect;
+            let x0 //, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
             let geneRects = geneG
                 .selectAll('rect.gene-rect')
@@ -881,7 +898,7 @@ var GeCoViz = function(selector) {
             .style('opacity', 0)
             .remove();
 
-            let { tipPath, strokePath } = getArrow(d, x0, geneRect.w, tipWidth);
+            let { tipPath, strokePath } = getArrow(d, x0, geneWidth, tipWidth);
             let geneTip = geneG
             .selectAll('path.gene-tip')
             .data(d => d.strand == '-'
@@ -941,7 +958,7 @@ var GeCoViz = function(selector) {
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('x', geneRect.w/2 - geneRect.ph/2
+            .attr('x', geneWidth/2 - geneRect.ph/2
                 + (d.strand == '-'
                     ? tipWidth
                     : 0))
@@ -959,12 +976,7 @@ var GeCoViz = function(selector) {
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('transform', d =>
-                'translate(' +
-                (+d.pos + nSide) * geneRect.w +
-                "," +
-                getY(d) +
-                ")")
+            .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`)
             genes
             .transition()
             .duration(duration)
@@ -981,12 +993,7 @@ var GeCoViz = function(selector) {
                 return cl
             })
             .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-            .attr('transform', d =>
-                'translate(' +
-                (+d.pos + nSide) * geneRect.w +
-                "," +
-                getY(d) +
-                ")")
+            .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`)
             .style('opacity', 0)
             .each(enterGene)
             .transition()
@@ -1000,17 +1007,11 @@ var GeCoViz = function(selector) {
         exitGenes = function() {
             let genes = contextG.selectAll('g.gene')
                 .data(data, d => d.anchor + d.pos);
-
             genes
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('transform', d =>
-                'translate(' +
-                (+d.pos + nSide) * geneRect.w +
-                "," +
-                getY(d) +
-                ")")
+            .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`);
             genes
             .exit()
             .transition()
@@ -1037,12 +1038,7 @@ var GeCoViz = function(selector) {
                 return cl
             })
             .attr('id', d => 'gene' + cleanString(d.anchor + d.pos))
-            .attr('transform', d =>
-                'translate(' +
-                (+d.pos + nSide) * geneRect.w +
-                "," +
-                getY(d) +
-                ")")
+            .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`)
             .style('opacity', 0)
             .each(enterGene)
             .transition()
@@ -1055,12 +1051,7 @@ var GeCoViz = function(selector) {
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .attr('transform', d =>
-                'translate(' +
-                (+d.pos + nSide) * geneRect.w +
-                "," +
-                getY(d) +
-                ")")
+            .attr('transform', d => `translate(${getX(d)}, ${getY(d)})`)
             .style('opacity', 1)
             .each(updateGene);
 
@@ -1109,20 +1100,89 @@ var GeCoViz = function(selector) {
             : false
   }
 
+  function computeCoordinates() {
+      function buildScale() {
+          let sizeRange = d3.extent(data.map(d => {
+              let size = Math.abs((+d.end)-(+d.start))
+              return size > 0 ? size : undefined
+          }));
+          // TipWidth + a small rect is the minimum width
+          let scaleRange = [tipWidth + 10, undefined];
+          let initialScale = d3.scaleLinear()
+                        .domain([0, sizeRange[0]])
+                        .range([0, scaleRange[0]]);
+          scaleRange[1] = initialScale(sizeRange[1]);
+          let distScale = (d) => {
+              let scale = d3.scaleLinear()
+                            .domain(sizeRange)
+                            .range(scaleRange);
+              let sign = +d / Math.abs(+d)
+              return sign * +scale(Math.abs(+d));
+          }
+          let sizeScale = (s) => +distScale(s) - tipWidth + geneRect.ph;
+          return [distScale, sizeScale]
+      }
+      function getDist(d, neigh, swapped, pos) {
+          let dist;
+          if (!swapped) dist = pos > 0
+              ? (+d.start) - (+neigh.end)
+              : (+neigh.start) - (+d.end);
+          else dist = pos > 0
+              ? (+neigh.start) - (+d.end)
+              : (+d.start) - (+neigh.end);
+          return dist;
+      }
+      let [distScale, sizeScale] = buildScale();
+      // Data should be sorted to compute virtual start and end
+      data.sort((a, b) => b.anchor == a.anchor
+          ? Math.abs(+b.pos) < Math.abs(+a.pos)
+          : b.anchor < a.anchor);
+      data.forEach(d => {
+          let swapped = swappedAnchors.includes(d.anchor);
+          if (+d.start && +d.end) {
+              let anchoredData = data.filter(el => el.anchor == d.anchor);
+              d.size = +Math.abs((+d.end) - (+d.start))
+              d.vSize = sizeScale(d.size)
+              if (+d.pos == 0) {
+                  d.vStart = (width - 7) / 2;
+                  d.vEnd = d.vStart + distScale(d.size);
+              } else {
+                  if (+d.pos > 0) {
+                      let neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
+                      let dist = getDist(d, neigh, swapped, 1)
+                      d.vStart = neigh.vEnd + distScale(dist);
+                      d.vEnd = d.vStart + distScale(d.size);
+                  }
+                  else if (+d.pos < 0) {
+                      let neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
+                      let dist = getDist(d, neigh, swapped, -1);
+                      d.vEnd = neigh.vStart - distScale(dist);
+                      d.vStart = d.vEnd - distScale(d.size);
+                  }
+              }
+          } else {
+              d.vSize = geneRect.w;
+              d.vStart = undefined;
+              d.vEnd = undefined;
+          }
+      })
+  }
+
   function updateData() {
       data = unfData.filter(d => Math.abs(+d.pos) <= nSide
                         && filterAnchor(d.anchor))
-      anchors = [...new Set(data.map(d => d.anchor))];
+      anchors = data.filter(d => d.pos == 0);
+      if (options.scaleDist) computeCoordinates();
   }
 
   function swapStrands(unswapped) {
-        let anchorToSwap = unswapped.map(d => {
+        swappedAnchors = unswapped.map(d => {
             if (d.pos == 0 && d.strand == '-') return d.anchor
         })
         let swapped = []
         unswapped.forEach(d => {
             let dCopy = Object.assign({}, d)
-            if (anchorToSwap.includes(d.anchor)) {
+            if (swappedAnchors.includes(d.anchor)) {
                 dCopy.pos = (-1) * (+d.pos);
                 dCopy.strand = d.strand == '+'
                     ? '-'
@@ -1136,9 +1196,8 @@ var GeCoViz = function(selector) {
   chart.data = function(d) {
     if (!arguments.length) return data;
     unfData = swapStrands(d);
-    updateData();
+    if (typeof updateData === 'function') updateData();
     if (typeof updatePalette === 'function') updatePalette();
-    if (typeof updateGenes === 'function') updateGenes();
     if (typeof updateGenes === 'function') updateGenes();
     return chart;
   };
@@ -1186,7 +1245,6 @@ var GeCoViz = function(selector) {
             .style('width', 0);
       }
       chart.nSide(nSide);
-      updateWidth();
   }
 
   chart.toggleLegend = function(toggle=true) {
@@ -1202,14 +1260,18 @@ var GeCoViz = function(selector) {
       }
       else legendContainer.style('opacity', 0).style('width', 0);
       chart.nSide(nSide);
-      updateWidth();
+  }
+
+  chart.scaleDist = function(scale=true) {
+      options.scaleDist = scale;
+      chart.nSide(nSide);
   }
 
   chart.nSide = function(d) {
     if (!arguments.length) return nSide;
     nSide = d;
-    updateData()
     if (typeof updateWidth === 'function') updateWidth();
+    if (typeof updateData === 'function') updateData();
     if (typeof updateLegend === 'function') updateLegend();
     if (typeof updateGenes === 'function') updateGenes();
     return chart;

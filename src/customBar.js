@@ -61,11 +61,15 @@ class CustomBar {
             .attr('class', 'd-flex')
             .style('margin-top', '12%');
         let checkButtons = [
-            { label : 'Tree', class : 'toggleTree' },
-            { label : 'Legend', class : 'toggleLegend' },
+            { label: 'Tree', class: 'toggleTree', checked: true },
+            { label: 'Legend', class: 'toggleLegend', checked: true },
+            { label: 'Scale', class: 'scaleDist', checked: false },
         ]
         checkButtons.forEach(cbutton => {
-            addCheckButton(checkButtonContainer, cbutton.label, cbutton.class)
+            addCheckButton(checkButtonContainer,
+                cbutton.label,
+                cbutton.class,
+                cbutton.checked)
         })
 
         let nSideSlider = this.container
