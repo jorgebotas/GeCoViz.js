@@ -215,10 +215,8 @@ var GeCoViz = function(selector) {
             .attr('height', height);
           contextG = contextSVG
                 .append('g')
-                .attr('transform', 'translate('
-                    + margin.left
-                    + ','
-                    + margin.top + ')');
+                .attr('transform',
+                      `translate(${margin.left}, ${margin.top})`);
           chart.toggleTree(true);
           updateWidth();
           contextSVG
@@ -765,6 +763,28 @@ var GeCoViz = function(selector) {
             .attr('height', targetHeight)
         }
 
+        function resizeSVG() {
+            let farLeft = d3.min(data, d => +d.vStart);
+            let farRight = d3.max(data, d => +d.vEnd);
+            let svgWidth = Math.max(width, farRight - farLeft + margin.left);
+            contextContainer
+                .select('.gcontextSVG')
+                .attr('width', svgWidth);
+            if (farLeft < 0) {
+                 contextG
+                    .attr('transform',
+                      `translate(${Math.abs(farLeft)}, ${margin.top})`);
+                container
+                    .select('.gene.anchor')
+                    .node()
+                    .scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'center'
+                    });
+            }
+        }
+
         function enterGene(d) {
             let geneG = d3.select(this);
             let {
@@ -1002,6 +1022,7 @@ var GeCoViz = function(selector) {
             .style('opacity', 1)
 
             updateHeight();
+            if (options.scaleDist) resizeSVG();
         }
 
         exitGenes = function() {
@@ -1021,6 +1042,7 @@ var GeCoViz = function(selector) {
             .remove();
 
             updateHeight();
+            if (options.scaleDist) resizeSVG();
         }
 
         updateGenes = function() {
@@ -1061,6 +1083,8 @@ var GeCoViz = function(selector) {
             .delay(delay.exit)
             .style('opacity', 0)
             .remove();
+
+            if (options.scaleDist) resizeSVG();
         }
 
         var container = d3.select(this);
