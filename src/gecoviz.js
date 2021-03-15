@@ -1153,14 +1153,14 @@ var GeCoViz = function(selector) {
               } else {
                   if (+d.pos > 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
-                      dist = getDist(d, neigh, swapped, 1)
-                      d.vStart = (+neigh.vEnd) + distScale(dist);
+                      dist = distScale(getDist(d, neigh, swapped, 1)) || 0;
+                      d.vStart = (+neigh.vEnd) + dist;
                       d.vEnd = d.vStart + distScale(d.size);
                   }
                   else if (+d.pos < 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
-                      dist = getDist(d, neigh, swapped, -1);
-                      d.vEnd = (+neigh.vStart) - distScale(dist);
+                      dist = distScale(getDist(d, neigh, swapped, -1)) || 0;
+                      d.vEnd = (+neigh.vStart) - dist;
                       d.vStart = d.vEnd - distScale(d.size);
                   }
               }
