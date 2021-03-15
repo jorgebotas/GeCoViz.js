@@ -1144,20 +1144,22 @@ var GeCoViz = function(selector) {
               d.size = +Math.abs((+d.end) - (+d.start))
               d.vSize = sizeScale(d.size)
               let neigh;
+              let dist;
               if (+d.pos == 0) {
                   d.vStart = (width - 7) / 2;
                   d.vEnd = (+d.vStart) + distScale(d.size);
                   neigh = d;
+                  dist = 0
               } else {
                   if (+d.pos > 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
-                      let dist = getDist(d, neigh, swapped, 1)
+                      dist = getDist(d, neigh, swapped, 1)
                       d.vStart = (+neigh.vEnd) + distScale(dist);
                       d.vEnd = d.vStart + distScale(d.size);
                   }
                   else if (+d.pos < 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
-                      let dist = getDist(d, neigh, swapped, -1);
+                      dist = getDist(d, neigh, swapped, -1);
                       console.log(`${dist} => ${distScale(dist)}`)
                       d.vEnd = (+neigh.vStart) - distScale(dist);
                       d.vStart = d.vEnd - distScale(d.size);
