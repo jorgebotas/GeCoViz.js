@@ -1165,6 +1165,7 @@ var GeCoViz = function(selector) {
               d.vStart = undefined;
               d.vEnd = undefined;
           }
+          console.log(`start ${d.vStart}  end${d.vEnd}`)
       })
   }
 
