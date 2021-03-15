@@ -1158,6 +1158,7 @@ var GeCoViz = function(selector) {
                   else if (+d.pos < 0) {
                       neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
                       let dist = getDist(d, neigh, swapped, -1);
+                      console.log(`${dist} => ${distScale(dist)}`)
                       d.vEnd = (+neigh.vStart) - distScale(dist);
                       d.vStart = d.vEnd - distScale(d.size);
                   }
