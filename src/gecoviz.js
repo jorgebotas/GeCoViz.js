@@ -764,25 +764,29 @@ var GeCoViz = function(selector) {
         }
 
         function resizeSVG() {
-            let farLeft = d3.min(data, d => +d.vStart);
-            let farRight = d3.max(data, d => +d.vEnd);
-            let svgWidth = Math.max(width, farRight - farLeft + margin.left);
-            contextContainer
-                .select('.gcontextSVG')
-                .attr('width', svgWidth);
-            if (farLeft < 0) {
-                 contextG
-                    .attr('transform',
-                      `translate(${Math.abs(farLeft)}, ${margin.top})`);
-                container
-                    .select('.gene.anchor')
-                    .node()
-                    .scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'nearest',
-                        inline: 'center'
-                    });
-            }
+            if (options.scaleDist) {
+                let farLeft = d3.min(data, d => +d.vStart);
+                let farRight = d3.max(data, d => +d.vEnd);
+                let svgWidth = Math.max(width, farRight - farLeft + margin.left);
+                contextContainer
+                    .select('.gcontextSVG')
+                    .attr('width', svgWidth);
+                if (farLeft < 0) {
+                     contextG
+                        .attr('transform',
+                          `translate(${Math.abs(farLeft) + margin.left}, ${margin.top})`);
+                    container
+                        .select('.gene.anchor')
+                        .node()
+                        .scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'center'
+                        });
+                }
+            } else contextG
+                .attr('transform',
+                  `translate(${margin.left}, ${margin.top})`);
         }
 
         function enterGene(d) {
@@ -1022,7 +1026,7 @@ var GeCoViz = function(selector) {
             .style('opacity', 1)
 
             updateHeight();
-            if (options.scaleDist) resizeSVG();
+            resizeSVG();
         }
 
         exitGenes = function() {
@@ -1042,7 +1046,7 @@ var GeCoViz = function(selector) {
             .remove();
 
             updateHeight();
-            if (options.scaleDist) resizeSVG();
+            resizeSVG();
         }
 
         updateGenes = function() {
@@ -1084,7 +1088,7 @@ var GeCoViz = function(selector) {
             .style('opacity', 0)
             .remove();
 
-            if (options.scaleDist) resizeSVG();
+            resizeSVG();
         }
 
         var container = d3.select(this);
