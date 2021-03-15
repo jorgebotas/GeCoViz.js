@@ -1164,7 +1164,7 @@ var GeCoViz = function(selector) {
               }
               console.log(`start ${d.vStart}  end ${d.vEnd}`)
               console.log(`start ${d.start}  end ${d.end}`)
-              console.log(`start ${neigh.start}  end ${neigh.end}`)
+              console.log(`start ${neigh.vStart}  end ${neigh.vEnd}`)
           } else {
               d.vSize = geneRect.w;
               d.vStart = undefined;
