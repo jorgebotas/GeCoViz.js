@@ -1143,30 +1143,32 @@ var GeCoViz = function(selector) {
               let anchoredData = data.filter(el => el.anchor == d.anchor);
               d.size = +Math.abs((+d.end) - (+d.start))
               d.vSize = sizeScale(d.size)
+              let neigh;
               if (+d.pos == 0) {
                   d.vStart = (width - 7) / 2;
                   d.vEnd = d.vStart + distScale(d.size);
               } else {
                   if (+d.pos > 0) {
-                      let neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
+                      neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
                       let dist = getDist(d, neigh, swapped, 1)
                       d.vStart = neigh.vEnd + distScale(dist);
                       d.vEnd = d.vStart + distScale(d.size);
                   }
                   else if (+d.pos < 0) {
-                      let neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
+                      neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
                       let dist = getDist(d, neigh, swapped, -1);
                       d.vEnd = neigh.vStart - distScale(dist);
                       d.vStart = d.vEnd - distScale(d.size);
                   }
               }
+              console.log(`start ${d.vStart}  end ${d.vEnd}`)
+              console.log(`start ${d.start}  end ${d.end}`)
+              console.log(`start ${neigh.start}  end ${neigh.end}`)
           } else {
               d.vSize = geneRect.w;
               d.vStart = undefined;
               d.vEnd = undefined;
           }
-          console.log(`start ${d.vStart}  end ${d.vEnd}`)
-          console.log(`start ${d.start}  end ${d.end}`)
       })
   }
 
