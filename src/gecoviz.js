@@ -1143,30 +1143,23 @@ var GeCoViz = function(selector) {
               let anchoredData = data.filter(el => el.anchor == d.anchor);
               d.size = +Math.abs((+d.end) - (+d.start))
               d.vSize = sizeScale(d.size)
-              let neigh;
-              let dist;
               if (+d.pos == 0) {
                   d.vStart = (width - 7) / 2;
                   d.vEnd = (+d.vStart) + distScale(d.size);
-                  neigh = d;
-                  dist = 0
               } else {
                   if (+d.pos > 0) {
-                      neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
-                      dist = distScale(getDist(d, neigh, swapped, 1)) || 0;
+                      let neigh = anchoredData.find(n => +n.pos == +d.pos - 1);
+                      let dist = distScale(getDist(d, neigh, swapped, 1)) || 0;
                       d.vStart = (+neigh.vEnd) + dist;
                       d.vEnd = d.vStart + distScale(d.size);
                   }
                   else if (+d.pos < 0) {
-                      neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
-                      dist = distScale(getDist(d, neigh, swapped, -1)) || 0;
+                      let neigh = anchoredData.find(n => +n.pos == +d.pos + 1);
+                      let dist = distScale(getDist(d, neigh, swapped, -1)) || 0;
                       d.vEnd = (+neigh.vStart) - dist;
                       d.vStart = d.vEnd - distScale(d.size);
                   }
               }
-              console.log(`pos${+d.pos} : ${dist} => ${distScale(dist)}`)
-              console.log(`start ${d.vStart}  end ${d.vEnd}`)
-              console.log(`start ${neigh.vStart}  end ${neigh.vEnd}`)
           } else {
               d.vSize = geneRect.w;
               d.vStart = undefined;
