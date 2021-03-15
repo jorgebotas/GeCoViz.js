@@ -767,9 +767,7 @@ var GeCoViz = function(selector) {
             if (options.scaleDist) {
                 let farLeft = d3.min(data, d => +d.vStart);
                 let farRight = d3.max(data, d => +d.vEnd);
-                let newWidth = farRight - farLeft + 2*margin.left;
-                let svgWidth = Math.max(width, newWidth);
-                console.log(svgWidth)
+                let svgWidth = farRight - farLeft + 2*margin.left;
                 contextContainer
                     .select('.gcontextSVG')
                     .attr('width', svgWidth);
