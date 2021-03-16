@@ -28,6 +28,10 @@ div.customBar > div {
     padding: 0 !important;
 }
 
+.choices .form-select {
+    background-color: var(--sand);
+}
+
 .choices.is-focused .form-select {
     border-color: transparent;
     box-shadow: 0 0 0 .25rem var(--light-indigo);
@@ -35,11 +39,12 @@ div.customBar > div {
 
 .choices .dropdown-menu .dropdown-item.is-highlighted {
     color: var(--indigo);
-    background-color: var(--light-indigo);
+    background-color: var(--light-indigo) !important;
 }
 
 .choices__list.dropdown-menu {
     margin-top: 7px;
+    background-color: var(--sand);
 }
 
 .choices__list--single {
