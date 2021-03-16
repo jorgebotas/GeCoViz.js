@@ -74,7 +74,7 @@ class CustomBar {
         let checkButtons = [
             { label: 'Tree', class: 'toggleTree', checked: true },
             { label: 'Legend', class: 'toggleLegend', checked: true },
-            //{ label: 'Scale', class: 'scaleDist', checked: false },
+            { label: 'Scale', class: 'scaleDist', checked: false },
         ]
         checkButtons.forEach(cbutton => {
             addCheckButton(checkButtonContainer,
@@ -94,7 +94,7 @@ class CustomBar {
         createSlider(nSideSlider,
             'nSideSlider',
             {
-                start : 2,
+                start : 4,
                 step : 1,
                 min : 0,
                 max : 10
