@@ -28,6 +28,10 @@ div.customBar > div {
     padding: 0 !important;
 }
 
+.form-selectgroup-label {
+    background-color: var(--sand);
+}
+
 .choices .form-select {
     background-color: var(--sand);
 }
