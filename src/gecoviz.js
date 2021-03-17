@@ -1089,7 +1089,6 @@ var GeCoViz = function(selector) {
             resizeSVG();
         }
 
-        console.log(data)
         var container = d3.select(this);
         var legendContainer,
             splitLegend,
