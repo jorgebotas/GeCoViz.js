@@ -1191,7 +1191,7 @@ var GeCoViz = function(selector) {
               d.vEnd = undefined;
           }
       })
-      comsole.log(data)
+      console.log(data)
   }
 
   function updateData() {
