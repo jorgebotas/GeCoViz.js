@@ -1099,7 +1099,6 @@ var GeCoViz = function(selector) {
         initChart(container);
         parameterListener();
         updateHeight();
-        console.log(data)
     });
   }
 
@@ -1193,6 +1192,7 @@ var GeCoViz = function(selector) {
               d.vEnd = undefined;
           }
       })
+        console.log(data)
   }
 
   function updateData() {
