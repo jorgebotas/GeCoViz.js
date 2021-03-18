@@ -1160,9 +1160,8 @@ var GeCoViz = function(selector) {
       }
       let [distScale, sizeScale] = buildScale();
       // Data should be sorted to compute virtual start and end
-      data = data.sort((a, b) => b.anchor == a.anchor
-          ? Math.abs(+b.pos) < Math.abs(+a.pos)
-          : b.anchor < a.anchor);
+      data.sort((a, b) => Math.abs(+b.pos) < Math.abs(+a.pos));
+      data.sort((a, b) => b.anchor < a.anchor);
       data.forEach(d => {
           let swapped = swappedAnchors.includes(d.anchor);
           if (+d.start && +d.end) {
