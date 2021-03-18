@@ -16,6 +16,7 @@ var PopperCreate = function(selector, d, URLs) {
             'vStart',
             'vEnd',
             'vSize',
+            'geneWidth'
         ]
         Object.entries(d).forEach(([key, field]) => {
             let fieldData = "";
