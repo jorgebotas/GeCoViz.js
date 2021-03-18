@@ -121,7 +121,7 @@ var GeCoViz = function(selector) {
         function getShowName(d) {
             let geneName = d[showName];
             if(["", "NA", undefined].every(i => i != geneName)){
-                let size = +Math.floor(geneRect.w / 13.5);
+                let size = +Math.floor(d.geneWidth / 13.5);
                 let name = d[showName];
                 if (size < name.length){
                     name = name.slice(0, size);
@@ -141,7 +141,7 @@ var GeCoViz = function(selector) {
                 .style('opacity', g => options.showName
                     && getShowName(g) != "."
                         ? 1 : 0)
-                .text(getShowName);
+                .text(g => getShowName(g));
         }
 
         treeLeafEnter = function(l) {
@@ -797,6 +797,7 @@ var GeCoViz = function(selector) {
             let geneWidth;
             if (options.scaleDist) geneWidth = d.vSize;
             else geneWidth = geneRect.w;
+            d.geneWidth = geneWidth;
             let barWidth = (geneWidth - geneRect.ph )/ nRect;
             let x0 //, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
@@ -850,7 +851,7 @@ var GeCoViz = function(selector) {
             .style('opacity', g => options.showName
                 && getShowName(g) != "."
                     ? 1 : 0)
-            .text(getShowName);
+            .text(g => getShowName(g));
             // Hover rationale
             let { mouseOver, mouseLeave } = hoverGene(d);
             let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
@@ -874,6 +875,7 @@ var GeCoViz = function(selector) {
             let geneWidth;
             if (options.scaleDist) geneWidth = d.vSize;
             else geneWidth = geneRect.w;
+            d.geneWidth = geneWidth;
             let barWidth = (geneWidth - geneRect.ph )/ nRect;
             let x0 //, xf;
             x0 = d.strand == "-" ? tipWidth : 0;
@@ -987,7 +989,7 @@ var GeCoViz = function(selector) {
             .style('opacity', g => options.showName
                 && getShowName(g) != "."
                     ? 1 : 0)
-            .text(getShowName);
+            .text(g => getShowName(g));
         }
 
         enterGenes = function() {
