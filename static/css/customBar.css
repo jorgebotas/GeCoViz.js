@@ -49,6 +49,8 @@ div.customBar > div {
 .choices__list.dropdown-menu {
     margin-top: 7px;
     background-color: var(--sand);
+    padding-left: .49rem;
+    padding-right: .5rem;
 }
 
 .choices__list--single {
@@ -57,4 +59,6 @@ div.customBar > div {
 
 .choices__item {
     font-size: .8em;
+    min-width: 13rem;
+    border-radius: 5px;
 }
