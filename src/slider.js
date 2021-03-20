@@ -1,5 +1,5 @@
 import noUiSlider from 'nouislider';
-import 'nouislider/distribute/nouislider.css';
+//import 'nouislider/distribute/nouislider.css';
 
 var createSlider = function(container,
     className,
