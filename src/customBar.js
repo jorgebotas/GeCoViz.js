@@ -4,6 +4,7 @@ import {
     addCustomSelect,
     addLabel,
     capitalize,
+    nonEmptyArray,
 } from './helpers';
 import createSlider from './slider';
 
