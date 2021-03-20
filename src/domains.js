@@ -1,4 +1,6 @@
-var draw_protDomains = function(selector,
+import { select } from 'd3';
+
+var protDomains = function(selector,
                     domains,
                     lenseq,
                     width,
@@ -25,7 +27,7 @@ var draw_protDomains = function(selector,
                          domains ,
                          palette,
                          urlRoot=undefined) {
-        var legend = d3.select(selector)
+        var legend = select(selector)
          .append("div")
          .attr("class", "dom-legend");
         var doms = new Set();
@@ -82,7 +84,7 @@ var draw_protDomains = function(selector,
             .attr("height", height)
             .attr("fill", d => palette(d.id));
     }
-    var g = d3.select(selector)
+    var g = select(selector)
               .append('svg:svg')
               .attr("width", width)
               .attr("height", height)
@@ -92,3 +94,5 @@ var draw_protDomains = function(selector,
     draw_domains(g, domains, lenseq, width, height, palette);
     draw_legend(selector, domains, palette, urlRoot);
 }
+
+export default protDomains;

@@ -1,3 +1,7 @@
+import { scaleOrdinal } from 'd3';
+import colors269 from './colors269';
+import { shuffle } from './helpers';
+
 class Palette {
     constructor() {
         let colors = [
@@ -45,7 +49,7 @@ class Palette {
 
     buildPalette(domain) {
         this.domain = domain;
-        this.palette = d3.scaleOrdinal()
+        this.palette = scaleOrdinal()
             .domain(this.domain)
             .range(this.colors);
     }
@@ -59,3 +63,5 @@ class Palette {
         return this.palette(query);
     }
 }
+
+export default Palette;

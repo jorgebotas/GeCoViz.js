@@ -42,3 +42,5 @@ var parseNewick = function(string, fields = ['name']) {
     }
     return tree;
 }
+
+export default parseNewick;

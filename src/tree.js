@@ -1,3 +1,15 @@
+import {
+    cluster,
+    hierarchy,
+    max,
+    scaleLinear,
+    select,
+} from 'd3';
+import {
+    addPopper,
+    PopperClick
+} from './popper';
+
 var buildTree = function(selector,
     root,
     fields = ['name'],
@@ -19,15 +31,15 @@ var buildTree = function(selector,
         bottom : 25,
         left : 10
     }
-    var treeRootHierarchy = d3.hierarchy(root)
+    var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
     var w = +options.width - margin.left - margin.right;
     var h = treeRootHierarchy.leaves().length * 20;
-    var tree = d3.cluster()
+    var tree = cluster()
             .size([h, w])
             .separation(() => 1);
     var treeRoot = tree(treeRootHierarchy)
-    var visContainer = d3.select(selector)
+    var visContainer = select(selector)
         .attr('width', w)
     var visDiv = visContainer
         .append('div')
@@ -239,8 +251,8 @@ var buildTree = function(selector,
         })
         //var rootDepths = nodes.map(function(n) { return n.depth; });
         var nodeLengths = nodes.map(n => n.data.length);
-        var yscale = d3.scaleLinear()
-            .domain([0, d3.max(nodeLengths)])
+        var yscale = scaleLinear()
+            .domain([0, max(nodeLengths)])
             .range([0, 33]);
         visitPreOrder(nodes[0], function(node) {
           node.y = 33 * (node.depth);
@@ -505,7 +517,7 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
-        let newWidth = d3.max(treeRoot
+        let newWidth = max(treeRoot
             .leaves()
             .map(l => l.y + getShowName(l).length*6));
         visSVG
@@ -523,5 +535,6 @@ var buildTree = function(selector,
     }
     // Enable pop-up interactivity
     PopperClick(selector + ' .phylogram');
-
 }
+
+export default buildTree;

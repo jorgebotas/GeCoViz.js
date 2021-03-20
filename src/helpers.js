@@ -1,3 +1,5 @@
+import Choices from 'choices.js';
+
 var cleanString = function(s) {
     let clean = String(s);
     let dirt = " \t.,;:_/\'@<>?()[]{}#%!*|".split("");
@@ -130,4 +132,17 @@ var counter = function(arr, attr) {
         return counter;
     };
     return arr.reduce(fn, {});
+}
+
+export {
+    addCheckbox,
+    addCheckButton,
+    addCustomSelect,
+    addLabel,
+    capitalize,
+    cleanString,
+    counter,
+    nonEmptyArray,
+    triggerEvent,
+    shuffle,
 }

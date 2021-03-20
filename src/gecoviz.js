@@ -1,3 +1,27 @@
+import {
+    extent,
+    min,
+    max,
+    scaleLinear,
+    select,
+    selectAll,
+} from 'd3';
+import $ from 'jquery';
+import { saveAs } from 'file-saver';
+import html2canvas from 'html2canvas';
+import Heatmap from '@jbotas/d3-heatmap';
+import CustomBar from './customBar';
+import {
+    addCheckbox,
+    cleanString,
+    counter,
+    triggerEvent,
+} from './helpers';
+import Palette from './palette';
+import parseNewick from './newick';
+import buildTree from './tree';
+import Sorter from './sorter.js'
+
 var GeCoViz = function(selector) {
   var unfData = [];
   var data = [];
@@ -99,23 +123,12 @@ var GeCoViz = function(selector) {
             try {
                 let cleaned = cleanString(d.anchor);
                 cleaned = cleaned.replaceAll('_', '');
-                y = d3.select(selector
+                y = select(selector
                             + ' #leaf'
-                            + cleanString(d.anchor)).node().__data__.x
-                //y = d3.select(selector
-                            //+ ' #leaf'
-                            //+ cleanString(d.anchor))
-                        //.node()
-                        //.getBoundingClientRect()
-                        //.top
-                    //- d3.select(selector + ' .phylogram')
-                        //.node()
-                        //.getBoundingClientRect()
-                        //.top;
+                            + cleanString(d.anchor)).node().__data__.x;
                 return y - 11;
-            }
-            catch {}
-            return anchors.findIndex(a => a.anchor == d.anchor) * geneRect.h
+            } catch {}
+            return anchors.findIndex(a => a.anchor == d.anchor) * geneRect.h;
         }
 
         function getShowName(d) {
@@ -132,7 +145,7 @@ var GeCoViz = function(selector) {
         }
 
         updateShowName = function() {
-            d3.selectAll('text.geneName')
+            selectAll('text.geneName')
                 .transition()
                 .duration(duration)
                 .style('opacity', 0)
@@ -748,7 +761,7 @@ var GeCoViz = function(selector) {
                     .attr('target-height');
 
             } catch {
-                targetHeight = d3.max(graphContainer
+                targetHeight = max(graphContainer
                 .selectAll('g.gene')
                 .nodes()
                 .map(n => n.getBoundingClientRect().top))
@@ -765,8 +778,8 @@ var GeCoViz = function(selector) {
 
         function resizeSVG() {
             if (options.scaleDist) {
-                let farLeft = d3.min(data, d => +d.vStart);
-                let farRight = d3.max(data, d => +d.vEnd);
+                let farLeft = min(data, d => +d.vStart);
+                let farRight = max(data, d => +d.vEnd);
                 let svgWidth = farRight - farLeft + 2*margin.left;
                 contextContainer
                     .select('.gcontextSVG')
@@ -788,7 +801,7 @@ var GeCoViz = function(selector) {
         }
 
         function enterGene(d) {
-            let geneG = d3.select(this);
+            let geneG = select(this);
             let {
                 unfNots,
                 nots
@@ -864,7 +877,7 @@ var GeCoViz = function(selector) {
         }
 
         function updateGene(d) {
-            let geneG = d3.select(this);
+            let geneG = select(this);
             let { mouseOver, mouseLeave } = hoverGene(d);
             let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
             let {
@@ -1091,7 +1104,7 @@ var GeCoViz = function(selector) {
             resizeSVG();
         }
 
-        var container = d3.select(this);
+        var container = select(this);
         var legendContainer,
             splitLegend,
             graphContainer,
@@ -1130,18 +1143,18 @@ var GeCoViz = function(selector) {
 
   function computeCoordinates() {
       function buildScale() {
-          let sizeRange = d3.extent(data.map(d => {
+          let sizeRange = extent(data.map(d => {
               let size = Math.abs((+d.end)-(+d.start))
               return size > 0 ? size : undefined
           }));
           // TipWidth + a small rect is the minimum width
           let scaleRange = [tipWidth + 10, undefined];
-          let initialScale = d3.scaleLinear()
+          let initialScale = scaleLinear()
                         .domain([0, sizeRange[0]])
                         .range([0, scaleRange[0]]);
           scaleRange[1] = initialScale(sizeRange[1]);
           let distScale = (d) => {
-              let scale = d3.scaleLinear()
+              let scale = scaleLinear()
                             .domain(sizeRange)
                             .range(scaleRange);
               let sign = +d / Math.abs(+d)
@@ -1238,8 +1251,18 @@ var GeCoViz = function(selector) {
         return chart;
   }
 
+  chart.heatmap = function(heatmapData, ) {
+      let heatmap = new Heatmap('.heatmap',
+                heatmapData,
+                {
+                    x: 'biome',
+                    y: 'gene',
+                    value: 'value'
+                })
+  }
+
   chart.toggleTree = async function(toggle=true) {
-      let phylogramContainer = d3.select(selector)
+      let phylogramContainer = select(selector)
                 .select('.phylogramContainer');
       let phylogramSVG = phylogramContainer
           .select('svg');
@@ -1277,7 +1300,7 @@ var GeCoViz = function(selector) {
   }
 
   chart.toggleLegend = function(toggle=true) {
-      let legendContainer = d3.select(selector)
+      let legendContainer = select(selector)
             .select('.legendContainer');
       let splitLegend = legendContainer.select('.split-legend');
       if (toggle) {
@@ -1367,7 +1390,7 @@ var GeCoViz = function(selector) {
   chart.toPng = function() {
       let toDownload = document.querySelector(selector + ' .graph-container');
       let dimensions = toDownload.getBoundingClientRect();
-      let legendHeight = d3.select(selector)
+      let legendHeight = select(selector)
           .select('.split-legend')
           .node()
           .getBoundingClientRect()
@@ -1377,11 +1400,11 @@ var GeCoViz = function(selector) {
       //['.phylogram',
       //'.gcontext',
        //'.split-legend'].forEach(d => {
-           //d3.select(selector)
+           //select(selector)
             //.select(d)
             //.style('border-color', 'transparent');
       //})
-      let splitLegend = d3.select(selector).select('.split-legend');
+      let splitLegend = select(selector).select('.split-legend');
       let legendEntries = splitLegend.selectAll('.lgnd-entry')
       splitLegend.select('.pl-3').style('display', 'none')
       legendEntries.select('label').style('padding-left', '.5rem')
@@ -1400,7 +1423,7 @@ var GeCoViz = function(selector) {
             //['.phylogram',
              //'.gcontext',
              //'.split-legend'].forEach(d => {
-               //d3.select(selector)
+               //select(selector)
                 //.select(d)
                 //.style('border-color', 'var(--dark-gray)');
             //})
@@ -1410,3 +1433,5 @@ var GeCoViz = function(selector) {
   PopperClick(selector + ' .gcontext');
   return chart;
 }
+
+export default GeCoViz

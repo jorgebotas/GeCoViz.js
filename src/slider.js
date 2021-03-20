@@ -1,3 +1,6 @@
+import noUiSlider from 'nouislider';
+import 'nouislider/distribute/nouislider.css';
+
 var createSlider = function(container,
     className,
     options = {
@@ -19,3 +22,5 @@ var createSlider = function(container,
         }});
     return slider
 }
+
+export default createSlider;

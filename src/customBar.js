@@ -1,3 +1,12 @@
+import { select } from 'd3';
+import {
+    addCheckButton,
+    addCustomSelect,
+    addLabel,
+    capitalize,
+} from './helpers';
+import createSlider from './slider';
+
 class CustomBar {
     constructor(selector, data) {
         this.selector = selector;
@@ -61,7 +70,7 @@ class CustomBar {
     }
 
     drawBar() {
-        let vis = d3.select(this.selector);
+        let vis = select(this.selector);
         this.container = vis.append('div')
                 .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
 
@@ -181,3 +190,5 @@ class CustomBar {
         else levelSelect.attr('disabled', '');
     }
 }
+
+export default CustomBar

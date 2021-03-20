@@ -1,3 +1,12 @@
+import { scaleOrdinal, select } from 'd3';
+import $ from 'jquery';
+import { createPopper } from '@popperjs/core';
+import protDomains from './domains';
+import {
+    capitalize,
+    cleanString,
+} from './helpers';
+
 var PopperCreate = function(selector, d, URLs) {
     function get_PopperHTML(d) {
         let arrayData = []
@@ -76,15 +85,15 @@ var PopperCreate = function(selector, d, URLs) {
     }
 
     var geneID = cleanString(d.anchor + d.pos);
-    let oldPopper = d3.select(selector + ' .popper#popr' + geneID)
+    let oldPopper = select(selector + ' .popper#popr' + geneID)
     if (oldPopper.nodes().length > 0) oldPopper.remove();
-    var popperD3 = d3.select(selector)
+    var popperD3 = select(selector)
                .append('div')
                .attr('class', 'popper col-lg-4 col-md-8 col-sm-10')
                .attr('id', 'popr' + geneID);
     var popperHTML = get_PopperHTML(d);
     // popper content
-    popperD3.append('div')
+    popperappend('div')
              .attr('class', 'popper-content')
              .html(popperHTML);
     if (nonEmptyArray(d.pfam)) {
@@ -95,10 +104,10 @@ var PopperCreate = function(selector, d, URLs) {
             }
         })
         var colors = colors269;
-        var palette = d3.scaleOrdinal()
+        var palette = scaleOrdinal()
                         .domain(doms)
                         .range(colors);
-        draw_protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
+        protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
                          d.pfam,
                          d.length || Math.abs((+d.end) - (+d.start)) || 1000,
                          250,
@@ -107,7 +116,7 @@ var PopperCreate = function(selector, d, URLs) {
                          URLs.pfam.b)
     }
     // Popper arrow
-    popperD3.append('div')
+    popperappend('div')
              .attr('class', 'popper-arrow');
 
     var popper  = document.querySelector(selector + ' .popper#popr' + geneID);
@@ -146,22 +155,22 @@ var addPopper = function(selector,
                     id,
                     popperHTML,
                     popperClass) {
-    var popperD3 = d3.select(selector)
+    var popperD3 = select(selector)
                     .append('div')
                     .attr('class', 'popper ' + popperClass)
                     .attr('id', 'popr' + id);
     // popper content
-    popperD3.append('div')
+    popperappend('div')
             .attr('class', 'popper-content card-body h6 pt-2')
             .html(popperHTML);
     // popper arrow
-    popperD3.append('div')
+    popperappend('div')
             .attr('class', 'popper-arrow');
     var popper = document.querySelector(selector + ' .popper#popr' + id);
     var ref = document.querySelector(selector + ' g#leaf' + id);
     function create() {
         // Popper Instance
-        Popper.createPopper(ref, popper, {
+        createPopper(ref, popper, {
           placement: 'right',
           modifiers: [
             {
@@ -231,11 +240,11 @@ var PopperClick = function(selector) {
                 //let refbound = document.querySelector(selector + ' g.gene#gene'+targetID)
                                        //.getBoundingClientRect();
                   //if (refbound.right+popperDims.width/2 > window.innerWidth){
-                      //d3.select(selector + ' .popper#popr'+targetID)
+                      //select(selector + ' .popper#popr'+targetID)
                           //.select(selector + ' .popper-arrow')
                           //.style('right', window.innerWidth-refbound.right+'px');
                   //} else if(refbound.left < popperDims.width/2) {
-                      //d3.select(selector + ' .popper#popr'+targetID)
+                      //select(selector + ' .popper#popr'+targetID)
                           //.select(selector + ' .popper-arrow')
                           //.style('left', refbound.left+'px')
                           //.style('right', '');
@@ -244,4 +253,10 @@ var PopperClick = function(selector) {
             }
         }
     });
+}
+
+export {
+    addPopper,
+    PopperCreate,
+    PopperClick
 }
