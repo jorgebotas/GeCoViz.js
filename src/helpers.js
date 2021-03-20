@@ -1,6 +1,6 @@
 import Choices from 'choices.js';
 
-export var cleanString = function(s) {
+var cleanString = function(s) {
     let clean = String(s);
     let dirt = " \t.,;:_/\'@<>?()[]{}#%!*|".split("");
     dirt.forEach(d => {
@@ -9,7 +9,7 @@ export var cleanString = function(s) {
     return String(clean)
 }
 
-export var shuffle = function(a) {
+var shuffle = function(a) {
     let j, x, i;
     for (i = a.length - 1; i > 0; i--) {
         j = Math.floor(Math.random() * (i + 1));
@@ -21,11 +21,11 @@ export var shuffle = function(a) {
 
 }
 
-export var capitalize = function(string) {
+var capitalize = function(string) {
     return string.trim().replace(/^\w/, c => c.toUpperCase());
 }
 
-export var addCheckbox = function(g,
+var addCheckbox = function(g,
                     label,
                     className,
                     switchToggle = false) {
@@ -46,7 +46,7 @@ export var addCheckbox = function(g,
     return container;
 }
 
-export var addCheckButton = function(g,
+var addCheckButton = function(g,
     label,
     className='',
     checked=true) {
@@ -62,7 +62,7 @@ export var addCheckButton = function(g,
     return input
 }
 
-export var addCustomSelect = function(g,
+var addCustomSelect = function(g,
     className,
     name,
     placeholder="hi") {
@@ -73,7 +73,7 @@ export var addCustomSelect = function(g,
     return choices
 }
 
-export var activateSelect = function(select, placeholder) {
+var activateSelect = function(select, placeholder) {
     let choices = new Choices(select, {
         classNames: {
             containerInner: select.className,
@@ -93,7 +93,7 @@ export var activateSelect = function(select, placeholder) {
     return choices;
 }
 
-export var addLabel = function(g,
+var addLabel = function(g,
     html) {
     let label = g.append('label')
         .attr('class', 'form-label ml-2')
@@ -103,12 +103,12 @@ export var addLabel = function(g,
     return label
 }
 
-export var nonEmptyArray = function(a) {
+var nonEmptyArray = function(a) {
     return Array.isArray(a)
         && a.length > 0
 }
 
-export var triggerEvent = function(el, type) {
+var triggerEvent = function(el, type) {
     // IE9+ and other modern browsers
     if ('createEvent' in document) {
         let e = document.createEvent('HTMLEvents');
@@ -122,7 +122,7 @@ export var triggerEvent = function(el, type) {
     }
 }
 
-export var counter = function(arr, attr) {
+var counter = function(arr, attr) {
     //let initial = new Map(map.map(d => [d.id, 0]));
     let fn = (counter, d) => {
         let a = d[attr]
@@ -132,4 +132,17 @@ export var counter = function(arr, attr) {
         return counter;
     };
     return arr.reduce(fn, {});
+}
+
+export {
+    addCheckbox,
+    addCheckButton,
+    addCustomSelect,
+    addLabel,
+    capitalize,
+    cleanString,
+    counter,
+    nonEmptyArray,
+    triggerEvent,
+    shuffle,
 }

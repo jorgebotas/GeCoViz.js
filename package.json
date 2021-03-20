@@ -4,7 +4,7 @@
   "description": "JS visualization package for Gene Context Visualization (GeCoViz)",
   "main": "dist/gecoviz.js",
   "scripts": {
-    "build": "babel src/gecoviz.js -d dist"
+    "build": "babel src/ -d dist"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,8 @@
     "@babel/cli": "^7.13.10",
     "@babel/core": "^7.13.10",
     "@babel/plugin-transform-classes": "^7.13.0",
-    "@babel/preset-env": "^7.13.10"
+    "@babel/preset-env": "^7.13.10",
+    "babel-plugin-module-resolver": "^4.1.0"
   },
   "dependencies": {
     "@jbotas/d3-heatmap": "^1.0.9",

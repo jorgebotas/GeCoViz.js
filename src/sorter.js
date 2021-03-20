@@ -55,4 +55,4 @@ var Sorter = {
     }
 }
 
-export default Sorter;,
+export default Sorter;
