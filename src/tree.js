@@ -15,11 +15,11 @@ var buildTree = function(selector,
     root,
     fields = ['name'],
     callbacks = {
-        enterEach : (_) => undefined,
-        enterMouseOver : (_e,_) => undefined,
-        enterMouseLeave : (_e,_) => undefined,
-        enterClick : (_e,_) => undefined,
-        exitEach : (_) => undefined,
+        enterEach : () => undefined,
+        enterMouseOver : () => undefined,
+        enterMouseLeave : () => undefined,
+        enterClick : () => undefined,
+        exitEach : () => undefined,
     },
     options = {
         width : 700,
@@ -98,85 +98,6 @@ var buildTree = function(selector,
         return diagonal;
     }
 
-    function styleNodes(node) {
-        // Support and distance values in inner nodes
-        var nodeInnerEnter = node
-        nodeInnerEnter
-            .append('text')
-            .attr('dx', -3)
-            .attr('dy', -3)
-            .attr('text-anchor', 'end')
-            .attr('font-size', '0.8em')
-            .attr('fill', 'var(--dark-red)')
-            .style('fill-opacity', 1e-6)
-            .text(n => (+n.data.support).toFixed(1));
-        nodeInnerEnter
-            .append('text')
-            .attr('dx', -3)
-            .attr('dy', +11)
-            .attr('text-anchor', 'end')
-            .attr('font-size', '0.8em')
-            .attr('fill', leafColor.text)
-            .style('fill-opacity', 1e-6)
-            .text(n => {
-                let length = (+n.data.length)
-                let rounded = length < 0.01
-                    ? length.toExponential(1)
-                    : length.toFixed(3)
-                return rounded ? rounded : n.data.length
-            });
-        nodeInnerEnter.merge(node)
-            .selectAll('text')
-            .style('fill-opacity', 1)
-            .transition()
-            .duration(duration)
-            .delay(delay.update)
-        // Inner nodes have classes that represent all children
-        // Hovering over clade will highlight descendants
-        function childrenName(node) {
-            let names = []
-            if (!node.children && node.data.name) {
-                names.push(cleanString(node.data.name));
-            } else {
-                node.children.forEach(c => {
-                    names = names.concat(childrenName(c));
-                })
-            }
-            return names;
-        }
-        nodeInnerEnter
-            .attr('class', n => 'leaf' + childrenName(n).join(' leaf'))
-        var nodeLeafEnter = vis.selectAll('g.leaf.node');
-        nodeLeafEnter
-            .attr('id', n => 'leaf'
-            + cleanString(n.data.name))
-            .append('text')
-            .attr('dx', 13)
-            .attr('dy', 5)
-            .attr('text-anchor', 'start')
-            .text(getShowName)
-        // Associate each leaf to pop-up
-        // Display fields data
-        if (fields) {
-            nodeLeafEnter
-                .each(n => {
-                    let popperContent = '';
-                    fields.forEach(f => {
-                        popperContent += f != 'showName'
-                            ? '<p>' + f + ': ' + n.data[f] + '</p>'
-                            : ''
-                    })
-                    popperContent = n.data.showName
-                        ? '<p>' + n.data.showName + '</p>' + popperContent
-                        : popperContent
-                    addPopper(selector + ' .phylogram',
-                        cleanString(n.data.name),
-                        popperContent,
-                        'col-d-2')
-                })
-        }
-    }
-
     var diagonal = rightAngleDiagonal();
     var duration = 1000;
     var delay = {
@@ -241,9 +162,9 @@ var buildTree = function(selector,
         var visitPreOrder = function(root, callback) {
           callback(root)
           if (root.children) {
-            for (var i = root.children.length - 1; i >= 0; i--){
+            for (var i = root.children.length - 1; i >= 0; i--) {
               visitPreOrder(root.children[i], callback)
-            };
+            }
           }
         }
         visitPreOrder(nodes[0], node => {

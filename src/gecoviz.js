@@ -127,8 +127,6 @@ var GeCoViz = function(selector) {
         function getY(d) {
             let y;
             try {
-                let cleaned = cleanString(d.anchor);
-                cleaned = cleaned.replaceAll('_', '');
                 y = select(selector
                             + ' #leaf'
                             + cleanString(d.anchor)).node().__data__.x;
@@ -692,7 +690,7 @@ var GeCoViz = function(selector) {
             let showOptions = showSelect.node();
             showSelect
                 .on('change', () => {
-                    newShowName = showOptions
+                    let newShowName = showOptions
                         .options[showOptions.selectedIndex]
                         .value;
                     if(newShowName != ''
@@ -1257,14 +1255,8 @@ var GeCoViz = function(selector) {
         return chart;
   }
 
-  chart.heatmap = function(heatmapData, ) {
-      let heatmap = new Heatmap('.heatmap',
-                heatmapData,
-                {
-                    x: 'biome',
-                    y: 'gene',
-                    value: 'value'
-                })
+  chart.heatmap = function() {
+
   }
 
   chart.toggleTree = async function(toggle=true) {
@@ -1324,7 +1316,7 @@ var GeCoViz = function(selector) {
               .style('width', 0)
           splitLegend
               .style('width', 0);
-      };
+      }
       chart.nSide(nSide);
   }
 

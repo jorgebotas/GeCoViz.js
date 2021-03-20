@@ -1,6 +1,7 @@
 import { scaleOrdinal, select } from 'd3';
 import $ from 'jquery';
 import { createPopper } from '@popperjs/core';
+import { colors269 } from './colors269';
 import protDomains from './domains';
 import {
     capitalize,
@@ -45,8 +46,7 @@ var PopperCreate = function(selector, d, URLs) {
                         + URLs[key].a
                         + '" target="_blank" style="outline:none;">'
                         + String(f.id)+'</a>';
-;
-                    levelData = !f.level
+                    let levelData = !f.level
                             ? ''
                             : f.leveDesc
                             ? ' (level: '
@@ -94,7 +94,7 @@ var PopperCreate = function(selector, d, URLs) {
                .attr('id', 'popr' + geneID);
     var popperHTML = get_PopperHTML(d);
     // popper content
-    popperappend('div')
+    popperD3.append('div')
              .attr('class', 'popper-content')
              .html(popperHTML);
     if (nonEmptyArray(d.pfam)) {
@@ -117,7 +117,7 @@ var PopperCreate = function(selector, d, URLs) {
                          URLs.pfam.b)
     }
     // Popper arrow
-    popperappend('div')
+    popperD3.append('div')
              .attr('class', 'popper-arrow');
 
     var popper  = document.querySelector(selector + ' .popper#popr' + geneID);
@@ -131,7 +131,7 @@ var PopperCreate = function(selector, d, URLs) {
         let ref = document
             .querySelector(selector + ' g.gene#gene' + geneID);
         popper.setAttribute('data-show', '');
-        Popper.createPopper(ref, popper, {
+        createPopper(ref, popper, {
           modifiers: [
             {
               name: 'offset',
@@ -161,11 +161,11 @@ var addPopper = function(selector,
                     .attr('class', 'popper ' + popperClass)
                     .attr('id', 'popr' + id);
     // popper content
-    popperappend('div')
+    popperD3.append('div')
             .attr('class', 'popper-content card-body h6 pt-2')
             .html(popperHTML);
     // popper arrow
-    popperappend('div')
+    popperD3.append('div')
             .attr('class', 'popper-arrow');
     var popper = document.querySelector(selector + ' .popper#popr' + id);
     var ref = document.querySelector(selector + ' g#leaf' + id);
@@ -199,7 +199,7 @@ var addPopper = function(selector,
         poppers.forEach(popper => {
             popper.removeAttribute('data-show');
         });
-      };
+      }
       const showEvents = ['click'];
       showEvents.forEach(function (event) {
         popper.addEventListener(event, show);
@@ -230,7 +230,7 @@ var PopperClick = function(selector) {
         if (!e.altKey) {
             let targetID;
             ['gene', 'leaf', 'popper'].forEach(c => {
-                try { targetID = lookForParent(e.target, c).id } catch {};
+                try { targetID = lookForParent(e.target, c).id } catch {}
             })
             targetID = !targetID ? e.target.id : targetID;
             targetID = targetID.trim()

@@ -6,6 +6,7 @@ var parseNewick = function(string, fields = ['name']) {
     for (let i=0; i<tokens.length; i++) {
       let token = tokens[i];
       let subtree = {};
+      let x;
       switch (token) {
         case '(': // new children set
           tree.children = [subtree];
@@ -22,20 +23,19 @@ var parseNewick = function(string, fields = ['name']) {
         case ':': // optional length next
           break;
         default:
-          let x = tokens[i-1];
-              if (x == ')') {
-                // optional support value
-                  tree.support = parseFloat(token);
-              }
-          else if (x == '(' || x == ',') {
-            let tokenSplit = token.trim().split('.');
-            fields.forEach((f, i) => {
-                if (tokenSplit[i]) tree[f] = tokenSplit[i];
-            })
-            tree.id = counter;
-            ++counter;
+          x = tokens[i-1];
+          if (x == ')') {
+              // optional support value
+              tree.support = parseFloat(token);
+          } else if (x == '(' || x == ',') {
+              let tokenSplit = token.trim().split('.');
+              fields.forEach((f, i) => {
+                  if (tokenSplit[i]) tree[f] = tokenSplit[i];
+              })
+              tree.id = counter;
+              ++counter;
           } else if (x == ':') {
-            tree.length = parseFloat(token);
+              tree.length = parseFloat(token);
           }
       }
     }

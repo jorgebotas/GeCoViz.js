@@ -2,7 +2,7 @@ import Choices from 'choices.js';
 
 var cleanString = function(s) {
     let clean = String(s);
-    let dirt = " \t.,;:_/\'@<>?()[]{}#%!*|".split("");
+    let dirt = " \t.,;:_/\\'@<>?()[]{}#%!*|".split("");
     dirt.forEach(d => {
         clean = clean.replaceAll(d, "");
     })

@@ -23,7 +23,8 @@
     "@babel/plugin-transform-classes": "^7.13.0",
     "@babel/plugin-transform-regenerator": "^7.12.13",
     "@babel/preset-env": "^7.13.10",
-    "babel-plugin-module-resolver": "^4.1.0"
+    "babel-plugin-module-resolver": "^4.1.0",
+    "eslint": "^7.22.0"
   },
   "dependencies": {
     "@jbotas/d3-heatmap": "^1.0.9",
