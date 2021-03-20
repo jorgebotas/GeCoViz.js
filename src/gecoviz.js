@@ -81,8 +81,10 @@ var GeCoViz = function(selector) {
   var domain = [];
   var palette = new Palette();
   var customBar;
-  var updateGenes,
-        updateShowName,
+  var enterGenes,
+        updateGenes,
+        exitGenes
+  var updateShowName,
         updateNotation,
         updateLegend,
         updateWidth,
