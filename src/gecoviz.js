@@ -1,3 +1,7 @@
+// Async functions support
+import "core-js/stable";
+import "regenerator-runtime/runtime";
+
 import {
     extent,
     min,
