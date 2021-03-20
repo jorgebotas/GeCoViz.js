@@ -1,6 +1,6 @@
 import Choices from 'choices.js';
 
-var cleanString = function(s) {
+export var cleanString = function(s) {
     let clean = String(s);
     let dirt = " \t.,;:_/\'@<>?()[]{}#%!*|".split("");
     dirt.forEach(d => {
@@ -9,8 +9,8 @@ var cleanString = function(s) {
     return String(clean)
 }
 
-var shuffle = function(a) {
-    var j, x, i;
+export var shuffle = function(a) {
+    let j, x, i;
     for (i = a.length - 1; i > 0; i--) {
         j = Math.floor(Math.random() * (i + 1));
         x = a[i];
@@ -21,11 +21,11 @@ var shuffle = function(a) {
 
 }
 
-var capitalize = function(string) {
+export var capitalize = function(string) {
     return string.trim().replace(/^\w/, c => c.toUpperCase());
 }
 
-var addCheckbox = function(g,
+export var addCheckbox = function(g,
                     label,
                     className,
                     switchToggle = false) {
@@ -46,7 +46,7 @@ var addCheckbox = function(g,
     return container;
 }
 
-var addCheckButton = function(g,
+export var addCheckButton = function(g,
     label,
     className='',
     checked=true) {
@@ -62,7 +62,7 @@ var addCheckButton = function(g,
     return input
 }
 
-var addCustomSelect = function(g,
+export var addCustomSelect = function(g,
     className,
     name,
     placeholder="hi") {
@@ -73,7 +73,7 @@ var addCustomSelect = function(g,
     return choices
 }
 
-var activateSelect = function(select, placeholder) {
+export var activateSelect = function(select, placeholder) {
     let choices = new Choices(select, {
         classNames: {
             containerInner: select.className,
@@ -93,7 +93,7 @@ var activateSelect = function(select, placeholder) {
     return choices;
 }
 
-var addLabel = function(g,
+export var addLabel = function(g,
     html) {
     let label = g.append('label')
         .attr('class', 'form-label ml-2')
@@ -103,26 +103,26 @@ var addLabel = function(g,
     return label
 }
 
-var nonEmptyArray = function(a) {
+export var nonEmptyArray = function(a) {
     return Array.isArray(a)
         && a.length > 0
 }
 
-var triggerEvent = function(el, type) {
+export var triggerEvent = function(el, type) {
     // IE9+ and other modern browsers
     if ('createEvent' in document) {
-        var e = document.createEvent('HTMLEvents');
+        let e = document.createEvent('HTMLEvents');
         e.initEvent(type, false, true);
         el.dispatchEvent(e);
     } else {
         // IE8
-        var e = document.createEventObject();
+        let e = document.createEventObject();
         e.eventType = type;
         el.fireEvent('on' + e.eventType, e);
     }
 }
 
-var counter = function(arr, attr) {
+export var counter = function(arr, attr) {
     //let initial = new Map(map.map(d => [d.id, 0]));
     let fn = (counter, d) => {
         let a = d[attr]
@@ -132,17 +132,4 @@ var counter = function(arr, attr) {
         return counter;
     };
     return arr.reduce(fn, {});
-}
-
-export {
-    addCheckbox,
-    addCheckButton,
-    addCustomSelect,
-    addLabel,
-    capitalize,
-    cleanString,
-    counter,
-    nonEmptyArray,
-    triggerEvent,
-    shuffle,
 }
