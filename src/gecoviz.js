@@ -1,7 +1,6 @@
 // Async functions support
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-
 import {
     extent,
     min,
@@ -21,8 +20,9 @@ import {
     counter,
     triggerEvent,
 } from './helpers';
-import Palette from './palette';
 import parseNewick from './newick';
+import Palette from './palette';
+import { PopperCreate, PopperClick } from './popper';
 import buildTree from './tree';
 import Sorter from './sorter.js'
 
