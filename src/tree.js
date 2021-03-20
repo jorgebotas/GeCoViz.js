@@ -5,6 +5,7 @@ import {
     scaleLinear,
     select,
 } from 'd3';
+import { cleanString } from './helpers';
 import {
     addPopper,
     PopperClick

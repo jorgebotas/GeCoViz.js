@@ -5,6 +5,7 @@ import protDomains from './domains';
 import {
     capitalize,
     cleanString,
+    nonEmptyArray,
 } from './helpers';
 
 var PopperCreate = function(selector, d, URLs) {
