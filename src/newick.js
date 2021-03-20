@@ -1,19 +1,18 @@
 var parseNewick = function(string, fields = ['name']) {
-    var ancestors = [];
-    var tree = {};
-    var counter = 0;
-    var tokens = string.split(/\s*(;|\(|\)|,|:)\s*/);
-    for (var i=0; i<tokens.length; i++) {
-      var token = tokens[i];
+    let ancestors = [];
+    let tree = {};
+    let counter = 0;
+    let tokens = string.split(/\s*(;|\(|\)|,|:)\s*/);
+    for (let i=0; i<tokens.length; i++) {
+      let token = tokens[i];
+      let subtree = {};
       switch (token) {
         case '(': // new children set
-          var subtree = {};
           tree.children = [subtree];
           ancestors.push(tree);
           tree = subtree;
           break;
         case ',': // another branch
-          var subtree = {};
           ancestors[ancestors.length-1].children.push(subtree);
           tree = subtree;
           break;
@@ -23,13 +22,13 @@ var parseNewick = function(string, fields = ['name']) {
         case ':': // optional length next
           break;
         default:
-          var x = tokens[i-1];
+          let x = tokens[i-1];
               if (x == ')') {
                 // optional support value
                   tree.support = parseFloat(token);
               }
           else if (x == '(' || x == ',') {
-            tokenSplit = token.trim().split('.');
+            let tokenSplit = token.trim().split('.');
             fields.forEach((f, i) => {
                 if (tokenSplit[i]) tree[f] = tokenSplit[i];
             })
