@@ -26,7 +26,7 @@ import { PopperCreate, PopperClick } from './popper';
 import buildTree from './tree';
 import Sorter from './sorter.js'
 
-var GeCoViz = function(selector) {
+function GeCoViz(selector) {
   var unfData = [];
   var data = [];
   var newick;

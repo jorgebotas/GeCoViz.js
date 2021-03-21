@@ -1,7 +1,7 @@
 import { scaleOrdinal, select } from 'd3';
 import $ from 'jquery';
 import { createPopper } from '@popperjs/core';
-import { colors269 } from './colors269';
+import colors269 from './colors269';
 import protDomains from './domains';
 import {
     capitalize,
@@ -46,7 +46,7 @@ var PopperCreate = function(selector, d, URLs) {
                         + URLs[key].a
                         + '" target="_blank" style="outline:none;">'
                         + String(f.id)+'</a>';
-                    let levelData = !f.level
+                let levelData = !f.level
                             ? ''
                             : f.leveDesc
                             ? ' (level: '
@@ -130,7 +130,7 @@ var PopperCreate = function(selector, d, URLs) {
             .querySelector(selector + ' .popper#popr' + geneID);
         let ref = document
             .querySelector(selector + ' g.gene#gene' + geneID);
-        popper.setAttribute('data-show', '');
+        popper.etAttribute('data-show', '');
         createPopper(ref, popper, {
           modifiers: [
             {
@@ -159,14 +159,16 @@ var addPopper = function(selector,
     var popperD3 = select(selector)
                     .append('div')
                     .attr('class', 'popper ' + popperClass)
-                    .attr('id', 'popr' + id);
+                    .attr('id', 'popr' + id)
+                    .attr('role', 'tooltip')
     // popper content
     popperD3.append('div')
             .attr('class', 'popper-content card-body h6 pt-2')
             .html(popperHTML);
     // popper arrow
     popperD3.append('div')
-            .attr('class', 'popper-arrow');
+            .attr('class', 'popper-arrow')
+            .attr('data-popper-arrow', '')
     var popper = document.querySelector(selector + ' .popper#popr' + id);
     var ref = document.querySelector(selector + ' g#leaf' + id);
     function create() {
@@ -189,13 +191,13 @@ var addPopper = function(selector,
           ],
         });
       }
-      function show() {
+    function show() {
         hide();
         popper.setAttribute('data-show', '');
         create();
-      }
-      function hide() {
-        var poppers = document.querySelectorAll(selector + ' .popper')
+    }
+    function hide() {
+        let poppers = document.querySelectorAll(selector + ' .popper')
         poppers.forEach(popper => {
             popper.removeAttribute('data-show');
         });
