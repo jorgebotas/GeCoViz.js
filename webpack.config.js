@@ -7,6 +7,7 @@ module.exports = {
     filename: "gecoviz_bundle.js",
     library: "GeCoViz",
     libraryTarget: "umd",
+    libraryExport: "default"
   },
   module: {
     rules: [
