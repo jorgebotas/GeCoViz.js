@@ -130,7 +130,7 @@ var PopperCreate = function(selector, d, URLs) {
             .querySelector(selector + ' .popper#popr' + geneID);
         let ref = document
             .querySelector(selector + ' g.gene#gene' + geneID);
-        popper.etAttribute('data-show', '');
+        popper.setAttribute('data-show', '');
         createPopper(ref, popper, {
           modifiers: [
             {

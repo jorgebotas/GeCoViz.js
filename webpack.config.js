@@ -1,10 +1,11 @@
-const path = require("path")
+const path = require("path");
+const webpack = require('webpack');
 
 module.exports = {
   entry: path.resolve(__dirname, "src/gecoviz.js"),
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "gecoviz_bundle.js",
+    filename: "gecoviz.js",
     library: "GeCoViz",
     libraryTarget: "umd",
     libraryExport: "default"
@@ -16,7 +17,25 @@ module.exports = {
         exclude: /node_modules/,
         use: "babel-loader",
       },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                importLoaders: 1,
+                modules: true,
+              }
+            },
+        ]
+      },
+      {
+        test: /\.svg$/,
+        use: 'file-loader'
+      },
     ],
   },
+  plugins: [],
   mode: "development",
 }

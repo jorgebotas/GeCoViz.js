@@ -1,3 +1,10 @@
+// import css
+import "../static/css/gecoviz.css"
+import "../static/css/colors.css"
+import "../static/css/customBar.css"
+import "../static/css/popper.css"
+import "../static/css/scrollbar.css"
+
 // Async functions support
 import "core-js/stable";
 import "regenerator-runtime/runtime";
