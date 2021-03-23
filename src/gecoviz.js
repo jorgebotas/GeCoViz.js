@@ -1,4 +1,6 @@
 // import css
+//import "../static/assets/tabler/css/tabler.min.css"
+//import "../static/assets/tabler/css/tabler-vendors.min.css"
 import "../static/css/gecoviz.css"
 import "../static/css/colors.css"
 import "../static/css/customBar.css"
@@ -29,7 +31,11 @@ import {
 } from './helpers';
 import parseNewick from './newick';
 import Palette from './palette';
-import { PopperCreate, PopperClick } from './popper';
+import {
+    PopperCreate,
+    PopperClick,
+    PopperListeners
+} from './popper';
 import buildTree from './tree';
 import Sorter from './sorter.js'
 
@@ -271,7 +277,7 @@ function GeCoViz(selector) {
           if (d.strand == "-") {
             tipPath = [
               "M",
-              x0,
+              x0+.5,
               " ",
               "0",
               " ",
@@ -281,7 +287,7 @@ function GeCoViz(selector) {
               (rect.h - rect.pv) / 2,
               " ",
               "L",
-              x0,
+              x0+.5,
               " ",
               rect.h - rect.pv,
               " ",
@@ -836,7 +842,7 @@ function GeCoViz(selector) {
                 : palette.get(n.id))
               .attr('x', (_, i) => x0 + i * barWidth)
               .attr('y', 0)
-              .attr('width', barWidth)
+              .attr('width', barWidth+.5)
               .attr('height', geneRect.h - geneRect.pv)
             let { tipPath, strokePath } = getArrow(d, x0, geneWidth, tipWidth);
             geneG
@@ -879,6 +885,8 @@ function GeCoViz(selector) {
             // Hover rationale
             let { mouseOver, mouseLeave } = hoverGene(d);
             let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
+            if (d.id) PopperListeners(selector + ' .gcontext', d);
+            console.log(d.id)
             // Gene SVG group
             geneG.node().childNodes.forEach(c => {
                 c.addEventListener('click', popperShow);
@@ -891,6 +899,7 @@ function GeCoViz(selector) {
             let geneG = select(this);
             let { mouseOver, mouseLeave } = hoverGene(d);
             let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
+            if (d.id) PopperListeners(selector + ' .gcontext', d);
             let {
                 unfNots,
                 nots
@@ -930,7 +939,7 @@ function GeCoViz(selector) {
               .duration(duration)
               .delay(delay.update)
               .attr('x', (_, i) => x0 + i * barWidth)
-              .attr('width', barWidth);
+              .attr('width', barWidth+.5);
             mergedGeneRects
               .transition()
               .duration(duration)

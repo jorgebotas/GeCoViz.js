@@ -1,4 +1,5 @@
 import { scaleOrdinal, select } from 'd3';
+import { saveAs } from 'file-saver';
 import $ from 'jquery';
 import { createPopper } from '@popperjs/core';
 import colors269 from './colors269';
@@ -69,6 +70,10 @@ var PopperCreate = function(selector, d, URLs) {
             if (fieldData) arrayData.push(fieldData)
         })
         var popperHTML = ''; //<strong>Gene information</strong>
+        if (d.id) popperHTML += `<button class="btn btn-sm btn-primary"\
+                                   id="downloadSeq${cleanString(d.id)}"\
+                                   style="position: absolute;right: 15px;top: 15px;">\
+                                Sequence</button>`;
         popperHTML += '<div class="p-2">';
         showFields.forEach(f => {
             if (d[f]) popperHTML += `${capitalize(f)}: ${d[f]}<br>`;
@@ -258,8 +263,18 @@ var PopperClick = function(selector) {
     });
 }
 
+var PopperListeners = function(selector, d) {
+    let downloadSeq = select(`${selector} #downloadSeq${cleanString(d.gene)}`)
+    downloadSeq.on('click', () => {
+        fetch(`api/seq/${d.gene}/`)
+            .then(response => response.blob())
+            .then(blob => saveAs(blob, `${d.gene}_seq.fasta`))
+    })
+}
+
 export {
     addPopper,
     PopperCreate,
-    PopperClick
+    PopperClick,
+    PopperListeners
 }
