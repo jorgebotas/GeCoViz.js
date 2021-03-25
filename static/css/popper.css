@@ -4,7 +4,7 @@
     color: var(--dark-gray);
     padding: 0;
     text-align: left;
-    font-size: 1em;
+    font-size: 10px;
     border: solid var(--dark-gray) 1px;
     border-radius: 5px;
     display: none;

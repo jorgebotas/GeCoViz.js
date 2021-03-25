@@ -1,7 +1,6 @@
 /* GRAPH */
 div.GeCoViz {
   width: 100%;
-  font-size: .8em;
   margin: 0 auto;
   visibility: hidden;
   opacity: 0;
@@ -83,7 +82,7 @@ text.geneName {
   fill: var(--white);
   font-weight: bold;
   transition: fill 0.3s;
-  font-size: 1em;
+  font-size: 10px;
   text-align: center;
   text-anchor: middle;
   z-index: 1;
@@ -114,13 +113,17 @@ path.light-stroke {
 
 
 /*TREE*/
+.node text {
+    font-size: 9px;
+}
+
 .leaf.node circle {
     transition: fill .5s, stroke .5s;
 }
 
 .leaf.node text {
     cursor: pointer;
-    font-size: .9em;
+    font-size: 10px;
     fill: var(--dark-gray);
     transition: fill .5s;
 }
@@ -145,7 +148,7 @@ div.legend {
     display: flex;
     margin: 0;
     overflow: visible;
-    font-size: .9em;
+    font-size: 10px;
     background: transparent;
 }
 

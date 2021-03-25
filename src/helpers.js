@@ -58,6 +58,7 @@ var addCheckButton = function(g,
     if (checked) input.attr('checked', '');
     container.append('span')
         .attr('class', 'form-selectgroup-label')
+        .style('font-size', '12px')
         .html(label)
     return input
 }
@@ -97,7 +98,7 @@ var addLabel = function(g,
     html) {
     let label = g.append('label')
         .attr('class', 'form-label ml-2')
-        .style('font-size', '1em')
+        .style('font-size', '11px')
         .style('font-weight', 'bold')
         .html(html);
     return label

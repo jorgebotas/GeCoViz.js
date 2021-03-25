@@ -9,8 +9,7 @@ import {
 import createSlider from './slider';
 
 class CustomBar {
-    constructor(selector, data) {
-        this.selector = selector;
+    constructor(data) {
         this.container;
         this.data = data;
         this.dataKeys;
@@ -63,17 +62,17 @@ class CustomBar {
         })
         this.dataComplexFields = dataComplexFields;
         this.dataSimpleFields = this.dataKeys
-            .filter(d => !Object.keys(dataComplexFields).includes(d));
+            .filter(d => !Object.keys(this.dataComplexFields).includes(d));
     }
 
-    getLevels(notation) {
-        return this.dataComplexFields[notation]
+    getLevels(annotation) {
+        return this.dataComplexFields[annotation]
     }
 
-    drawBar() {
-        let vis = select(this.selector);
-        this.container = vis.append('div')
-                .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
+    drawBar(selector) {
+        this.container = select(selector)
+            .append('div')
+            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
 
         let checkButtonContainer = this.container
             .append('div')
@@ -118,29 +117,29 @@ class CustomBar {
                 + Math.round(nSideSlider.get()))
         })
 
-        let showNameSelect = this.container
+        let geneTextSelect = this.container
             .append('div');
-        addLabel(showNameSelect,
+        addLabel(geneTextSelect,
             'Show on gene')
             //.style('text-align', 'center');
-        showNameSelect = addCustomSelect(showNameSelect,
-                'showName',
-                'showName');
-        showNameSelect.setChoices(
+        geneTextSelect = addCustomSelect(geneTextSelect,
+                'geneText',
+                'geneText');
+        geneTextSelect.setChoices(
         [{ value: '', label: 'Gene text', selected: true, disabled: true },
             ...this.dataSimpleFields.map(f => {
                 return { value : f, label : capitalize(f) }
             })
         ])
-        let notationSelect = this.container
+        let annotationSelect = this.container
             .append('div')
-        addLabel(notationSelect,
+        addLabel(annotationSelect,
             'Color genes by')
             //.style('text-align', 'center');
-        notationSelect = addCustomSelect(notationSelect,
-                'notation',
-                'notation')
-        notationSelect.setChoices(
+        annotationSelect = addCustomSelect(annotationSelect,
+                'annotation',
+                'annotation')
+        annotationSelect.setChoices(
         [{ value: '', label: 'Color', selected: true, disabled: true },
             ...this.dataKeys.map(k => {
                 return { value : k, label : capitalize(k) }
@@ -150,11 +149,11 @@ class CustomBar {
         let levelSelect = this.container
             .append('div');
         addLabel(levelSelect,
-            'Anotation level')
+            'Aannotation level')
             //.style('text-align', 'center');
         this.levelSelect = addCustomSelect(levelSelect,
-                'notationLevel',
-                'notationLevel')
+                'annotationLevel',
+                'annotationLevel')
         this.levelSelect.setChoices([
             { value: '', label: 'Select level', selected: true, disabled: true }
         ])
@@ -177,8 +176,8 @@ class CustomBar {
             .html('Download graph');
     }
 
-    updateLevels(notation) {
-        let levels = this.dataComplexFields[notation] || [];
+    updateLevels(annotation) {
+        let levels = this.dataComplexFields[annotation] || [];
         this.levelSelect.clearChoices();
         this.levelSelect.setChoices(levels.map((l, idx) => {
             if (idx == 0) {
@@ -186,7 +185,7 @@ class CustomBar {
             }
             return { value: l, label: capitalize(l) }
         }))
-        let levelSelect = this.container.select('select.notationLevel');
+        let levelSelect = this.container.select('select.annotationLevel');
         if (nonEmptyArray(levels)) levelSelect.attr('disabled', null);
         else levelSelect.attr('disabled', '');
     }

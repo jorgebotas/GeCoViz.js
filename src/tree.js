@@ -175,11 +175,11 @@ var buildTree = function(selector,
         var nodeLengths = nodes.map(n => n.data.length);
         var yscale = scaleLinear()
             .domain([0, max(nodeLengths)])
-            .range([0, 33]);
+            .range([0, 30]);
         visitPreOrder(nodes[0], function(node) {
-          node.y = 33 * (node.depth);
+          node.y = 30 * (node.depth);
             if (node.data.length != undefined) {
-              node.dotted = 33 - yscale(node.data.length);
+              node.dotted = 30 - yscale(node.data.length);
             } else {
                 node.dotted = 0;
             }
@@ -238,7 +238,7 @@ var buildTree = function(selector,
 
     function update(source) {
         // compute the new height
-        let newHeight = treeRoot.leaves().length* 20; // 20 pixels per line
+        let newHeight = treeRoot.leaves().length* 18; // 20 pixels per line
         visSVG
         .attr('target-height', newHeight + 50)
         tree.size([newHeight, w])
@@ -319,8 +319,8 @@ var buildTree = function(selector,
         nodeLeafEnter
             .on('mouseover', (e, l) => callbacks.enterMouseOver(e, l))
             .on('mouseleave', (e, l) => callbacks.enterMouseLeave(e, l))
-            .on('click', (e, l) => callbacks.enterClick(e, l))
-            .each(l => callbacks.enterEach(l))
+            //.on('click', (e, l) => callbacks.enterClick(e, l))
+            //.each(l => callbacks.enterEach(l))
         nodeLeafEnter
             .append('text')
             .attr('dx', 10)
