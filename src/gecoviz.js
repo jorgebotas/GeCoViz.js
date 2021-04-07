@@ -19,9 +19,8 @@ import {
     select,
     selectAll,
 } from 'd3';
-import $ from 'jquery';
+import domtoimage from 'dom-to-image';
 import { saveAs } from 'file-saver';
-import html2canvas from 'html2canvas';
 import Heatmap from '@jbotas/d3-heatmap';
 import CustomBar from './customBar';
 import {
@@ -46,8 +45,8 @@ function GeCoViz(selector) {
     var unfData = [];
     var data = [];
     var heatmap;
-    var newick;
-    var newickFields;
+    var heatmapData = { data: undefined, unfData: undefined, vars: undefined };
+    var treeData = { newick: undefined, fields: ['name'] }
     var anchors = [];
     var swappedAnchors = [];
     var nSide = 2;
@@ -99,10 +98,12 @@ function GeCoViz(selector) {
     var palette = new Palette();
     var customBar;
     var options = {
-      geneText : true,
-      showTree : true,
-      showLegend : true,
-      scaleDist : false,
+      showBar: true,
+      geneText: true,
+      showTree: false,
+      showHeatmap: false,
+      showLegend: true,
+      scaleDist: false,
     }
     // Color variables
     var color = {
@@ -122,15 +123,17 @@ function GeCoViz(selector) {
     }
     // Containers
     var graphContainer;
-    var legendContainer;
-    var splitLegend;
+    var treeContainer;
+    var heatmapContainer;
     var contextAndLegend;
     var contextContainer;
     var contextG;
+    var legendContainer;
+    var splitLegend;
 
     // Data formatters
     function filterAnchor(a) {
-      return !excludedAnchors.includes(a)
+      return !excludedAnchors.includes(cleanString(a))
             ? true
             : false
     }
@@ -207,6 +210,8 @@ function GeCoViz(selector) {
       data = unfData.filter(d => Math.abs(+d.pos) <= nSide
                         && filterAnchor(d.anchor))
       anchors = data.filter(d => d.pos == 0);
+      if (heatmapData.unfData) heatmapData.data = heatmapData.unfData
+            .filter(d => filterAnchor(d.anchor))
       if (options.scaleDist) computeCoordinates();
     }
 
@@ -235,13 +240,14 @@ function GeCoViz(selector) {
     }
 
     function getY(d) {
-        let y;
-        try {
-            y = select(selector
-                        + ' #leaf'
-                        + cleanString(d.anchor)).node().__data__.x;
-            return y - 11.2;
-        } catch {}
+        if (treeData.newick) {
+            try {
+                let y = select(selector
+                            + ' #leaf'
+                            + cleanString(d.anchor)).node().__data__.x;
+                return y - 11.2;
+            } catch { return -1000 }
+        }
         return anchors.findIndex(a => a.anchor == d.anchor) * geneRect.h;
     }
 
@@ -548,10 +554,11 @@ function GeCoViz(selector) {
         .text(g => getShowName(g));
         // Hover rationale
         let { mouseOver, mouseLeave } = hoverGene(d);
-        let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
+        // let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
         // Gene SVG group
         geneG.node().childNodes.forEach(child => {
-            child.addEventListener('click', popperShow);
+            child.addEventListener('click', () =>
+                PopperCreate(selector + ' .gcontext', d, URLs));
             child.addEventListener('mouseover', mouseOver);
             child.addEventListener('mouseleave', mouseLeave);
         });
@@ -560,7 +567,7 @@ function GeCoViz(selector) {
     function updateGene(d) {
         let geneG = contextG
             .select(`#gene${cleanString(d.anchor)}${d.pos}`);
-        let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
+        // let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
         let {
             unfAnnots,
             annots
@@ -592,7 +599,7 @@ function GeCoViz(selector) {
         geneRectsEnter
           .on('mouseover', mouseOver)
           .on('mouseleave', mouseLeave)
-          .on('click', () => popperShow())
+          .on('click', () => PopperCreate(selector + ' .gcontext', d, URLs))
         // Updating gene rects
         let mergedGeneRects = geneRectsEnter
         .merge(geneRects);
@@ -727,6 +734,8 @@ function GeCoViz(selector) {
     function exitGenes() {
         let genes = contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos);
+        console.log(excludedAnchors)
+        console.log(genes.exit())
         genes
         .transition()
         .duration(duration)
@@ -791,16 +800,22 @@ function GeCoViz(selector) {
         let totalWidth = +graphContainer
             .node()
             .clientWidth;
-        let treeWidth = 0;
-        if (newick && options.showTree) {
-            treeWidth = +graphContainer
+        let nonContextWidth = 0;
+        if (treeData.newick && options.showTree) {
+            let treeWidth = +graphContainer
                 .select('.phylogram svg')
                 .attr('target-width');
+            treeWidth = Math.min(.4*totalWidth, treeWidth);
+            nonContextWidth += treeWidth;
         }
-        treeWidth = Math.min(.4*totalWidth, treeWidth);
+        if (heatmap && options.showHeatmap) {
+            let heatmapWidth = +heatmapContainer
+                .attr('target-width');
+            nonContextWidth += heatmapWidth;
+        }
         graphContainer
             .select('.gcontextAndLegend')
-            .style('width', `calc(100% - ${treeWidth}px)`)
+            .style('width', `calc(100% - ${nonContextWidth + 10}px)`)
         width = graphContainer
             .select('.gcontext')
             .node()
@@ -815,24 +830,29 @@ function GeCoViz(selector) {
         // Avoid errors when tree is not present
         let targetHeight;
         try {
-            targetHeight = graphContainer
+            targetHeight = +graphContainer
                 .select('.phylogram svg')
                 .attr('target-height');
-
         } catch {
             targetHeight = max(graphContainer
-            .selectAll('g.gene')
-            .nodes()
-            .map(n => n.getBoundingClientRect().top))
-            - graphContainer.node().getBoundingClientRect().top
-            + geneRect.h + 10;
+                .selectAll('g.gene')
+                .nodes()
+                .map(n => +n.getBoundingClientRect().top))
+                - +graphContainer.node().getBoundingClientRect().top
+                + geneRect.h + 10;
         }
+        height = targetHeight;
         graphContainer
-        .select('.gcontextSVG')
-        .transition()
-        .duration(duration)
-        .delay(delay.update)
-        .attr('height', targetHeight)
+            .select('.gcontextSVG')
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .attr('height', height)
+        graphContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.update/2)
+            .style('height', `${targetHeight + 40}px`)
     }
 
     function resizeSVG() {
@@ -860,52 +880,80 @@ function GeCoViz(selector) {
               `translate(${margin.left}, ${margin.top})`);
     }
 
+    function drawHeatmap() {
+        if (heatmapData.data)
+            heatmap = new Heatmap(selector
+                + ' .heatmapContainer .innerContainer',
+                heatmapData.data,
+                heatmapData.vars,
+                { getX: undefined, getY: getY },
+                { margin: {
+                    top: 8.5,
+                    right: 5,
+                    bottom: 5,
+                    left: 5,
+                  },
+                  height: height,
+                  showX: false,
+                  showY: false,
+                  rect: { height: geneRect.h }
+                })
+    }
+
     function initGraph() {
-      customBar = new CustomBar(data);
-      customBar.drawBar(selector);
-      customBar.updateLevels(annotation);
+        customBar = new CustomBar(data);
+        customBar.drawBar(selector, options);
+        customBar.updateLevels(annotation);
 
-      graphContainer = container
-        .append('div')
-        .attr('class', 'graph-container');
-      graphContainer
+        graphContainer = container
             .append('div')
-            .attr('class', 'phylogramContainer p-1')
-      contextAndLegend = graphContainer
+            .attr('class', 'graph-container');
+        contextAndLegend = graphContainer
             .append('div')
-            .attr('class', 'gcontextAndLegend')
+            .attr('class', 'gcontextAndLegend pb-2')
             .style('opacity', 0);
-      contextContainer = contextAndLegend
+        contextContainer = contextAndLegend
             .append('div')
-            .attr('class', 'gcontext m-1');
-
-      contextAndLegend
-        .transition()
-        .duration(duration)
-        .delay(delay.enter*1.5)
-        .style('opacity', 1);
-      legendContainer = contextAndLegend
+            .attr('class', 'gcontext innerContainer m-1');
+        contextAndLegend
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
+            .style('opacity', 1);
+        legendContainer = contextAndLegend
             .append('div')
             .attr('class', 'p-1 pt-0 legendContainer')
             .append('div')
             .attr('class', 'legend w-100 h-100');
-      drawLegend();
-      let contextSVG = contextContainer
-        .insert('svg', '.legendContainer')
-        .attr('class', 'gcontextSVG')
-        .attr('width', width)
-        .attr('height', height);
-      contextG = contextSVG
+        drawLegend();
+        let contextSVG = contextContainer
+            .insert('svg', '.legendContainer')
+            .attr('class', 'gcontextSVG')
+            .attr('width', width)
+            .attr('height', height);
+        contextG = contextSVG
             .append('g')
             .attr('transform',
                   `translate(${margin.left}, ${margin.top})`);
-      graph.toggleTree(true);
-      updateWidth();
-      contextSVG
-        .attr('width', width);
-      contextG.selectAll('g.gene')
-        .data(data, d => d.anchor + d.pos)
-        .enter()
+        treeContainer = graphContainer
+            .insert('div', '.gcontextAndLegend')
+            .attr('class', 'treeContainer p-1')
+        drawTree();
+        if (options.showTree)
+            updateHeight();
+        heatmapContainer = graphContainer
+            .insert('div', '.gcontextAndLegend')
+            .attr('class', 'heatmapContainer p-1')
+        heatmapContainer
+            .append('div')
+            .attr('class', 'innerContainer');
+        drawHeatmap();
+        updateWidth();
+        contextSVG
+            .attr('width', width);
+        contextG.selectAll('g.gene')
+            .data(data, d => d.anchor + d.pos)
+            .enter()
             .append('g')
             .attr('class', d => {
                 let cl = 'gene'
@@ -921,91 +969,114 @@ function GeCoViz(selector) {
             .delay(delay.enter)
             .style('opacity', 1)
             .each(d => enterGene(d))
+        graphContainer
+            .selectAll('.innerContainer')
+            .style('opacity', 0)
+            .transition()
+            .duration(duration)
+            .delay(delay.enter)
+            .style('opacity', 1)
+        // Update height if no tree was shown
+        if (!options.showTree) updateHeight();
+        // Toggle elements that will be shown
+        graph.toggleCustomBar(options.showBar);
+        graph.toggleTree(options.showTree);
+        graph.toggleHeatmap(options.showHeatmap);
+        graph.toggleLegend(options.showLegend);
     }
 
     // Custombar (control pannel) listeners
     function parameterListener() {
-        // nSide slider
-        let nSideSlider = container
-            .select('.nSideSlider')
-            .node()
-            .noUiSlider;
-        nSideSlider.on('change', () => {
-            graph.nSide(Math.round(nSideSlider.get()))
+    // nSide slider
+    let nSideSlider = container
+        .select('.nSideSlider')
+        .node()
+        .noUiSlider;
+    nSideSlider.on('change', () => {
+        graph.nSide(Math.round(nSideSlider.get()))
+    })
+    // Tree toggler
+    let treeToggler = container
+        .select('input.toggleTree');
+    treeToggler.on('change', () => {
+        options.showTree = treeToggler.property('checked');
+        options.showTree
+            ? graph.toggleTree(true)
+            : graph.toggleTree(false)
+    })
+    // Heatmap toggler
+    let heatmapToggler = container
+        .select('input.toggleHeatmap');
+    heatmapToggler.on('change', () => {
+        options.showHeatmap = heatmapToggler.property('checked');
+        options.showHeatmap
+            ? graph.toggleHeatmap(true)
+            : graph.toggleHeatmap(false)
+    })
+    // Legend toggler
+    let legendToggler = container
+        .select('input.toggleLegend');
+    legendToggler.on('change', () => {
+        options.showLegend = legendToggler.property('checked');
+        options.showLegend
+            ? graph.toggleLegend(true)
+            : graph.toggleLegend(false)
+    })
+    // Scale distance and gene width
+    let scaleDist = container
+        .select('input.scaleDist');
+    scaleDist.on('change', () => {
+        options.scaleDist = scaleDist.property('checked');
+        options.scaleDist
+            ? graph.scaleDist(true)
+            : graph.scaleDist(false)
+    })
+    // Show on gene
+    let showSelect = container
+        .select('select.geneText');
+    let showOptions = showSelect.node();
+    showSelect
+        .on('change', () => {
+            let newShowName = showOptions
+                .options[showOptions.selectedIndex]
+                .value;
+            if(newShowName != ''
+            && newShowName != geneText) graph.geneText(newShowName)
         })
-        // Tree toggler
-        let treeToggler = container
-            .select('input.toggleTree');
-        treeToggler.on('change', () => {
-            options.showTree = treeToggler.property('checked');
-            options.showTree
-                ? graph.toggleTree(true)
-                : graph.toggleTree(false)
+    // Annotation level
+    let annotationLevelSelect = container
+        .select('select.annotationLevel');
+    let annotationLevelOptions = annotationLevelSelect
+        .node();
+    annotationLevelSelect
+        .on('change', () => {
+            let newAnnotationLevel = annotationLevelOptions
+                .options[annotationLevelOptions.selectedIndex]
+                .value;
+            graph.annotation(annotation, newAnnotationLevel)
         })
-        // Legend toggler
-        let legendToggler = container
-            .select('input.toggleLegend');
-        legendToggler.on('change', () => {
-            options.showLegend = legendToggler.property('checked');
-            options.showLegend
-                ? graph.toggleLegend(true)
-                : graph.toggleLegend(false)
+    // Annotation options
+    let annotationSelect = container
+        .select('select.annotation')
+    let annotationOptions = annotationSelect
+        .node();
+    annotationSelect
+        .on('change', () => {
+            let newAnnotation = annotationOptions
+                .options[annotationOptions.selectedIndex]
+                .value;
+            customBar.updateLevels(newAnnotation);
+            let annotationLevelOption = annotationLevelOptions
+                .options[annotationLevelOptions.selectedIndex]
+                .value;
+            graph.annotation(newAnnotation, annotationLevelOption)
         })
-        // Scale distance and gene width
-        let scaleDist = container
-            .select('input.scaleDist');
-        scaleDist.on('change', () => {
-            options.scaleDist = scaleDist.property('checked');
-            options.scaleDist
-                ? graph.scaleDist(true)
-                : graph.scaleDist(false)
-        })
-        // Show on gene
-        let showSelect = container
-            .select('select.geneText');
-        let showOptions = showSelect.node();
-        showSelect
-            .on('change', () => {
-                let newShowName = showOptions
-                    .options[showOptions.selectedIndex]
-                    .value;
-                if(newShowName != ''
-                && newShowName != geneText) graph.geneText(newShowName)
-            })
-        // Annotation level
-        let annotationLevelSelect = container
-            .select('select.annotationLevel');
-        let annotationLevelOptions = annotationLevelSelect
-            .node();
-        annotationLevelSelect
-            .on('change', () => {
-                let newAnnotationLevel = annotationLevelOptions
-                    .options[annotationLevelOptions.selectedIndex]
-                    .value;
-                graph.annotation(annotation, newAnnotationLevel)
-            })
-        // Annotation options
-        let annotationSelect = container
-            .select('select.annotation')
-        let annotationOptions = annotationSelect
-            .node();
-        annotationSelect
-            .on('change', () => {
-                let newAnnotation = annotationOptions
-                    .options[annotationOptions.selectedIndex]
-                    .value;
-                customBar.updateLevels(newAnnotation);
-                let annotationLevelOption = annotationLevelOptions
-                    .options[annotationLevelOptions.selectedIndex]
-                    .value;
-                graph.annotation(newAnnotation, annotationLevelOption)
-            })
-        container
-            .select('.shuffleColors')
-            .on('click', () => graph.shuffleColors());
-        container
-            .select('.downloadPng')
-            .on('click', () => graph.toPng());
+    container
+        .select('.shuffleColors')
+        .on('click', () => graph.shuffleColors());
+    container
+        .select('.downloadPng')
+        .on('click', () => graph.toPng());
     }
 
     // Legend
@@ -1050,17 +1121,19 @@ function GeCoViz(selector) {
     }
 
     function drawLegend() {
+        // Remove items inside legend (if any)
+        legendContainer.selectAll('*').remove();
         // Sticky legend
         let stickyLegend = legendContainer.append('div')
-                    .attr('class', 'sticky-legend sticky')
+                    .attr('class', 'sticky-legend sticky');
         // Legend is split to optimize space
         splitLegend = stickyLegend
-                    .append('div')
-                    .attr('class', 'split-legend annotation-legend mt-1')
-                    .style('width', '300px')
+            .append('div')
+            .attr('class', 'split-legend annotation-legend bg-sand mt-1')
+            .style('width', '300px');
         // Legend title
         splitLegend.append('div')
-                   .attr('class', 'legend-title font-weight-bold');
+            .attr('class', 'legend-title font-weight-bold');
         // Select-all checkbox
         addCheckbox(splitLegend.append("div")
                           .attr("class", "pl-3")
@@ -1070,7 +1143,8 @@ function GeCoViz(selector) {
         // No data legend entry
         let noData = splitLegend.append("div")
                         .style("outline", "none")
-                        .style("display", "flex");
+                        .style("display", "flex")
+                        .style('padding-top', '6.5px');
         let noDataSVG = noData.append("svg")
            .attr("width", 40)
            .attr("height", 40)
@@ -1215,11 +1289,11 @@ function GeCoViz(selector) {
 
     // Tree callbacks
     function treeLeafEnter(l) {
-        graph.excludeAnchor(l.data.name, false)
+        graph.excludeAnchor(cleanString(l.data.name), false);
     }
 
     function treeLeafExit(l) {
-        graph.excludeAnchor(l.data.name, true)
+        graph.excludeAnchor(cleanString(l.data.name), true);
     }
 
     function treeLeafMouseOver(_, l) {
@@ -1242,13 +1316,28 @@ function GeCoViz(selector) {
 
     function treeLeafClick(event, l) {
         if (event.altKey) {
-            let name = l.data.name;
+            let name = cleanString(l.data.name);
             let excluded = excludedAnchors.includes(name);
-            graph.excludeAnchor(l.data.name, !excluded);
+            graph.excludeAnchor(name, !excluded);
         }
     }
 
-    // GeCoViz modifiers
+    function drawTree() {
+        if (treeData.newick)
+            buildTree(selector + ' .treeContainer',
+                treeData.newick, treeData.fields,
+                {
+                  enterEach : treeLeafEnter,
+                  enterMouseOver : treeLeafMouseOver,
+                  enterMouseLeave : treeLeafMouseLeave,
+                  enterClick : treeLeafClick,
+                  exitEach : treeLeafExit,
+                }, { show: options.showTree });
+    }
+
+    // GECOVIZ MODIFIERS
+
+    // Data
     graph.contextData = function(d) {
         if (!arguments.length) return data;
         unfData = swapStrands(d);
@@ -1258,68 +1347,95 @@ function GeCoViz(selector) {
         return graph;
     }
 
-    graph.tree = function(n, fields = ['name']) {
-        if (!arguments.length) return newick;
-        if (n) newick = parseNewick(n, fields);
-        newickFields = fields;
+    graph.treeData = function(newick, fields) {
+        if (!arguments.length) return treeData.newick;
+        if (newick) treeData.newick = parseNewick(newick, fields);
+        if (treeData.newick) options.showTree = true;
+        if (fields) treeData.fields = fields;
         return graph;
     }
 
-    graph.heatmap = function(heatmapData, vars) {
-        graphContainer
-            .insert('div', '.contextAndLegend')
-            .attr('class', 'heatmapContainer p-1')
-        heatmap = new Heatmap(`${selector} .heatmapContainer`,
-            heatmapData,
-            vars,
-            { getX: undefined, getY: getY })
+    graph.heatmapData = function(newHeatmapData, vars) {
+        if (!arguments.length) return heatmapData;
+        if (newHeatmapData) {
+            heatmapData.unfData = newHeatmapData
+            heatmapData.data = heatmapData.unfData
+                .filter(d => filterAnchor(d.anchor))
+        }
+        if (vars) heatmapData.vars = vars
+        if (heatmapData.data) options.showHeatmap = true;
+        return graph
     }
 
-    graph.toggleTree = async function(toggle=true) {
-        let phylogramContainer = select(selector)
-                .select('.phylogramContainer');
-        let phylogramSVG = phylogramContainer
-          .select('svg');
-        if (newick && toggle) {
-            if (!phylogramSVG.node()) {
-                buildTree(selector + ' .phylogramContainer',
-                      newick, newickFields,
-                      {
-                      enterEach : treeLeafEnter,
-                      enterMouseOver : treeLeafMouseOver,
-                      enterMouseLeave : treeLeafMouseLeave,
-                      enterClick : treeLeafClick,
-                      exitEach : treeLeafExit,
-                      });
-            }
-            let targetWidth = phylogramContainer
+    // Togglers
+    graph.toggleTree = async function(show=true) {
+        console.log(show)
+        if (treeData.newick && show) {
+            // Adjust width
+            let targetWidth = treeContainer
                 .select('svg')
                 .attr('target-width');
-            phylogramContainer
+            treeContainer
                 .transition()
                 .duration(duration)
                 .delay(delay.update)
                 .style('width', `${targetWidth}px`);
-            phylogramContainer
+            treeContainer
                 .transition()
                 .duration(duration)
                 .delay(delay.enter)
                 .style('opacity', 1);
         } else {
-            phylogramContainer
+            treeContainer
+                .style('opacity', 0)
+                .style('width', 0)
+            treeContainer
+                .transition()
+                .duration(0)
+                .delay(delay.enter)
+                .style('width', 0)
+        }
+        graph.nSide(nSide);
+    }
+
+    graph.toggleHeatmap = function(show=true) {
+        if (heatmapData.data && show) {
+            // Adjust width
+            heatmapContainer
+                .style('display', 'block')
+            let targetWidth = +heatmapContainer
+                .select('svg')
+                .attr('width') + 10;
+            heatmapContainer
+                .attr('target-width', targetWidth)
+                .transition()
+                .duration(duration)
+                .delay(delay.update)
+                .style('width', `${targetWidth}px`);
+            heatmapContainer
+                .transition()
+                .duration(duration)
+                .delay(delay.enter)
+                .style('opacity', 1);
+        } else {
+            heatmapContainer
+                .style('display', 'none')
                 .style('opacity', 0)
                 .style('width', 0);
         }
         graph.nSide(nSide);
     }
 
-    graph.toggleLegend = function (toggle=true) {
+    graph.toggleLegend = function (show=true) {
       let legendContainer = select(selector)
             .select('.legendContainer');
       let splitLegend = legendContainer.select('.split-legend');
-      if (toggle) {
-          legendContainer.style('width', '320px');
-          splitLegend.style('width', '300px');
+      if (show) {
+          legendContainer
+              .style('display', 'block')
+              .style('width', '320px');
+          splitLegend
+              .style('width', '300px');
           legendContainer
             .transition()
             .duration(duration)
@@ -1328,6 +1444,7 @@ function GeCoViz(selector) {
       }
       else {
           legendContainer
+              .style('display', 'none')
               .style('opacity', 0)
               .style('width', 0)
           splitLegend
@@ -1336,6 +1453,15 @@ function GeCoViz(selector) {
       graph.nSide(nSide);
     }
 
+    graph.toggleCustomBar = function(show=true) {
+        let customBarContainer = container.select('.customBar');
+        if (show)
+            customBarContainer.style('display', 'flex')
+        else
+            customBarContainer.style('display', 'none')
+    }
+
+    // Graph modifiers
     graph.scaleDist = function(scale=true) {
       options.scaleDist = scale;
       graph.nSide(nSide);
@@ -1373,18 +1499,19 @@ function GeCoViz(selector) {
 
     graph.excludeAnchor = function(anchor, exclude=true) {
         if (!arguments.length) return excludedAnchors;
-        if (exclude && !excludedAnchors.includes(anchor))
-          {
+        if (exclude && !excludedAnchors.includes(anchor)) {
             excludedAnchors.push(anchor)
             updateData();
+            if (options.showHeatmap && heatmapData.data)
+                heatmap.updateData(heatmapData.data)
             exitGenes();
-          }
-        else if (!exclude && excludedAnchors.includes(anchor))
-          {
+        } else if (!exclude && excludedAnchors.includes(anchor)) {
             excludedAnchors = excludedAnchors.filter(a => a!= anchor)
             updateData();
+            if (options.showHeatmap && heatmapData.data)
+                heatmap.updateData(heatmapData.data)
             enterGenes();
-          }
+        }
         return graph;
     }
 
@@ -1402,55 +1529,46 @@ function GeCoViz(selector) {
         return graph;
     }
 
+    graph.options = function(opts) {
+        Object.entries(opts).forEach(([k, v]) => {
+            options[k] = v;
+        })
+    }
+
+    // Download
     graph.toPng = function() {
-      let toDownload = document.querySelector(selector + ' .graph-container');
-      let dimensions = toDownload.getBoundingClientRect();
-      let legendHeight = select(selector)
-          .select('.split-legend')
-          .node()
-          .getBoundingClientRect()
-          .height + 7;
-      let scrollX = $(document).scrollLeft();
-      let scrollY = $(document).scrollTop();
-      //['.phylogram',
-      //'.gcontext',
-       //'.split-legend'].forEach(d => {
-           //select(selector)
-            //.select(d)
-            //.style('border-color', 'transparent');
-      //})
-      let legendEntries = splitLegend.selectAll('.lgnd-entry')
-      splitLegend.select('.pl-3').style('display', 'none')
-      legendEntries.select('label').style('padding-left', '.5rem')
-      legendEntries.select('input').style('display', 'none')
-      html2canvas(toDownload, {
-          width : dimensions.width,
-          height : Math.max(dimensions.height, legendHeight),
-          scrollX : - scrollX,
-          scrollY : - scrollY,
-      })
-        .then(canvas => {
-            canvas.toBlob(blob => saveAs(blob, 'GeCoViz.png'))
-            splitLegend.select('.pl-3').style('display', 'block')
-            legendEntries.select('label').style('padding-left', '1.5rem')
-            legendEntries.select('input').style('display', 'block')
-            //['.phylogram',
-             //'.gcontext',
-             //'.split-legend'].forEach(d => {
-               //select(selector)
-                //.select(d)
-                //.style('border-color', 'var(--dark-gray)');
-            //})
-        });
+        function filterNodes(node) {
+            if(node.tagName == 'input') return false;
+            let classes = ['popper', 'stroke'];
+            if(node.classList
+                && [...node.classList].some(c => classes.includes(c)))
+                return false;
+            return true;
+        }
+        // Set cursor to progress
+        select(':root').style('cursor', 'progress')
+        // Format legend
+        splitLegend.node().classList.remove('bg-sand');
+        splitLegend.select('.pl-3').remove(); // Remove selectAll
+        splitLegend.selectAll('input').remove(); // Remove checkboxes
+        let legendEntries = splitLegend.selectAll('.lgnd-entry')
+        legendEntries.select('label').style('padding-left', '.5rem')
+        let toDownload = graphContainer.node();
+        domtoimage.toBlob(toDownload, {filter: filterNodes})
+            .then((blob) => saveAs(blob, 'GeCoViz.png'))
+            .then(() => drawLegend())
+            .then(() => select(':root').style('cursor', 'default'));
         return graph;
     }
 
+    // Required draw method
     graph.draw = function() {
-        initialized = true;
-        initGraph();
-        parameterListener();
-        updateHeight();
-        PopperClick(selector + ' .gcontext');
+        if (!initialized) {
+            initialized = true;
+            initGraph();
+            parameterListener();
+            PopperClick(selector); // + ' .gcontext');
+        }
         return graph;
     }
 

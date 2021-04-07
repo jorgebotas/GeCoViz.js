@@ -7,8 +7,8 @@ import {
 } from 'd3';
 import { cleanString } from './helpers';
 import {
-    addPopper,
-    PopperClick
+    PopperClick,
+    TreePopper,
 } from './popper';
 
 var buildTree = function(selector,
@@ -22,8 +22,9 @@ var buildTree = function(selector,
         exitEach : () => undefined,
     },
     options = {
-        width : 700,
-        height : 800
+        width: 700,
+        height: 800,
+        show: true,
     }){
 
     var margin = {
@@ -34,17 +35,17 @@ var buildTree = function(selector,
     }
     var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
-    var w = +options.width - margin.left - margin.right;
+    var w = (+options.width || 700) - margin.left - margin.right;
     var h = treeRootHierarchy.leaves().length * 20;
     var tree = cluster()
             .size([h, w])
             .separation(() => 1);
     var treeRoot = tree(treeRootHierarchy)
     var visContainer = select(selector)
-        .attr('width', w)
+        .style('width', w)
     var visDiv = visContainer
         .append('div')
-        .attr('class', 'phylogram')
+        .attr('class', 'phylogram innerContainer')
     var visSVG = visDiv
         .append('svg:svg')
         .attr('width', w + margin.left + margin.right)
@@ -231,7 +232,7 @@ var buildTree = function(selector,
             .attr("y", y)
             .attr("dy", -7)
             .attr("text-anchor", "middle")
-            .attr('font-size', '0.9em')
+            .attr('font-size', '11px')
             .attr('fill', color.darkGray)
             .text(ticks[1] + units);
     }
@@ -240,7 +241,7 @@ var buildTree = function(selector,
         // compute the new height
         let newHeight = treeRoot.leaves().length* 18; // 20 pixels per line
         visSVG
-        .attr('target-height', newHeight + 50)
+            .attr('target-height', newHeight + 30)
         tree.size([newHeight, w])
         treeRoot = tree(treeRootHierarchy);
         let nodes = treeRoot.descendants();
@@ -319,8 +320,8 @@ var buildTree = function(selector,
         nodeLeafEnter
             .on('mouseover', (e, l) => callbacks.enterMouseOver(e, l))
             .on('mouseleave', (e, l) => callbacks.enterMouseLeave(e, l))
-            //.on('click', (e, l) => callbacks.enterClick(e, l))
-            //.each(l => callbacks.enterEach(l))
+            .on('click', (e, l) => callbacks.enterClick(e, l))
+            .each(l => callbacks.enterEach(l))
         nodeLeafEnter
             .append('text')
             .attr('dx', 10)
@@ -332,7 +333,7 @@ var buildTree = function(selector,
         // Display fields data
         if (fields) {
             nodeLeafEnter
-                .each(n => {
+                .on('click', (_, n) => {
                     let popperContent = '';
                     fields.forEach(f => {
                         popperContent += f == 'showName'
@@ -344,7 +345,7 @@ var buildTree = function(selector,
                     popperContent = n.data.showName
                         ? '<p>' + n.data.showName + '</p>' + popperContent
                         : popperContent
-                    addPopper(selector + ' .phylogram',
+                   TreePopper(selector + ' .phylogram',
                         cleanString(n.data.name),
                         popperContent,
                         'col-md-2 col-sm-4')
@@ -393,7 +394,11 @@ var buildTree = function(selector,
         // LINKS
         let link = vis.selectAll('path.link')
             .data(treeRoot.links(nodes), d =>  d.target.data.id);
+        let dottedLink = vis.selectAll('line.dotted-link')
+            .data(treeRoot.links(nodes), d =>  d.target.data.id);
         let linkEnter = link
+            .enter();
+        let dottedLinkEnter = dottedLink
             .enter();
         linkEnter
             .insert('svg:path', 'g')
@@ -408,8 +413,9 @@ var buildTree = function(selector,
             .duration(duration)
             .delay(delay.update)
             .attr('d', diagonal)
-        linkEnter
+        dottedLinkEnter
             .insert('svg:line', 'g')
+            .attr('class', 'dotted-link')
             .attr('x1', n => n.target.y - n.target.dotted)
             .attr('y1', n => n.target.x)
             .attr('x2', n => n.target.y)
@@ -424,6 +430,15 @@ var buildTree = function(selector,
             .duration(duration)
             .delay(delay.update)
             .attr('d', diagonal)
+        dottedLink
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .attr('x1', n => n.target.y - n.target.dotted)
+            .attr('y1', n => n.target.x)
+            .attr('x2', n => n.target.y)
+            .attr('y2', n => n.target.x)
+
         // Transition exiting nodes to parent's new position
         link
             .exit()
@@ -437,6 +452,9 @@ var buildTree = function(selector,
                                  target : newPos})
             })
             .remove();
+        dottedLink
+            .exit()
+            .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
         let newWidth = max(treeRoot
@@ -448,12 +466,13 @@ var buildTree = function(selector,
         .duration(duration)
         .delay(delay.update)
         .attr('width', newWidth + 20)
-        .attr('height', newHeight + 50)
-        visContainer
-        .transition()
-        .duration(duration)
-        .delay(delay.update)
-        .style('width', newWidth + 30 + 'px')
+        .attr('height', newHeight + 20)
+        if(options.show != false)
+            visContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .style('width', newWidth + 30 + 'px')
     }
     // Enable pop-up interactivity
     PopperClick(selector + ' .phylogram');

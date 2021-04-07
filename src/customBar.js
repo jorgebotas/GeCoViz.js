@@ -69,7 +69,7 @@ class CustomBar {
         return this.dataComplexFields[annotation]
     }
 
-    drawBar(selector) {
+    drawBar(selector, options) {
         this.container = select(selector)
             .append('div')
             .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
@@ -81,9 +81,10 @@ class CustomBar {
             .attr('class', 'd-flex')
             .style('margin-top', '12%');
         let checkButtons = [
-            { label: 'Tree', class: 'toggleTree', checked: true },
-            { label: 'Legend', class: 'toggleLegend', checked: true },
-            { label: 'Scale', class: 'scaleDist', checked: false },
+            { label: 'Tree', class: 'toggleTree', checked: options.showTree },
+            { label: 'Heatmap', class: 'toggleHeatmap', checked: options.showHeatmap },
+            { label: 'Legend', class: 'toggleLegend', checked: options.showLegend },
+            { label: 'Scale', class: 'scaleDist', checked: options.scaleDist },
         ]
         checkButtons.forEach(cbutton => {
             addCheckButton(checkButtonContainer,

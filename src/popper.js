@@ -1,4 +1,4 @@
-import { scaleOrdinal, select } from 'd3';
+import { scaleOrdinal, select, selectAll } from 'd3';
 import { saveAs } from 'file-saver';
 import $ from 'jquery';
 import { createPopper } from '@popperjs/core';
@@ -28,7 +28,7 @@ var PopperCreate = function(selector, d, URLs) {
             'vStart',
             'vEnd',
             'vSize',
-            'geneWidth'
+            'geneWidth',
         ]
         Object.entries(d).forEach(([key, field]) => {
             let fieldData = "";
@@ -69,9 +69,9 @@ var PopperCreate = function(selector, d, URLs) {
             }
             if (fieldData) arrayData.push(fieldData)
         })
-        var popperHTML = ''; //<strong>Gene information</strong>
-        if (d.id) popperHTML += `<button class="btn btn-sm btn-primary"\
-                                   id="downloadSeq${cleanString(d.id)}"\
+        let popperHTML = ''; //<strong>Gene information</strong>
+        if (d.seqID) popperHTML += `<button class="btn btn-sm btn-primary"\
+                                   id="downloadSeq${cleanString(d.gene)}"\
                                    style="position: absolute;right: 15px;top: 15px;">\
                                 Sequence</button>`;
         popperHTML += '<div class="p-2">';
@@ -90,28 +90,28 @@ var PopperCreate = function(selector, d, URLs) {
         return popperHTML
     }
 
-    var geneID = cleanString(d.anchor + d.pos);
+    let geneID = cleanString(d.anchor + d.pos);
     let oldPopper = select(selector + ' .popper#popr' + geneID)
     if (oldPopper.nodes().length > 0) oldPopper.remove();
-    var popperD3 = select(selector)
+    let popper = select(selector)
                .append('div')
                .attr('class', 'popper col-lg-4 col-md-8 col-sm-10')
                .attr('id', 'popr' + geneID)
                .attr('role', 'tooltip');
-    var popperHTML = get_PopperHTML(d);
+    let popperHTML = get_PopperHTML(d);
     // popper content
-    popperD3.append('div')
+    popper.append('div')
              .attr('class', 'popper-content')
              .html(popperHTML);
     if (nonEmptyArray(d.pfam)) {
-        var doms = new Set();
+        let doms = new Set();
         d.pfam.forEach(d => {
             if (d.class && d.class != '') {
                 doms.add(d.class)
             }
         })
-        var colors = colors269;
-        var palette = scaleOrdinal()
+        let colors = colors269;
+        let palette = scaleOrdinal()
                         .domain(doms)
                         .range(colors);
         protDomains(selector + ' #dom' + cleanString(d.anchor + d.pos),
@@ -123,64 +123,59 @@ var PopperCreate = function(selector, d, URLs) {
                          URLs.pfam.b)
     }
     // Popper arrow
-    popperD3.append('div')
+    popper.append('div')
         .attr('class', 'popper-arrow')
         .attr('data-popper-arrow', '');
-
-    var popper  = document.querySelector(selector + ' .popper#popr' + geneID);
-    function show() {
-        var poppers = document.querySelectorAll(selector + ' .popper')
-        poppers.forEach(p => {
-            p.removeAttribute('data-show');
-        });
-        let popper  = document
-            .querySelector(selector + ' .popper#popr' + geneID);
-        let ref = document
-            .querySelector(selector + ' g.gene#gene' + geneID);
-        popper.setAttribute('data-show', '');
-        createPopper(ref, popper, {
-          modifiers: [
-            {
-              name: 'offset',
+    popper  = popper.node();
+    let ref = document
+        .querySelector(selector + ' g.gene#gene' + geneID);
+    createPopper(ref, popper, {
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [-4, 4],
+          },
+        },
+          {
+              name: 'flip',
               options: {
-                offset: [-4, 4],
-              },
-            },
-              {
-                  name: 'flip',
-                  options: {
-                      fallbackPlacements: ['top'],
-                  }
+                  fallbackPlacements: ['top'],
               }
-          ],
-        });
+          }
+      ],
+    });
+    popper.setAttribute('data-show', '');
+    if (d.seqID) {
+        let seqButton = select(`${selector} #downloadSeq${cleanString(d.gene)}`);
+        seqButton.on('click', () => {
+            fetch(`api/seq/${d.seqID}/`)
+                .then(response => response.blob())
+                .then(blob => saveAs(blob, `${d.seqID}_seq.fasta`))
+        })
     }
-    popper.addEventListener('click', show);
-    return show;
 }
 
-var addPopper = function(selector,
+var TreePopper = function(selector,
                     id,
                     popperHTML,
                     popperClass) {
-    var popperD3 = select(selector)
-                    .append('div')
-                    .attr('class', 'popper ' + popperClass)
-                    .attr('id', 'popr' + id)
-                    .attr('role', 'tooltip')
+    let popper = select(selector)
+                .append('div')
+                .attr('class', 'popper ' + popperClass)
+                .attr('id', 'popr' + id)
+                .attr('role', 'tooltip')
     // popper content
-    popperD3.append('div')
-            .attr('class', 'popper-content card-body h6 pt-2')
-            .html(popperHTML);
+    popper.append('div')
+        .attr('class', 'popper-content card-body h6 pt-2')
+        .html(popperHTML);
     // popper arrow
-    popperD3.append('div')
-            .attr('class', 'popper-arrow')
-            .attr('data-popper-arrow', '');
-    var popper = document.querySelector(selector + ' .popper#popr' + id);
-    var ref = document.querySelector(selector + ' g#leaf' + id);
-    function create() {
-        // Popper Instance
-        createPopper(ref, popper, {
+    popper.append('div')
+        .attr('class', 'popper-arrow')
+        .attr('data-popper-arrow', '');
+    popper = popper.node();
+    let ref = document.querySelector(selector + ' g#leaf' + id);
+    createPopper(ref, popper, {
           placement: 'right',
           modifiers: [
             {
@@ -197,23 +192,7 @@ var addPopper = function(selector,
               }
           ],
         });
-      }
-    function show() {
-        hide();
-        popper.setAttribute('data-show', '');
-        create();
-    }
-    function hide() {
-        let poppers = document.querySelectorAll(selector + ' .popper')
-        poppers.forEach(popper => {
-            popper.removeAttribute('data-show');
-        });
-      }
-      const showEvents = ['click'];
-      showEvents.forEach(function (event) {
-        popper.addEventListener(event, show);
-        ref.addEventListener(event, show);
-      });
+    popper.setAttribute('data-show', '');
 }
 
 var PopperClick = function(selector) {
@@ -232,41 +211,28 @@ var PopperClick = function(selector) {
             }
             return undefined;
         }
-        let poppers = document.querySelectorAll(selector + ' .popper')
-        poppers.forEach(popper => {
-            popper.removeAttribute('data-show');
-        });
         if (!e.altKey) {
             let targetID;
             ['gene', 'leaf', 'popper'].forEach(c => {
                 try { targetID = lookForParent(e.target, c).id } catch {}
             })
             targetID = !targetID ? e.target.id : targetID;
-            targetID = targetID.trim()
-            if (['gene',  'leaf', 'popr'].indexOf(targetID.slice(0,4)) > -1){
-                targetID = targetID.slice(4);
-                let popper = document.querySelector(selector + ' .popper#popr'+targetID);
-                try { popper.setAttribute('data-show', '') } catch {}
-            }
+            targetID = targetID.trim();
+            let prefix = targetID.slice(0,4);
+            let suffix = targetID.slice(4);
+            let popper = document.querySelector(`${selector} .popper#popr${suffix}`);
+            let poppers = selectAll(`${selector} .popper`);
+            if (!(['gene','leaf','popr'].includes(prefix)) || popper == null)
+                poppers.remove();
+            poppers = poppers.nodes();
+            if(popper != null && poppers.length > 1)
+                poppers.forEach(p => { if(p != popper) p.remove() })
         }
     });
 }
 
-var PopperListeners = function(selector, d) {
-    let downloadSeq = select(`${selector} #downloadSeq${cleanString(d.id)}`)
-    console.log(downloadSeq.node())
-    console.log(d.gene)
-    downloadSeq.on('click', () => {
-        console.log(d.id)
-        fetch(`api/seq/${d.id}/`)
-            .then(response => response.blob())
-            .then(blob => saveAs(blob, `${d.id}_seq.fasta`))
-    })
-}
-
 export {
-    addPopper,
     PopperCreate,
     PopperClick,
-    PopperListeners
+    TreePopper,
 }

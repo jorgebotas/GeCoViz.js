@@ -18,17 +18,26 @@ div.graph-container {
 }
 
 
+.innerContainer {
+    border: solid var(--dark-gray) 1px;
+    border-radius: 5px;
+    height: 100%;
+}
+
+.bg-sand {
+    background-color: var(--sand) !important;
+}
+
+
 /*PHYLOGRAM*/
 
-div.phylogramContainer {
+div.treeContainer {
     max-width: 40%;
     float: left;
 }
 
 div.phylogram {
     text-align: left;
-    border: solid var(--dark-gray) 1px;
-    border-radius: 5px;
     overflow-x: scroll;
     overflow-y: hidden;
 }
@@ -53,8 +62,6 @@ div.gcontext {
   text-align: center;
   overflow-x: scroll;
   overflow-y: hidden;
-  border: solid var(--dark-gray) 1px;
-  border-radius: 5px;
 }
 
 svg.gcontext {
@@ -149,7 +156,7 @@ div.legend {
     margin: 0;
     overflow: visible;
     font-size: 10px;
-    background: transparent;
+    background: inherit;
 }
 
 div.sticky-legend {
@@ -178,7 +185,7 @@ div.split-legend {
     flex-wrap: wrap;
     text-align: center;
     overflow: auto;
-    background: var(--sand);
+    background: inherit;
 }
 
 .split-legend .legend-title {
