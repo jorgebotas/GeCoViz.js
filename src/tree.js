@@ -26,17 +26,20 @@ var buildTree = function(selector,
         height: 800,
         show: true,
     }){
-
     var margin = {
         top : 5,
         right : 5,
         bottom : 25,
         left : 10
     }
+    var graph = function() { return this };
+    var leafText = 'showName';
     var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
     var w = (+options.width || 700) - margin.left - margin.right;
     var h = treeRootHierarchy.leaves().length * 20;
+    var width;
+    var height;
     var tree = cluster()
             .size([h, w])
             .separation(() => 1);
@@ -113,6 +116,9 @@ var buildTree = function(selector,
 
     //treeRoot.children.forEach(toggleAll);
     update(treeRoot);
+    // Enable pop-up interactivity
+    PopperClick(selector + ' .phylogram');
+
     // Toggle node function
     function toggle(node) {
         if (node.children) {
@@ -151,11 +157,12 @@ var buildTree = function(selector,
     }
 
     function getShowName(d) {
-        return d.data.showName
-            ? d.data.showName
-            : d.data.name
-            ? d.data.name
-            : ''
+        return d.data[leafText] || '';
+        //return d.data.showName
+            //? d.data.showName
+            //: d.data.name
+            //? d.data.name
+            //: ''
     }
 
     function scaleBranchLength(nodes) {
@@ -237,12 +244,48 @@ var buildTree = function(selector,
             .text(ticks[1] + units);
     }
 
+    function updateWidth() {
+        width = max(treeRoot
+            .leaves()
+            .map(l => l.y + getShowName(l).length*6));
+        visSVG
+        .attr('target-width', width + 30)
+        .transition()
+        .duration(duration)
+        .delay(delay.update)
+        .attr('width', width + 20)
+        .attr('height', height + 20)
+        if(options.show != false)
+            visContainer
+            .transition()
+            .duration(duration)
+            .delay(delay.update)
+            .style('width', width + 30 + 'px')
+    }
+
+    function updateHeight() {
+        height = treeRoot.leaves().length* 18; // 20 pixels per line
+        visSVG
+            .attr('target-height', height + 30)
+        tree.size([height, w])
+    }
+
+    function updateLeafText() {
+        updateWidth();
+        let leaves = vis.selectAll('g.node.leaf')
+        leaves.select('text')
+            .transition()
+            .duration(duration)
+            .style('opacity', 0)
+            .transition()
+            .duration(duration)
+            .style('opacity', 1)
+            .text(getShowName)
+    }
+
     function update(source) {
         // compute the new height
-        let newHeight = treeRoot.leaves().length* 18; // 20 pixels per line
-        visSVG
-            .attr('target-height', newHeight + 30)
-        tree.size([newHeight, w])
+        updateHeight();
         treeRoot = tree(treeRootHierarchy);
         let nodes = treeRoot.descendants();
         // Scale branches by length
@@ -457,25 +500,17 @@ var buildTree = function(selector,
             .remove();
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
-        let newWidth = max(treeRoot
-            .leaves()
-            .map(l => l.y + getShowName(l).length*6));
-        visSVG
-        .attr('target-width', newWidth + 30)
-        .transition()
-        .duration(duration)
-        .delay(delay.update)
-        .attr('width', newWidth + 20)
-        .attr('height', newHeight + 20)
-        if(options.show != false)
-            visContainer
-            .transition()
-            .duration(duration)
-            .delay(delay.update)
-            .style('width', newWidth + 30 + 'px')
+        updateWidth();
     }
-    // Enable pop-up interactivity
-    PopperClick(selector + ' .phylogram');
+
+    graph.leafText = function(field) {
+        if (!field) return leafText;
+        leafText = field;
+        updateLeafText();
+        return graph;
+    }
+
+    return graph;
 }
 
 export default buildTree;

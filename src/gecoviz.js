@@ -1,6 +1,6 @@
 // import css
-//import "../static/assets/tabler/css/tabler.min.css"
-//import "../static/assets/tabler/css/tabler-vendors.min.css"
+import "../static/assets/tabler/css/tabler.min.css"
+import "../static/assets/tabler/css/tabler-vendors.min.css"
 
 import "../static/css/gecoviz.css"
 import "../static/css/colors.css"
@@ -46,6 +46,7 @@ function GeCoViz(selector) {
     var data = [];
     var heatmap;
     var heatmapData = { data: undefined, unfData: undefined, vars: undefined };
+    var tree;
     var treeData = { newick: undefined, fields: ['name'] }
     var anchors = [];
     var swappedAnchors = [];
@@ -367,7 +368,7 @@ function GeCoViz(selector) {
     }
 
     function updateGeneText() {
-        selectAll('text.geneName')
+        contextG.selectAll('text.geneName')
             .transition()
             .duration(duration)
             .style('opacity', 0)
@@ -381,6 +382,10 @@ function GeCoViz(selector) {
 
     // Annotation methods
     function filterByLevel(d) {
+        // Assert there is an id...
+        if (!d.id || d.id.trim() == '')
+            return false
+        // Filter by level
         return !annotationLevel
             ? true
             : !d.level
@@ -389,7 +394,7 @@ function GeCoViz(selector) {
     }
 
     function filterAnnotation(n) {
-        return excludedAnnotation.includes(n.id)
+        return !n.id || excludedAnnotation.includes(n.id) || n.id.trim() == ''
             ? false
             : filterByLevel(n)
     }
@@ -424,19 +429,19 @@ function GeCoViz(selector) {
             .select('path.stroke');
         let geneName = geneG
             .select('text.geneName')
-        let leaf = graphContainer
-            .select('#leaf'
-            + cleanString(d.anchor));
-        let leafCircle = leaf
-            .select('circle');
-        let leafText = leaf
-            .select('text');
         function mouseOver() {
             stroke
              .style('opacity', 1);
             geneName
              .style('fill', color.black);
             // Highlight tree
+            let leaf = graphContainer
+                .select('#leaf'
+                + cleanString(d.anchor));
+            let leafCircle = leaf
+                .select('circle');
+            let leafText = leaf
+                .select('text');
             leafCircle
                 .style('stroke', color.highlight)
                 .style('fill', color.highlight);
@@ -461,6 +466,13 @@ function GeCoViz(selector) {
             geneName
              .style('fill', color.white);
             // Highlight tree
+            let leaf = graphContainer
+                .select('#leaf'
+                + cleanString(d.anchor));
+            let leafCircle = leaf
+                .select('circle');
+            let leafText = leaf
+                .select('text');
             leafCircle
                 .style('stroke', leafColor.stroke)
                 .style('fill', leafColor.fill);
@@ -734,8 +746,6 @@ function GeCoViz(selector) {
     function exitGenes() {
         let genes = contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos);
-        console.log(excludedAnchors)
-        console.log(genes.exit())
         genes
         .transition()
         .duration(duration)
@@ -807,6 +817,7 @@ function GeCoViz(selector) {
                 .attr('target-width');
             treeWidth = Math.min(.4*totalWidth, treeWidth);
             nonContextWidth += treeWidth;
+            console.log(treeWidth)
         }
         if (heatmap && options.showHeatmap) {
             let heatmapWidth = +heatmapContainer
@@ -822,8 +833,8 @@ function GeCoViz(selector) {
             .clientWidth;
         graphContainer
             .select('.gcontextSVG')
-            .attr('width', width)
-        geneRect.w = (width - 7) / (2 * nSide + 1)
+            .attr('width', width - 2)
+        geneRect.w = (width - 9) / (2 * nSide + 1)
     }
 
     function updateHeight() {
@@ -901,7 +912,7 @@ function GeCoViz(selector) {
     }
 
     function initGraph() {
-        customBar = new CustomBar(data);
+        customBar = new CustomBar(data, treeData.fields);
         customBar.drawBar(selector, options);
         customBar.updateLevels(annotation);
 
@@ -1031,6 +1042,23 @@ function GeCoViz(selector) {
             ? graph.scaleDist(true)
             : graph.scaleDist(false)
     })
+    // Show on leaf
+    let leafTextSelect = container
+        .select('select.leafText');
+        if (leafTextSelect.node()) {
+            let leafTextOptions = leafTextSelect.node();
+            leafTextSelect
+                .on('change', () => {
+                    let newLeafText = leafTextOptions
+                        .options[leafTextOptions.selectedIndex]
+                        .value;
+                    if(newLeafText != ''
+                        && newLeafText != tree.leafText()) {
+                        tree.leafText(newLeafText);
+                        graph.nSide(nSide);
+                    }
+                })
+        }
     // Show on gene
     let showSelect = container
         .select('select.geneText');
@@ -1324,7 +1352,7 @@ function GeCoViz(selector) {
 
     function drawTree() {
         if (treeData.newick)
-            buildTree(selector + ' .treeContainer',
+            tree = buildTree(selector + ' .treeContainer',
                 treeData.newick, treeData.fields,
                 {
                   enterEach : treeLeafEnter,
@@ -1369,7 +1397,6 @@ function GeCoViz(selector) {
 
     // Togglers
     graph.toggleTree = async function(show=true) {
-        console.log(show)
         if (treeData.newick && show) {
             // Adjust width
             let targetWidth = treeContainer
@@ -1518,7 +1545,7 @@ function GeCoViz(selector) {
     graph.geneText = function(field) {
         if (!arguments.length) return geneText;
         geneText = field;
-        updateGeneText();
+        if(initialized) updateGeneText();
         return graph;
     }
 
@@ -1533,6 +1560,7 @@ function GeCoViz(selector) {
         Object.entries(opts).forEach(([k, v]) => {
             options[k] = v;
         })
+        return graph
     }
 
     // Download

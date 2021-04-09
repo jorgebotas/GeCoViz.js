@@ -9,7 +9,7 @@ import {
 import createSlider from './slider';
 
 class CustomBar {
-    constructor(data) {
+    constructor(data, treeFields) {
         this.container;
         this.data = data;
         this.dataKeys;
@@ -27,6 +27,7 @@ class CustomBar {
         this.computeDataKeys();
         this.dataSimpleFields;
         this.dataComplexFields;
+        this.treeFields = treeFields;
         this.computeFields();
         this.levelSelect;
     }
@@ -79,7 +80,7 @@ class CustomBar {
         checkButtonContainer = checkButtonContainer
             .append('div')
             .attr('class', 'd-flex')
-            .style('margin-top', '12%');
+            .style('margin-top', '20px');
         let checkButtons = [
             { label: 'Tree', class: 'toggleTree', checked: options.showTree },
             { label: 'Heatmap', class: 'toggleHeatmap', checked: options.showHeatmap },
@@ -117,6 +118,22 @@ class CustomBar {
             nSideSliderLabel.html('Genes up/downstream: '
                 + Math.round(nSideSlider.get()))
         })
+
+        if (this.treeFields) {
+            let leafTextSelect = this.container
+                .append('div');
+            addLabel(leafTextSelect,
+                'Show on leaves')
+            leafTextSelect = addCustomSelect(leafTextSelect,
+                    'leafText',
+                    'leafText');
+            leafTextSelect.setChoices(
+            [{ value: '', label: 'Leaf text', selected: true, disabled: true },
+                ...this.treeFields.map(f => {
+                    return { value : f, label : capitalize(f) }
+                })
+            ])
+        }
 
         let geneTextSelect = this.container
             .append('div');
