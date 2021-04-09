@@ -1,6 +1,6 @@
 // import css
-import "../static/assets/tabler/css/tabler.min.css"
-import "../static/assets/tabler/css/tabler-vendors.min.css"
+//import "../static/assets/tabler/css/tabler.min.css"
+//import "../static/assets/tabler/css/tabler-vendors.min.css"
 
 import "../static/css/gecoviz.css"
 import "../static/css/colors.css"
