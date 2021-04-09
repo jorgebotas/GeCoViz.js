@@ -245,8 +245,7 @@ var buildTree = function(selector,
     }
 
     function updateWidth() {
-        width = max(treeRoot
-            .leaves()
+        width = max(treeRoot.leaves()
             .map(l => l.y + getShowName(l).length*6));
         visSVG
         .attr('target-width', width + 30)

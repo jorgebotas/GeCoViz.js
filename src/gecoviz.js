@@ -17,7 +17,6 @@ import {
     max,
     scaleLinear,
     select,
-    selectAll,
 } from 'd3';
 import domtoimage from 'dom-to-image';
 import { saveAs } from 'file-saver';
@@ -38,7 +37,7 @@ import {
 import buildTree from './tree';
 import Sorter from './sorter.js'
 
-function GeCoViz(selector) {
+function GeCoViz(selector, opts) {
     var graph = function() { return this };
     var container = select(selector);
     var initialized = false;
@@ -93,7 +92,11 @@ function GeCoViz(selector) {
       update : duration,
       exit: 0,
     }
-    var geneRect = { w: width / (2 * nSide + 1), h: 16, ph: 20, pv: 5 };
+    var geneRect = {
+        w: width / (2 * nSide + 1),
+        h: opts.geneRect ? opts.geneRect.h : 16,
+        ph: 20, pv: 5
+    };
     var tipWidth = (2 * geneRect.ph) / 5;
     var domain = [];
     var palette = new Palette();
@@ -681,7 +684,6 @@ function GeCoViz(selector) {
         .attr('d', strokePath)
         geneG
         .select('path.stroke')
-        .attr('d', strokePath)
         .attr('class', 'stroke '
                     + unfAnnots.filter(n => filterByLevel(n))
                     .map(n => `c${cleanString(n.id)}`)
@@ -689,6 +691,7 @@ function GeCoViz(selector) {
         .transition()
         .duration(duration)
         .delay(delay.update)
+        .attr('d', strokePath)
         .style('opacity', 0);
         geneG
         .select('text.geneName')
@@ -817,7 +820,6 @@ function GeCoViz(selector) {
                 .attr('target-width');
             treeWidth = Math.min(.4*totalWidth, treeWidth);
             nonContextWidth += treeWidth;
-            console.log(treeWidth)
         }
         if (heatmap && options.showHeatmap) {
             let heatmapWidth = +heatmapContainer
@@ -827,13 +829,18 @@ function GeCoViz(selector) {
         graphContainer
             .select('.gcontextAndLegend')
             .style('width', `calc(100% - ${nonContextWidth + 10}px)`)
-        width = graphContainer
-            .select('.gcontext')
+        //width = graphContainer
+            //.select('.gcontext')
+            //.node()
+            //.clientWidth;
+        width = +graphContainer
+            .select('.gcontextAndLegend')
             .node()
-            .clientWidth;
+            .clientWidth - 325;
+        console.log(width)
         graphContainer
             .select('.gcontextSVG')
-            .attr('width', width - 2)
+            .attr('width', width - 5)
         geneRect.w = (width - 9) / (2 * nSide + 1)
     }
 
@@ -935,7 +942,7 @@ function GeCoViz(selector) {
             .append('div')
             .attr('class', 'p-1 pt-0 legendContainer')
             .append('div')
-            .attr('class', 'legend w-100 h-100');
+            .attr('class', 'legend w-100');
         drawLegend();
         let contextSVG = contextContainer
             .insert('svg', '.legendContainer')
@@ -960,8 +967,6 @@ function GeCoViz(selector) {
             .attr('class', 'innerContainer');
         drawHeatmap();
         updateWidth();
-        contextSVG
-            .attr('width', width);
         contextG.selectAll('g.gene')
             .data(data, d => d.anchor + d.pos)
             .enter()
@@ -1210,14 +1215,18 @@ function GeCoViz(selector) {
         let uniqueAnnotation = scoreAnnotation()
         let factor = 60;
         // Scale legend to fit all data
-        let legendHeight = uniqueAnnotation.length * factor;
+        let legendHeight = (uniqueAnnotation.length > 1
+            ? uniqueAnnotation.length : 2) * factor;
+        legendHeight = min([+window.innerHeight - 50,
+                            legendHeight + 100,
+                            height + 32]);
+        legendContainer
+            .style('height', `calc(100% - ${legendHeight}px)`);
         splitLegend
             .transition()
             .duration(duration)
             .delay(delay.update)
-            .style("height",
-                Math.min(window.innerHeight - 50,
-                         legendHeight + 100) + "px");
+            .style("height", legendHeight + "px");
         let legendEntry = splitLegend
             .selectAll('.lgnd-entry')
             .data(uniqueAnnotation);
@@ -1396,7 +1405,7 @@ function GeCoViz(selector) {
     }
 
     // Togglers
-    graph.toggleTree = async function(show=true) {
+    graph.toggleTree = function(show=true) {
         if (treeData.newick && show) {
             // Adjust width
             let targetWidth = treeContainer
@@ -1497,9 +1506,9 @@ function GeCoViz(selector) {
     graph.nSide = function(d) {
         if (!arguments.length) return nSide;
         nSide = d;
-        if(initialized) updateWidth();
         updateData();
         if(initialized) updateLegend();
+        if(initialized) updateWidth();
         if(initialized) updateGenes();
         return graph;
     }
