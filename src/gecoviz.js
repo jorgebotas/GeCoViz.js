@@ -257,10 +257,10 @@ function GeCoViz(selector, opts) {
   }
 
   function getY(d) {
+    console.log(d.anchor)
+    console.log(cleanString(d.anchor))
     if (treeData.newick) {
       try {
-        console.log(d.anchor)
-        console.log(cleanString(d.anchor))
         const y = select(`${selector} #leaf${cleanString(d.anchor)}`).node()
           .__data__.x;
         return y - 11.2;
