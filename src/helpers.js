@@ -22,6 +22,7 @@ var shuffle = function(a) {
 }
 
 var capitalize = function(string) {
+    string = String(string);
     return string.trim().replace(/^\w/, c => c.toUpperCase());
 }
 
