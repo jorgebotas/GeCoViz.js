@@ -273,12 +273,7 @@ class CustomBar {
                     else
                         choices.node().blur()
                 })
-                menu.selectAll('.choices__item')
-                    .each(function() {
-                        select(this).on('click', () => 
-                            menu.classed('show', false)
-                        )
-                    });
+                choices.on('change', () => menu.classed('show', false));
             })
     }
 
