@@ -38,6 +38,7 @@
     "@popperjs/core": "^2.9.1",
     "choices.js": "^9.0.1",
     "core-js": "^3.9.1",
+    "css-element-queries": "^1.2.3",
     "d3": "^6.6.0",
     "dom-to-image": "^2.6.0",
     "file-saver": "^2.0.5",

@@ -11,7 +11,7 @@ import {
     TreePopper,
 } from './popper';
 
-var buildTree = function(selector,
+var Tree = function(selector,
     root,
     fields = ['name'],
     callbacks = {
@@ -33,7 +33,7 @@ var buildTree = function(selector,
         left : 10
     }
     var graph = function() { return this };
-    var leafText = 'showName';
+    var leafText = 'last tax level';
     var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
     var w = (+options.width || 700) - margin.left - margin.right;
@@ -158,11 +158,6 @@ var buildTree = function(selector,
 
     function getShowName(d) {
         return d.data[leafText] || '';
-        //return d.data.showName
-            //? d.data.showName
-            //: d.data.name
-            //? d.data.name
-            //: ''
     }
 
     function scaleBranchLength(nodes) {
@@ -183,11 +178,11 @@ var buildTree = function(selector,
         var nodeLengths = nodes.map(n => n.data.length);
         var yscale = scaleLinear()
             .domain([0, max(nodeLengths)])
-            .range([0, 30]);
+            .range([0, 25]);
         visitPreOrder(nodes[0], function(node) {
-          node.y = 30 * (node.depth);
+          node.y = 25 * (node.depth);
             if (node.data.length != undefined) {
-              node.dotted = 30 - yscale(node.data.length);
+              node.dotted = 25 - yscale(node.data.length);
             } else {
                 node.dotted = 0;
             }
@@ -246,7 +241,8 @@ var buildTree = function(selector,
 
     function updateWidth() {
         width = max(treeRoot.leaves()
-            .map(l => l.y + getShowName(l).length*6));
+            .map(l => l.y + getShowName(l).length*6 + 6));
+        console.log('tree-w: ' + (width + 30))
         visSVG
         .attr('target-width', width + 30)
         .transition()
@@ -335,7 +331,7 @@ var buildTree = function(selector,
             .attr('font-size', '0.8em')
             .attr('fill', color.darkRed)
             .style('fill-opacity', 1e-6)
-            .text(n => (+n.data.support).toFixed(1));
+            .text(n => (+n.data.support).toFixed(2));
         nodeInnerEnter
             .append('text')
             .attr('dx', -3)
@@ -347,8 +343,8 @@ var buildTree = function(selector,
             .text(n => {
                 let length = (+n.data.length)
                 let rounded = length < 0.01
-                    ? length.toExponential(1)
-                    : length.toFixed(3)
+                    ? length.toExponential(0)
+                    : length.toFixed(2)
                 return rounded ? rounded : n.data.length
             });
         // Hovering over clade will highlight descendants
@@ -512,4 +508,4 @@ var buildTree = function(selector,
     return graph;
 }
 
-export default buildTree;
+export default Tree;

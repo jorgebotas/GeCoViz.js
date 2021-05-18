@@ -70,60 +70,68 @@ class CustomBar {
         return this.dataComplexFields[annotation]
     }
 
-    drawBar(selector, options) {
-        this.container = select(selector)
-            .append('div')
-            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0');
-
-        let checkButtonContainer = this.container
-            .append('div')
-        checkButtonContainer = checkButtonContainer
-            .append('div')
-            .attr('class', 'd-flex')
-            .style('margin-top', '20px');
-        let checkButtons = [
-            { label: 'Tree', class: 'toggleTree', checked: options.showTree },
-            { label: 'Heatmap', class: 'toggleHeatmap', checked: options.showHeatmap },
-            { label: 'Legend', class: 'toggleLegend', checked: options.showLegend },
-            { label: 'Scale', class: 'scaleDist', checked: options.scaleDist },
-        ]
-        checkButtons.forEach(cbutton => {
-            addCheckButton(checkButtonContainer,
-                cbutton.label,
-                cbutton.class,
-                cbutton.checked)
-        })
-
-        let nSideSlider = this.container
+    drawDropdown(container, label, dropdownId) {
+        const dropdown = container
             .append('div');
-        let nSideSliderLabel = addLabel(nSideSlider,
-            'Genes up/downstream')
-        nSideSlider = nSideSlider
+        // Dropdown toggler
+        dropdown.append('a')
+            .attr('class', 'btn-clean dropdown-toggle dropdown-noafter')
+            .attr('role', 'button')
+            .attr('id', dropdownId)
+            .attr('data-toggle', 'dropdown')
+            .attr('aria-expanded', 'false')
+            .attr('aria-haspopup', 'true')
+            .html(label);
+        const dropdownMenu = dropdown
             .append('div')
-            .style('width', '200px')
-            .style('margin-top', '1.5rem');
-        createSlider(nSideSlider,
-            'nSideSlider',
-            {
-                start : 4,
-                step : 1,
-                min : 0,
-                max : 10
-            })
-        nSideSlider = this.container
-            .select('.nSideSlider')
+            .attr('class', 
+                  'dropdown-menu dropdown-menu-arrow clickoutside-dropdown')
+            .attr('aria-labelledby', dropdownId)
+            .append('div')
+              .attr('class', 'dropdown-menu-content d-flex p-3')
+        return dropdownMenu
+    }
+
+    drawSlider(container, label, sliderClass, options, formatter) {
+        let sliderLabel = addLabel(container, label)
+        let slider = container
+            .append('div')
+            .style('width', '160px')
+            .style('margin-top', '1.6rem')
+            .style('margin-bottom', '.9rem');
+        createSlider(slider, sliderClass, options)
+        slider = this.container
+            .select(`.${sliderClass}`)
             .node()
             .noUiSlider;
-        nSideSlider.on('update', () => {
-            nSideSliderLabel.html('Genes up/downstream: '
-                + Math.round(nSideSlider.get()))
+        slider.on('update', () => {
+            sliderLabel.html(`${label}: ${formatter(slider.get())}`);
         })
+    }
 
+    drawBar(selector, options) {
+
+        this.container = select(selector)
+            .append('div')
+            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0 w-100');
+
+        // Tree visualization
+        const treeDropdown = this.drawDropdown(
+            this.container.append('div'),
+            "Tree visualization",
+            "treeVizDropdown",
+        );
+        addCheckButton(
+            treeDropdown,
+            "Tree",
+            "toggleTree",
+            options.showTree,
+        );
         if (this.treeFields) {
-            let leafTextSelect = this.container
+            let leafTextSelect = treeDropdown
                 .append('div');
             addLabel(leafTextSelect,
-                'Show on leaves')
+                'Tree visualization')
             leafTextSelect = addCustomSelect(leafTextSelect,
                     'leafText',
                     'leafText');
@@ -135,11 +143,55 @@ class CustomBar {
             ])
         }
 
-        let geneTextSelect = this.container
+        // Scaling
+        const scalingDropdown = this.drawDropdown(
+            this.container.append('div'),
+            "Scaling",
+            "scalingDropdown"
+        );
+        addCheckButton(
+            scalingDropdown,
+            "Scale",
+            "scaleDist",
+            options.scaleDist,
+        );
+        this.drawSlider(
+            scalingDropdown
+                .append('div')
+                .attr('class', 'ml-3'),
+            'Scaling zoom',
+            'zoomSlider',
+            {
+                start : 1,
+                step : 0.1,
+                min : 0.1,
+                max : 2
+            },
+            n => (+n).toFixed(1)
+        );
+
+        // Genes
+        const genesDropdown = this.drawDropdown(
+            this.container.append('div'),
+            "Genes",
+            "genesDropdown"
+        );
+        this.drawSlider(
+            genesDropdown.append('div'),
+            'Genes up/downstream',
+            'nSideSlider',
+            {
+                start : 4,
+                step : 1,
+                min : 0,
+                max : 10
+            },
+            n => Math.round(+n)
+        );
+        let geneTextSelect = genesDropdown
             .append('div');
         addLabel(geneTextSelect,
-            'Show on gene')
-            //.style('text-align', 'center');
+            'Show on gene');
         geneTextSelect = addCustomSelect(geneTextSelect,
                 'geneText',
                 'geneText');
@@ -149,7 +201,20 @@ class CustomBar {
                 return { value : f, label : capitalize(f) }
             })
         ])
-        let annotationSelect = this.container
+
+        // Legend
+        const legendDropdown = this.drawDropdown(
+            this.container.append('div'),
+            "Legend",
+            "legendDropdown"
+        )
+        addCheckButton(
+            legendDropdown,
+            "Legend",
+            "toggleLegend",
+            options.showLegend,
+        )
+        let annotationSelect = legendDropdown
             .append('div')
         addLabel(annotationSelect,
             'Color genes by')
@@ -164,10 +229,10 @@ class CustomBar {
             })
         ])
 
-        let levelSelect = this.container
+        let levelSelect = legendDropdown
             .append('div');
         addLabel(levelSelect,
-            'Aannotation level')
+            'Annotation level')
             //.style('text-align', 'center');
         this.levelSelect = addCustomSelect(levelSelect,
                 'annotationLevel',
@@ -177,21 +242,44 @@ class CustomBar {
         ])
         this.updateLevels('');
 
-        let shuffleColors = this.container
+        let shuffleColors = legendDropdown
             .append('div');
         shuffleColors
             .append('button')
-            .attr('class', 'shuffleColors btn btn-secondary btn-sm')
-            .style('margin-top', '33px')
+            .attr('class', 'shuffleColors btn-clean')
+            .style('width', '7rem')
             .html('Shuffle colors');
 
         let downloadPng = this.container
             .append('div');
         downloadPng
             .append('button')
-            .attr('class', 'downloadPng btn btn-secondary btn-sm')
-            .style('margin-top', '33px')
-            .html('Download graph');
+            .attr('class', 'downloadPng btn-clean')
+            .html('Download image');
+
+        // Deal with choices and dropdowns not working properly
+        this.container
+            .selectAll('.clickoutside-dropdown')
+            .on('click', e => e.stopPropagation())
+        this.container
+            .selectAll('.choices')
+            .each(function() {
+                const choices = select(this);
+                const menu = choices.select('.dropdown-menu');
+                choices.on('click', () => {
+                    menu.classed('show', !menu.classed('show'));
+                    if (menu.classed('show'))
+                        choices.node().focus()
+                    else
+                        choices.node().blur()
+                })
+                menu.selectAll('.choices__item')
+                    .each(function() {
+                        select(this).on('click', () => 
+                            menu.classed('show', false)
+                        )
+                    });
+            })
     }
 
     updateLevels(annotation) {

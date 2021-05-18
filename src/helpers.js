@@ -51,7 +51,7 @@ var addCheckButton = function(g,
     className='',
     checked=true) {
     let container = g.append('label')
-        .attr('class', 'form-selectgroup-item m-1')
+        .attr('class', 'form-selectgroup-item')
     let input = container.append('input')
         .attr('type', 'checkbox')
         .attr('class', 'form-selectgroup-input ' + className);
@@ -66,7 +66,7 @@ var addCheckButton = function(g,
 var addCustomSelect = function(g,
     className,
     name,
-    placeholder="hi") {
+    placeholder="customSelect") {
     let select = g.append('select')
         .attr('class', 'form-select form-control ' + className)
         .attr('name', name)
@@ -124,7 +124,6 @@ var triggerEvent = function(el, type) {
 }
 
 var counter = function(arr, attr) {
-    //let initial = new Map(map.map(d => [d.id, 0]));
     let fn = (counter, d) => {
         let a = d[attr]
         counter[a] = counter[a]

@@ -2,7 +2,6 @@ div.customBar {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  /*border: solid var(--dark-gray) 1px;*/
   border-radius: 5px;
   margin: 20px 10px;
   padding: 10px;
@@ -10,11 +9,22 @@ div.customBar {
 
 div.customBar > div {
     margin: auto;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
     padding: 5px;
     padding-top: 0;
     border-radius: 5px;
+}
+
+.dropdown-menu-content {
+    align-items: flex-end;
+}
+
+.dropdown-menu-content > * {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.dropdown-menu-content > .form-selectgroup-item {
+    margin-bottom: 2px;
 }
 
 .customBar .checkbox {

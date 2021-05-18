@@ -102,7 +102,7 @@ path.stroke {
   stroke-width: 2.3px;
   z-index: 3;
   outline: none;
-  transition: opacity 0.3s;
+  /*transition: opacity 0.3s;*/
 }
 
 path.light-stroke {
@@ -175,7 +175,7 @@ div.sticky-legend {
 
 div.split-legend {
     width: 100%;
-    padding: 20px 10px 15px 0px;
+    padding: 15px 10px 15px 0px;
     border: solid 1px var(--dark-gray);
     border-radius: 5px;
     margin: 0px 10px 10px 0px;

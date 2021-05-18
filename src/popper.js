@@ -105,12 +105,19 @@ var PopperCreate = function(selector, d, URLs) {
              .html(popperHTML);
     if (nonEmptyArray(d.pfam)) {
         let doms = new Set();
-        d.pfam.forEach(d => {
-            if (d.class && d.class != '') {
-                doms.add(d.class)
-            }
+        d.pfam.forEach(dom => {
+            dom.doms.forEach(d => {
+                if (d.class && d.class != "")
+                    doms.add(d.class)
+                })
         })
         let colors = colors269;
+        doms = [...doms];
+        // Always render helix with same color
+        if (doms.includes('helix'))
+            doms = ['helix', ...doms.filter(d => d != 'helix')];
+        else
+            colors = colors.slice(1);
         let palette = scaleOrdinal()
                         .domain(doms)
                         .range(colors);
@@ -198,8 +205,7 @@ var TreePopper = function(selector,
 var PopperClick = function(selector) {
     $(document).click(e => {
         // Helper function
-        function lookForParent(element,
-                             targetClass){
+        function lookForParent(element, targetClass){
             let el = element;
             let name = el.nodeName;
             while (name && name != 'HTML') {
@@ -211,9 +217,11 @@ var PopperClick = function(selector) {
             }
             return undefined;
         }
+
         if (!e.altKey) {
             let targetID;
-            ['gene', 'leaf', 'popper'].forEach(c => {
+            const targetClasses = ['gene', 'leaf', 'popper', 'customBar-item'];
+            targetClasses.forEach(c => {
                 try { targetID = lookForParent(e.target, c).id } catch {}
             })
             targetID = !targetID ? e.target.id : targetID;
@@ -222,7 +230,7 @@ var PopperClick = function(selector) {
             let suffix = targetID.slice(4);
             let popper = document.querySelector(`${selector} .popper#popr${suffix}`);
             let poppers = selectAll(`${selector} .popper`);
-            if (!(['gene','leaf','popr'].includes(prefix)) || popper == null)
+            if (!(['gene','leaf','popr', 'cbit'].includes(prefix)) || popper == null)
                 poppers.remove();
             poppers = poppers.nodes();
             if(popper != null && poppers.length > 1)
