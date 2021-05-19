@@ -1,14 +1,13 @@
 div.customBar {
-  display: flex;
   flex-wrap: wrap;
   justify-content: center;
   border-radius: 5px;
-  margin: 20px 10px;
   padding: 10px;
 }
 
 div.customBar > div {
-    margin: auto;
+    margin-left: 1rem;
+    margin-right: 1rem;
     padding: 5px;
     padding-top: 0;
     border-radius: 5px;
