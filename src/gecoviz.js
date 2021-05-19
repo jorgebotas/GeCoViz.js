@@ -1326,9 +1326,12 @@ function GeCoViz(selector, opts) {
 
   graph.treeData = function (newick, leafText, fields) {
     if (!arguments.length) return treeData.newick;
+    console.log('newick')
     if (newick) treeData.newick = parseNewick(newick, fields);
     if (treeData.newick) options.showTree = true;
+    console.log('fields')
     if (fields) treeData.fields = fields;
+    console.log('leafText')
     if (leafText) treeData.leafText = leafText
     else treeData.leafText = treeData.fields[0];
     return graph;
