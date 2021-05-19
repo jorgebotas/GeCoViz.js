@@ -34,7 +34,7 @@ function GeCoViz(selector, opts) {
   var heatmap;
   var heatmapData = { data: undefined, unfData: undefined, vars: undefined };
   var tree;
-  var treeData = { newick: undefined, fields: ["name"] };
+  var treeData = { newick: undefined, leafText: "name", fields: ["name"] };
   var anchors = [];
   var swappedAnchors = [];
   var nSide = 2;
@@ -1299,6 +1299,7 @@ function GeCoViz(selector, opts) {
       tree = Tree(
         selector + " .treeContainer",
         treeData.newick,
+        treeData.leafText,
         treeData.fields,
         {
           enterEach: treeLeafEnter,

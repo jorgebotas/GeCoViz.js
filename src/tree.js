@@ -13,6 +13,7 @@ import {
 
 var Tree = function(selector,
     root,
+    leafText,
     fields = ['name'],
     callbacks = {
         enterEach : () => undefined,
@@ -33,7 +34,7 @@ var Tree = function(selector,
         left : 10
     }
     var graph = function() { return this };
-    var leafText = 'last tax level';
+    leafText = leafText || fields[0];
     var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
     var w = (+options.width || 700) - margin.left - margin.right;
