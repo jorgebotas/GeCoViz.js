@@ -1036,7 +1036,7 @@ function GeCoViz(selector, opts) {
       graph.annotation(newAnnotation, annotationLevelOption);
     });
     container.select(".shuffleColors").on("click", () => graph.shuffleColors());
-    container.select(".downloadPng").on("click", () => graph.toPng());
+    container.select(".downloadPng").on("click", () => graph.toSvg());
 
     // Scrolling listener
     window.addEventListener("scroll", updateViewPortGenes, { passive: true });
@@ -1610,7 +1610,7 @@ function GeCoViz(selector, opts) {
     select(":root").style("cursor", "progress");
     // Format legend
     splitLegend.node().classList.remove("bg-sand");
-    splitLegend.select(".pl-3").remove(); // Remove selectAll
+    splitLegend.select(".pl-3").remove(); // Remove toggleAll
     splitLegend.selectAll("input").remove(); // Remove checkboxes
     let legendEntries = splitLegend.selectAll(".lgnd-entry");
     legendEntries.select("label").style("padding-left", ".5rem");
@@ -1622,6 +1622,48 @@ function GeCoViz(selector, opts) {
       .then(() => select(":root").style("cursor", "default"));
     return graph;
   };
+
+  graph.toSvg = function() {
+    // Set cursor to progress
+    select(":root").style("cursor", "progress");
+    const toDownload = select(graphContainer.node().cloneNode(true));
+    toDownload.selectAll(".popper").remove();  // remove popovers
+    toDownload.selectAll(".stroke").remove();  // remove strokes
+    const splitLegend = toDownload.select('.split-legend');
+    splitLegend.select(".pl-3").remove(); // Remove toggleAll
+    splitLegend.selectAll("input").remove(); // Remove checkboxes
+    const legendEntries = splitLegend.selectAll(".lgnd-entry");
+    legendEntries.select("label").style("padding-left", ".5rem");
+    
+    //apply_css(svg, document.styleSheets[0]);
+    const svg_xml = (new XMLSerializer()).serializeToString(toDownload.node());
+    const content = "data:image/svg+xml;base64," + btoa(svg_xml);
+    const element = document.createElement("a");
+    element.setAttribute("href", encodeURI(content));
+    element.setAttribute("download", "GeCoViz.svg");
+    element.style.display = "none";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    select(":root").style("cursor", "default");
+
+    return graph;
+
+    //// Apply CSS rules to elements contained in a (cloned) container
+    //function apply_css(container, stylesheet) {
+        //let styles = [];
+        //Array.from(stylesheet.rules).forEach(r => {
+            //const style = r.cssText;
+            //if (style) 
+                //styles.push(style);
+        //})
+        //const style_element = document.createElement("style");
+        //style_element.innerHTML = styles.join("\n");
+        //container.appendChild(style_element);
+    //}
+
+
+  }
 
   // Required draw method
   graph.draw = function () {
