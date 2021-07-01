@@ -104,11 +104,11 @@ var Tree = function(selector,
     }
 
     var diagonal = rightAngleDiagonal();
-    var duration = 1000;
+    var duration = 600;
     var delay = {
-      enter : duration*1.5,
-      update : 0,
-      exit: 0,
+      enter : duration * 2,
+      update : duration,
+      exit: duration,
     }
 
     // Initialize root's initial position
@@ -243,7 +243,6 @@ var Tree = function(selector,
     function updateWidth() {
         width = max(treeRoot.leaves()
             .map(l => l.y + getShowName(l).length*6 + 6));
-        console.log('tree-w: ' + (width + 30))
         visSVG
         .attr('target-width', width + 30)
         .transition()

@@ -28,6 +28,8 @@ function GeCoViz(selector, opts) {
     return this;
   };
   var container = select(selector);
+  var containerY = container.node().getBoundingClientRect().top + 40;
+  var viewport = document.querySelector("html");
   var initialized = false;
   var unfData = [];
   var data = [];
@@ -35,6 +37,7 @@ function GeCoViz(selector, opts) {
   var heatmapData = { data: undefined, unfData: undefined, vars: undefined };
   var tree;
   var treeData = { newick: undefined, leafText: "name", fields: ["name"] };
+  var timer; // avoid overloading when collapsing tree nodes
   var anchors = [];
   var swappedAnchors = [];
   var nSide = 2;
@@ -77,14 +80,14 @@ function GeCoViz(selector, opts) {
       a: "",
     },
   };
-  var duration = 500;
+  var duration = 300;
   var delay = {
     enter: duration * 2,
     update: duration,
     exit: 0,
   };
   var geneRect = {
-    w: width / (2 * nSide + 1),
+    w: (width - 2) / (2 * nSide + 1),
     h: opts && opts.geneRect ? opts.geneRect.h : 16,
     ph: 20,
     pv: 5,
@@ -162,6 +165,7 @@ function GeCoViz(selector, opts) {
       };
       return [distScale, sizeScale, scale];
     }
+
     function getDist(d, neigh, swapped, pos) {
       let dist;
       if (!swapped)
@@ -169,13 +173,16 @@ function GeCoViz(selector, opts) {
       else dist = pos > 0 ? +neigh.start - +d.end : +d.start - +neigh.end;
       return dist;
     }
+
     const [distScale, sizeScale, scale] = buildScale();
+
     // Data should be sorted to compute virtual start and end
     data = Sorter.sort(
       data,
       (a, b) => Math.abs(parseInt(b.pos)) < Math.abs(parseInt(a.pos))
     );
     data.sort((a, b) => b.anchor < a.anchor);
+
     data.forEach((d) => {
       let swapped = swappedAnchors.includes(d.anchor);
       if (+d.start && +d.end) {
@@ -267,6 +274,18 @@ function GeCoViz(selector, opts) {
       }
     }
     return anchors.findIndex((a) => a.anchor == d.anchor) * geneRect.h;
+  }
+
+  function inViewPort(d) {
+    // Check x coordinate
+    const x = getX(d);
+    if (!x && x != 0) return false;
+    // Check y coordinate
+    const y = getY(d) + containerY;
+    const minY = viewport.scrollTop;
+    const maxY = minY + viewport.clientHeight;
+    const margin = 50;
+    return y >= 0 && y >= (minY - margin) && y <= (maxY + margin);
   }
 
   // Tip and arrow strokes
@@ -673,9 +692,9 @@ function GeCoViz(selector, opts) {
 
   function updateGenes() {
     // Update data-dependant variables
-    let genes = contextG
+    const genes = contextG
       .selectAll("g.gene")
-      .data(data, (d) => d.anchor + d.pos);
+      .data(data.filter(inViewPort), (d) => d.anchor + d.pos);
 
     genes
       .enter()
@@ -694,18 +713,13 @@ function GeCoViz(selector, opts) {
       .delay(delay.enter)
       .style("opacity", 1);
 
-    let update = genes.merge(genes);
+    const update = genes.merge(genes);
     update
       .transition()
       .duration(duration)
       .delay(delay.update)
       .attr("transform", (d) => `translate(${getX(d)}, ${getY(d)})`)
       .each((d) => updateGene(d));
-    update
-      .transition()
-      .duration(duration)
-      .delay(delay.enter)
-      .style("opacity", 1);
 
     genes
       .exit()
@@ -716,6 +730,30 @@ function GeCoViz(selector, opts) {
       .remove();
 
     resizeSVG();
+  }
+
+  function updateViewPortGenes() {
+    const genes = contextG
+      .selectAll("g.gene")
+      .data(data.filter(inViewPort), (d) => d.anchor + d.pos);
+
+    genes
+      .enter()
+      .append("g")
+      .attr("class", (d) => {
+        let cl = "gene";
+        cl += d.pos == 0 ? " anchor" : "";
+        return cl;
+      })
+      .attr("id", (d) => "gene" + cleanString(d.anchor + d.pos))
+      .attr("transform", (d) => `translate(${getX(d)}, ${getY(d)})`)
+      .style("opacity", 0)
+      .each((d) => enterGene(d))
+      .style("opacity", 1);
+
+    genes
+      .exit()
+      .remove();
   }
 
   // Graph methods
@@ -738,8 +776,9 @@ function GeCoViz(selector, opts) {
     width = totalWidth - nonContextWidth;
     graphContainer.select(".gcontextAndLegend").style("width", `${width}px`);
     if (options.showLegend) width -= 320; // Legend width
-    graphContainer.select(".gcontextSVG").attr("width", width - 8);
-    geneRect.w = (width - 10) / (2 * nSide + 1);
+    width -= 10; // Account for svg padding
+    graphContainer.select(".gcontextSVG").attr("width", width);
+    geneRect.w = (width - 2) / (2 * nSide + 1);
   }
 
   function updateHeight() {
@@ -778,22 +817,25 @@ function GeCoViz(selector, opts) {
 
   function resizeSVG() {
     if (options.scaleDist) {
-      let farLeft = min(data, (d) => +d.vStart);
-      let farRight = max(data, (d) => +d.vEnd);
-      let svgWidth = farRight - farLeft + 2 * margin.left;
+      const farLeft = min(data, (d) => +d.vStart);
+      const farRight = max(data, (d) => +d.vEnd);
+      const svgWidth = farRight - farLeft + 2 * margin.left;
       contextContainer.select(".gcontextSVG").attr("width", svgWidth);
       contextG.attr(
         "transform",
         `translate(${-farLeft + margin.left},
                                  ${margin.top})`
       );
+    } else
+      contextG.attr("transform", `translate(${margin.left}, ${margin.top})`);
+  }
+
+  function scrollIntoView() {
       container.select(".gene.anchor").node().scrollIntoView({
         behavior: "smooth",
         block: "nearest",
         inline: "center",
       });
-    } else
-      contextG.attr("transform", `translate(${margin.left}, ${margin.top})`);
   }
 
   function drawHeatmap() {
@@ -875,7 +917,7 @@ function GeCoViz(selector, opts) {
 
     contextG
       .selectAll("g.gene")
-      .data(data, (d) => d.anchor + d.pos)
+      .data(data.filter(inViewPort), (d) => d.anchor + d.pos)
       .enter()
       .append("g")
       .attr("class", (d) => {
@@ -957,8 +999,10 @@ function GeCoViz(selector, opts) {
           leafTextOptions.options[leafTextOptions.selectedIndex].value;
         if (newLeafText != "" && newLeafText != tree.leafText()) {
           tree.leafText(newLeafText);
-          if (initialized) updateWidth();
-          if (initialized) updateGenes();
+            if (initialized) {
+                updateWidth();
+                updateGenes();
+            }        
         }
       });
     }
@@ -993,6 +1037,9 @@ function GeCoViz(selector, opts) {
     });
     container.select(".shuffleColors").on("click", () => graph.shuffleColors());
     container.select(".downloadPng").on("click", () => graph.toPng());
+
+    // Scrolling listener
+    window.addEventListener("scroll", updateViewPortGenes, { passive: true });
   }
 
   // Legend
@@ -1368,8 +1415,10 @@ function GeCoViz(selector, opts) {
         .delay(delay.enter)
         .style("width", 0);
     }
-    if (initialized) updateWidth();
-    if (initialized) updateGenes();
+    if (initialized) {
+      updateWidth();
+      updateGenes();
+    }
   };
 
   graph.toggleHeatmap = function (show = true) {
@@ -1394,8 +1443,10 @@ function GeCoViz(selector, opts) {
         .style("opacity", 0)
         .style("width", 0);
     }
-    if (initialized) updateWidth();
-    if (initialized) updateGenes();
+    if (initialized) {
+      updateWidth();
+      updateGenes();
+    }
   };
 
   graph.toggleLegend = function (show = true) {
@@ -1416,8 +1467,10 @@ function GeCoViz(selector, opts) {
         .style("width", 0);
       splitLegend.style("width", 0);
     }
-    if (initialized) updateWidth();
-    if (initialized) updateGenes();
+    if (initialized) {
+      updateWidth();
+      updateGenes();
+    }
   };
 
   graph.toggleCustomBar = function (show = true) {
@@ -1430,8 +1483,11 @@ function GeCoViz(selector, opts) {
   graph.scaleDist = function (scale = true) {
     options.scaleDist = scale;
     updateData();
-    if (initialized) updateWidth();
-    if (initialized) updateGenes();
+    if (initialized) {
+      updateWidth();
+      updateGenes();
+      scrollIntoView();
+    }
     return graph;
   };
 
@@ -1439,9 +1495,19 @@ function GeCoViz(selector, opts) {
     zoom = z;
     if (options.scaleDist) {
       updateData();
-      if (initialized) updateWidth();
-      if (initialized) updateGenes();
+      if (initialized) {
+          updateWidth();
+          updateGenes();
+          scrollIntoView();
+      }
     }
+    return graph;
+  };
+
+  graph.viewPort = function(vp) {
+    if (!vp) return viewport;
+    viewport = vp;
+    if (initialized) updateGenes();
     return graph;
   };
 
@@ -1449,9 +1515,12 @@ function GeCoViz(selector, opts) {
     if (!arguments.length) return nSide;
     nSide = d;
     updateData();
-    if (initialized) updateLegend();
-    if (initialized) updateWidth();
-    if (initialized) updateGenes();
+    if (initialized) {
+        updateLegend();
+        updateWidth();
+        updateGenes();
+        scrollIntoView();
+    }
     return graph;
   };
 
@@ -1460,24 +1529,29 @@ function GeCoViz(selector, opts) {
     annotation = not;
     annotationLevel = level;
     updatePalette();
-    if (initialized) updateLegend();
-    if (initialized) updateAnnotation();
+    if (initialized) {
+        updateLegend();
+        updateAnnotation();
+    }
     return graph;
   };
 
   graph.excludeAnnotation = function (annotationID, exclude = true) {
     if (!arguments.length) return excludedAnnotation;
+      if (timer) clearTimeout(timer);
     if (exclude && !excludedAnnotation.includes(annotationID)) {
       excludedAnnotation.push(annotationID);
     } else if (!exclude && excludedAnnotation.includes(annotationID)) {
       excludedAnnotation = excludedAnnotation.filter((n) => n != annotationID);
     }
-    if (initialized) updateAnnotation();
+    if (initialized) 
+      timer = setTimeout(() => updateAnnotation(), 100);
     return graph;
   };
 
   graph.excludeAnchor = function (anchor, exclude = true) {
     if (!arguments.length) return excludedAnchors;
+    if (timer) clearTimeout(timer);
     if (exclude && !excludedAnchors.includes(anchor)) {
       excludedAnchors.push(anchor);
       updateData();
@@ -1489,11 +1563,13 @@ function GeCoViz(selector, opts) {
       if (options.showHeatmap && heatmapData.data)
         heatmap.updateData(heatmapData.data);
     }
-    setTimeout(() => {
-      if(initialized) updateWidth();
-      if(initialized) updateHeight();
-      if(initialized) updateGenes();
-    }, 0);
+    timer = setTimeout(() => {
+        if (initialized) {
+            updateWidth();
+            updateHeight();
+            updateGenes();
+        }
+    }, duration + 100);
     return graph;
   };
 

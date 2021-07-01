@@ -70,7 +70,7 @@ class CustomBar {
         return this.dataComplexFields[annotation]
     }
 
-    drawDropdown(container, label, dropdownId) {
+    drawDropdown(container, label, dropdownId, end=false) {
         const dropdown = container
             .append('div');
         // Dropdown toggler
@@ -82,10 +82,12 @@ class CustomBar {
             .attr('aria-expanded', 'false')
             .attr('aria-haspopup', 'true')
             .html(label);
+        const dropdownMenuClass = 'dropdown-menu dropdown-menu-arrow' 
+            + ' clickoutside-dropdown'
+            + (end ? ' dropdown-menu-right' : '')
         const dropdownMenu = dropdown
             .append('div')
-            .attr('class', 
-                  'dropdown-menu dropdown-menu-arrow clickoutside-dropdown')
+            .attr('class', dropdownMenuClass)
             .attr('aria-labelledby', dropdownId)
             .append('div')
               .attr('class', 'dropdown-menu-content d-flex p-3')
@@ -123,7 +125,7 @@ class CustomBar {
         );
         addCheckButton(
             treeDropdown,
-            "Tree",
+            "Toggle tree",
             "toggleTree",
             options.showTree,
         );
@@ -146,12 +148,12 @@ class CustomBar {
         // Scaling
         const scalingDropdown = this.drawDropdown(
             this.container.append('div'),
-            "Scaling",
+            "Gene length",
             "scalingDropdown"
         );
         addCheckButton(
             scalingDropdown,
-            "Scale",
+            "Scale by length",
             "scaleDist",
             options.scaleDist,
         );
@@ -170,14 +172,14 @@ class CustomBar {
             n => (+n).toFixed(1)
         );
 
-        // Genes
-        const genesDropdown = this.drawDropdown(
+        // Neighbors
+        const neighborsDropdown = this.drawDropdown(
             this.container.append('div'),
-            "Genes",
-            "genesDropdown"
+            "Neighbors",
+            "neighborsDropdown"
         );
         this.drawSlider(
-            genesDropdown.append('div'),
+            neighborsDropdown.append('div'),
             'Genes up/downstream',
             'nSideSlider',
             {
@@ -188,7 +190,7 @@ class CustomBar {
             },
             n => Math.round(+n)
         );
-        let geneTextSelect = genesDropdown
+        let geneTextSelect = neighborsDropdown
             .append('div');
         addLabel(geneTextSelect,
             'Show on gene');
@@ -205,12 +207,13 @@ class CustomBar {
         // Legend
         const legendDropdown = this.drawDropdown(
             this.container.append('div'),
-            "Legend",
-            "legendDropdown"
+            "Color by",
+            "legendDropdown",
+            true,
         )
         addCheckButton(
             legendDropdown,
-            "Legend",
+            "Toggle legend",
             "toggleLegend",
             options.showLegend,
         )
