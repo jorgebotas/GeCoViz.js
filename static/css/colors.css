@@ -1,3 +1,8 @@
+/*This selector acts as header to be recognized by js*/
+.GeCoViz_dummy {
+    color: default;
+}
+
 :root {
   --nodata: #cfcfcf;
   --highlight: var(--orange); /*#ff8c00*/

@@ -24,8 +24,9 @@ var Tree = function(selector,
     },
     options = {
         width: 700,
-        height: 800,
+        leafHeight: 18,
         show: true,
+        collapse: false,
     }){
     var margin = {
         top : 5,
@@ -37,23 +38,22 @@ var Tree = function(selector,
     leafText = leafText || fields[0];
     var treeRootHierarchy = hierarchy(root)
             .sort(node => node.children ? node.children.length : -1);
-    var w = (+options.width || 700) - margin.left - margin.right;
-    var h = treeRootHierarchy.leaves().length * 20;
-    var width;
-    var height;
+    var width = (+options.width || 700) - margin.left - margin.right;
+    var height = treeRootHierarchy.leaves().length * (options.collapse ? 
+        4 : options.leafHeight || 18);
     var tree = cluster()
-            .size([h, w])
+            .size([height, width])
             .separation(() => 1);
     var treeRoot = tree(treeRootHierarchy)
     var visContainer = select(selector)
-        .style('width', w)
+        .style('width', width)
     var visDiv = visContainer
         .append('div')
         .attr('class', 'phylogram innerContainer')
     var visSVG = visDiv
         .append('svg:svg')
-        .attr('width', w + margin.left + margin.right)
-        .attr('height', h + margin.top + margin.bottom)
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
     var vis = visSVG
         .append('svg:g')
             .attr('transform',
@@ -112,13 +112,8 @@ var Tree = function(selector,
     }
 
     // Initialize root's initial position
-    treeRoot.x0 = h / 2;
+    treeRoot.x0 = height / 2;
     treeRoot.y0 = 0;
-
-    //treeRoot.children.forEach(toggleAll);
-    update(treeRoot);
-    // Enable pop-up interactivity
-    PopperClick(selector + ' .phylogram');
 
     // Toggle node function
     function toggle(node) {
@@ -158,7 +153,7 @@ var Tree = function(selector,
     }
 
     function getShowName(d) {
-        return d.data[leafText] || '';
+        return options.collapse ? '' : d.data[leafText] || '';
     }
 
     function scaleBranchLength(nodes) {
@@ -175,15 +170,15 @@ var Tree = function(selector,
           node.rootDist = (node.parent ? node.parent.rootDist : 0)
                 + (node.data.length || 0);
         })
-        //var rootDepths = nodes.map(function(n) { return n.depth; });
-        var nodeLengths = nodes.map(n => n.data.length);
-        var yscale = scaleLinear()
+        const branchLength = options.collapse ? 10 : 25;
+        const nodeLengths = nodes.map(n => n.data.length);
+        const yscale = scaleLinear()
             .domain([0, max(nodeLengths)])
-            .range([0, 25]);
+            .range([0, branchLength]);
         visitPreOrder(nodes[0], function(node) {
-          node.y = 25 * (node.depth);
+          node.y = branchLength * (node.depth);
             if (node.data.length != undefined) {
-              node.dotted = 25 - yscale(node.data.length);
+              node.dotted = branchLength - yscale(node.data.length);
             } else {
                 node.dotted = 0;
             }
@@ -240,6 +235,19 @@ var Tree = function(selector,
             .text(ticks[1] + units);
     }
 
+    function updateScale(scale) {
+        let scaleG = visDiv.select('.scale');
+        if (scaleG.node()) {
+            scaleG = scaleG.select("g");
+            scaleG.selectAll("*").remove();
+        } else
+            scaleG = visDiv
+                .append('svg')
+                .attr('class', 'scale')
+                .append('g');
+        drawScale(scaleG, scale, 0, 0);
+    }
+
     function updateWidth() {
         width = max(treeRoot.leaves()
             .map(l => l.y + getShowName(l).length*6 + 6));
@@ -259,15 +267,17 @@ var Tree = function(selector,
     }
 
     function updateHeight() {
-        height = treeRoot.leaves().length* 18; // 20 pixels per line
+        // 18 pixels per line
+        height = treeRoot.leaves().length * (options.collapse ? 
+            4 : options.leafHeight || 18); 
         visSVG
             .attr('target-height', height + 30)
-        tree.size([height, w])
+        tree.size([height, width])
     }
 
     function updateLeafText() {
         updateWidth();
-        let leaves = vis.selectAll('g.node.leaf')
+        const leaves = vis.selectAll('g.node.leaf')
         leaves.select('text')
             .transition()
             .duration(duration)
@@ -278,21 +288,16 @@ var Tree = function(selector,
             .text(getShowName)
     }
 
-    function update(source) {
+    graph.update = function (source=treeRoot, firstTime=false) {
         // compute the new height
         updateHeight();
         treeRoot = tree(treeRootHierarchy);
         let nodes = treeRoot.descendants();
         // Scale branches by length
-        let scale = scaleBranchLength(nodes)
+        const scale = scaleBranchLength(nodes)
         // Draw yscale legend
-        if (!visDiv.select('.scale').node()) {
-            let scaleG = visDiv
-                .append('svg')
-                .attr('class', 'scale')
-                .append('g');
-            drawScale(scaleG, scale, 0, 0);
-        }
+        if (firstTime)
+            updateScale(scale);
 
         // ENTERING NODES
         let node = vis.selectAll('g.node')
@@ -314,7 +319,7 @@ var Tree = function(selector,
                 .on('click', (event, d) => {
                     if (event.altKey) toggleAll(d)
                     else toggle(d)
-                    update(d);
+                    graph.update(d);
                 })
         nodeEnter.append('svg:circle')
             .attr('r', 1e-6)
@@ -347,6 +352,7 @@ var Tree = function(selector,
                     : length.toFixed(2)
                 return rounded ? rounded : n.data.length
             });
+
         // Hovering over clade will highlight descendants
         nodeInnerEnter
             .on('mouseover', (_, d) => highlightLeaves(d, true))
@@ -371,22 +377,25 @@ var Tree = function(selector,
         // Display fields data
         if (fields) {
             nodeLeafEnter
-                .on('click', (_, n) => {
-                    let popperContent = '';
-                    fields.forEach(f => {
-                        popperContent += f == 'showName'
-                            ? ''
-                            : n.data[f]
-                            ? '<p>' + f + ': ' + n.data[f] + '</p>'
-                            : ''
-                    })
-                    popperContent = n.data.showName
-                        ? '<p>' + n.data.showName + '</p>' + popperContent
-                        : popperContent
-                   TreePopper(selector + ' .phylogram',
-                        cleanString(n.data.name),
-                        popperContent,
-                        'col-md-2 col-sm-4')
+                .on('click', (event, n) => {
+                    callbacks.enterClick(event, n);
+                    if (!event.altKey) {
+                        let popperContent = '';
+                        fields.forEach(f => {
+                            popperContent += f == 'showName'
+                                ? ''
+                                : n.data[f]
+                                ? '<p>' + f + ': ' + n.data[f] + '</p>'
+                                : ''
+                        })
+                        popperContent = n.data.showName
+                            ? '<p>' + n.data.showName + '</p>' + popperContent
+                            : popperContent
+                        TreePopper(selector + ' .phylogram',
+                            cleanString(n.data.name),
+                            popperContent,
+                            'col-md-2 col-sm-4')
+                    }
                 })
         }
 
@@ -400,12 +409,13 @@ var Tree = function(selector,
             .delay(delay.update)
             .attr('transform', d => 'translate(' + d.y + ',' + d.x + ')');
         nodeUpdate.select('circle')
-            .attr('r', 4)
+            .attr('r', options.collapse ? 1.5 : 4)
             .attr('stroke-width', '1.5px')
             .attr('stroke', leafColor.stroke)
             .style('fill', d => d._children ? leafColor.full : leafColor.empty);
         nodeUpdate.selectAll('text')
-            .style('fill-opacity', 1);
+            .style("display", options.collapse ? "none" : "block")
+            .style('fill-opacity', options.collapse ? 1e-6 : 1);
 
         // EXITING NODES
         let nodeExit = node.exit()
@@ -460,7 +470,8 @@ var Tree = function(selector,
             .attr('y2', n => n.target.x)
             .attr("stroke", color.sand)
             .attr("stroke-width", "2px")
-            .attr("stroke-dasharray", "3,3");
+            .attr("stroke-dasharray", "2")
+            .style("display", options.collapse ? "none" : "block");
 
         // Transition links to new position
         link
@@ -476,6 +487,7 @@ var Tree = function(selector,
             .attr('y1', n => n.target.x)
             .attr('x2', n => n.target.y)
             .attr('y2', n => n.target.x)
+            .style("display", options.collapse ? "none" : "block");
 
         // Transition exiting nodes to parent's new position
         link
@@ -496,6 +508,25 @@ var Tree = function(selector,
         // Store node's old position for transition
         nodes.forEach(n => {n.x0 = n.x; n.y0 = n.y;});
         updateWidth();
+
+        return graph;
+    }
+
+    graph.collapse = function(collapse=true) {
+        if (collapse)
+            options.collapse = true;
+        else
+            options.collapse = false;
+        graph.update(treeRoot, true);
+        visSVG.node().scrollIntoView({ behaviour: "smooth" });
+        return graph;
+    }
+
+    graph.options = function (opt) {
+        if (!opt) return options;
+        for (let key in opt)
+            options[key] = opt[key];
+        return graph;
     }
 
     graph.leafText = function(field) {
@@ -505,6 +536,9 @@ var Tree = function(selector,
         return graph;
     }
 
+    graph.update(treeRoot, true);
+    // Enable pop-up interactivity
+    PopperClick(selector + ' .phylogram');
     return graph;
 }
 

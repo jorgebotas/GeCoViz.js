@@ -87,6 +87,12 @@ li.popper-ul-title {
     background: var(--sand);
   }
 
+/* Hide the popper when the reference is hidden */
+.popper[data-popper-reference-hidden] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .popper[data-popper-placement^='top'] > .popper-arrow{
   bottom: -4px;
   right: 49%;
@@ -122,4 +128,3 @@ li.popper-ul-title {
 .popper[data-popper-placement^='right'] > .popper-arrow::before {
     border-color: transparent transparent var(--dark-gray) var(--dark-gray);
 }
-

@@ -135,11 +135,26 @@ var counter = function(arr, attr) {
     return arr.reduce(fn, {});
 }
 
+var applyCss = function(container, stylesheet) {
+    // Apply CSS rules to elements contained in a (cloned) container
+    let styles = [];
+    Array.from(stylesheet.rules).forEach(r => {
+        const style = r.cssText;
+        if (style) 
+            styles.push(style);
+    })
+    const style_element = document.createElement("style");
+    style_element.innerHTML = styles.join("\n");
+    container.appendChild(style_element);
+}
+
+
 export {
     addCheckbox,
     addCheckButton,
     addCustomSelect,
     addLabel,
+    applyCss,
     capitalize,
     cleanString,
     counter,

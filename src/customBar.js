@@ -33,7 +33,7 @@ class CustomBar {
     }
 
     computeDataKeys() {
-        let dataKeys = this.data
+        const dataKeys = this.data
             .reduce((maxKeys, d) => maxKeys.length < Object.keys(d).length
             ? Object.keys(d)
             : maxKeys, []);
@@ -42,7 +42,7 @@ class CustomBar {
 
     computeFields() {
         // Extract complex and simple data fields
-        let dataComplexFields = {}
+        const dataComplexFields = {}
         this.data.forEach(d => {
             Object.entries(d).forEach(([k, v]) =>{
                 if (nonEmptyArray(v)) {
@@ -95,7 +95,7 @@ class CustomBar {
     }
 
     drawSlider(container, label, sliderClass, options, formatter) {
-        let sliderLabel = addLabel(container, label)
+        const sliderLabel = addLabel(container, label)
         let slider = container
             .append('div')
             .style('width', '160px')
@@ -148,8 +148,14 @@ class CustomBar {
         // Scaling
         const scalingDropdown = this.drawDropdown(
             this.container.append('div'),
-            "Gene length",
+            "Gene dimensions",
             "scalingDropdown"
+        );
+        addCheckButton(
+            scalingDropdown,
+            "Collapse height",
+            "collapseHeight",
+            options.collapseHeight,
         );
         addCheckButton(
             scalingDropdown,
@@ -183,7 +189,7 @@ class CustomBar {
             'Genes up/downstream',
             'nSideSlider',
             {
-                start : 4,
+                start : options.nSide,
                 step : 1,
                 min : 0,
                 max : 10
@@ -232,7 +238,7 @@ class CustomBar {
             })
         ])
 
-        let levelSelect = legendDropdown
+        const levelSelect = legendDropdown
             .append('div');
         addLabel(levelSelect,
             'Annotation level')
@@ -245,7 +251,7 @@ class CustomBar {
         ])
         this.updateLevels('');
 
-        let shuffleColors = legendDropdown
+        const shuffleColors = legendDropdown
             .append('div');
         shuffleColors
             .append('button')
@@ -253,7 +259,7 @@ class CustomBar {
             .style('width', '7rem')
             .html('Shuffle colors');
 
-        let downloadPng = this.container
+        const downloadPng = this.container
             .append('div');
         downloadPng
             .append('button')
@@ -281,7 +287,7 @@ class CustomBar {
     }
 
     updateLevels(annotation) {
-        let levels = this.dataComplexFields[annotation] || [];
+        const levels = this.dataComplexFields[annotation] || [];
         this.levelSelect.clearChoices();
         this.levelSelect.setChoices(levels.map((l, idx) => {
             if (idx == 0) {
@@ -289,7 +295,7 @@ class CustomBar {
             }
             return { value: l, label: capitalize(l) }
         }))
-        let levelSelect = this.container.select('select.annotationLevel');
+        const levelSelect = this.container.select('select.annotationLevel');
         if (nonEmptyArray(levels)) levelSelect.attr('disabled', null);
         else levelSelect.attr('disabled', '');
     }
