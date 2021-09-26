@@ -19,7 +19,7 @@ div.graph-container {
 
 
 .innerContainer {
-    border: solid var(--dark-gray) 1px;
+    border: none;
     border-radius: 5px;
     height: 100%;
 }
@@ -57,7 +57,7 @@ div.gcontextAndLegend {
 }
 
 div.gcontext {
-  min-width: 500px;
+  min-width: 200px;
   width: 100%;
   text-align: center;
   overflow-x: scroll;
@@ -81,6 +81,10 @@ svg.scale g {
 }
 
 /*GENE*/
+.gene path, .gene text {
+    pointer-events: none !important;
+}
+
 .gene-rect, .gene-tip {
     cursor: pointer;
 }
@@ -128,7 +132,7 @@ path.light-stroke {
     transition: fill .5s, stroke .5s;
 }
 
-.leaf.node text {
+.node text.name {
     cursor: pointer;
     font-size: 10px;
     fill: var(--dark-gray);
@@ -144,7 +148,6 @@ path.link {
 /*LEGEND*/
 
 .legendContainer {
-    width: 320px;
     float: right;
     z-index: 10;
 }
@@ -176,8 +179,6 @@ div.sticky-legend {
 div.split-legend {
     width: 100%;
     padding: 15px 10px 15px 0px;
-    border: solid 1px var(--dark-gray);
-    border-radius: 5px;
     margin: 0.25rem 0 10px 0;
     resize: vertical;
     line-height: 1;
@@ -205,7 +206,6 @@ div.split-legend > div {
     display: inline-block;
     text-align: left;
     margin-bottom: 10px;
-    width: 50%;
     max-height: 80px;
     overflow-x: hidden;
 }
@@ -213,13 +213,18 @@ div.split-legend > div {
 div.split-legend > div div {
     display: inline-block;
     overflow: hidden;
-    width: 155px;
-    padding-left: 5px;
+    width: 130px;
     text-overflow: ellipsis;
+    overflow-y: auto;
 }
 
-div.split-legend > div div {
-    overflow-y: auto;
+div.split-legend label.form-check {
+    display: flex;
+    align-content: center;
+}
+
+div.split-legend .form-check-label {
+    margin-inline-start: 0.5rem !important;
 }
 
 

@@ -52,7 +52,7 @@ var addCheckButton = function(g,
     className='',
     checked=true) {
     let container = g.append('label')
-        .attr('class', 'form-selectgroup-item')
+        .attr('class', 'form-selectgroup-item mx-1')
     let input = container.append('input')
         .attr('type', 'checkbox')
         .attr('class', 'form-selectgroup-input ' + className);
@@ -96,9 +96,9 @@ var activateSelect = function(select, placeholder) {
 }
 
 var addLabel = function(g,
-    html) {
+    html, labelPadding=3) {
     let label = g.append('label')
-        .attr('class', 'form-label ml-2')
+        .attr('class', `form-label ml-${labelPadding}`)
         .style('font-size', '11px')
         .style('font-weight', 'bold')
         .html(html);

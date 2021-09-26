@@ -1,6 +1,8 @@
 div.customBar {
+  display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: last baseline;
   border-radius: 5px;
   padding: 10px;
 }
@@ -31,6 +33,16 @@ div.customBar > div {
    margin: 10px 0 0 20px; 
 }
 
+.customBar .split-btn-group > :first-child > .btn-clean {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.customBar .split-btn-group > :last-child > .btn-clean {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
 .noUi-target {
     color: var(--indigo) !important;
     height: .25rem;
@@ -39,6 +51,18 @@ div.customBar > div {
 
 .form-selectgroup-label {
     background-color: var(--sand);
+}
+
+.customBar .geneText + .choices__list--single {
+    width: 150px;
+}
+
+.customBar .annotation + .choices__list--single {
+    width: 150px;
+}
+
+.customBar .annotationLevel + .choices__list--single {
+    width: 250px;
 }
 
 .choices .form-select {
@@ -63,10 +87,6 @@ div.customBar > div {
 .choices__list.dropdown-menu .choices__list {
     padding-left: .5rem;
     padding-right: .65rem;
-}
-
-.choices__list--single {
-    width: 120px;
 }
 
 .choices__item {

@@ -1,4 +1,20 @@
 var parseNewick = function(string, fields = ['name']) {
+
+    function setAttributes(token, tree) {
+      const tokenSplit = token.trim().split('.');
+      tokenSplit.forEach((t, i) => {
+          const tSplit = t.split("__");
+          if (tSplit.length > 1) {
+              tree.lineage = tree.lineage || {};
+              const [ rank, t ] = tSplit;
+              tree.lineage[rank] = t;
+          } else if (fields[i])
+              tree[fields[i]] = t
+          else
+              tree[i] = t;
+      });
+    }
+
     let ancestors = [];
     let tree = {};
     let counter = 0;
@@ -28,14 +44,17 @@ var parseNewick = function(string, fields = ['name']) {
               // optional support value
               tree.support = parseFloat(token);
           } else if (x == '(' || x == ',') {
-              let tokenSplit = token.trim().split('.');
-              fields.forEach((f, i) => {
-                  if (tokenSplit[i]) tree[f] = tokenSplit[i];
-              })
+              setAttributes(token, tree)
               tree.id = counter;
               ++counter;
           } else if (x == ':') {
-              tree.length = parseFloat(token);
+              if (token[token.length - 1] === "]") 
+                  setAttributes(token.slice(0, -1).split("=")[1], tree);
+              else {
+                  if (token.includes("[&&NHX"))
+                      token = token.split("[")[0];
+                  tree.length = parseFloat(token);
+              }
           }
       }
     }

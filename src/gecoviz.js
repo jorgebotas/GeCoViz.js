@@ -16,7 +16,7 @@ import domtoimage from "dom-to-image";
 import { saveAs } from "file-saver";
 import Heatmap from "@jbotas/d3-heatmap";
 import CustomBar from "./customBar";
-import { addCheckbox, applyCss, cleanString, counter, triggerEvent } 
+import { addCheckbox, applyCss, cleanString, triggerEvent } 
        from "./helpers";
 import parseNewick from "./newick";
 import Palette from "./palette";
@@ -29,8 +29,9 @@ function GeCoViz(selector, opts) {
     return this;
   };
   var container = select(selector);
-  var containerY = container.node().getBoundingClientRect().top + 40;
+  var containerY; updateContainerY();
   var viewport = document.querySelector("html");
+  var scrollport = window;
   var initialized = false;
   var unfData = [];
   var data = [];
@@ -42,7 +43,7 @@ function GeCoViz(selector, opts) {
   var timer; // avoid overloading when collapsing tree nodes
   var anchors = [];
   var swappedAnchors = [];
-  var nSide = 2;
+  var nSide = { up: 4, down: 4 };
   var zoom = 1;
   var width = 700;
   var height = 700;
@@ -56,9 +57,18 @@ function GeCoViz(selector, opts) {
   var excludedAnnotation = [];
   var excludedAnchors = [];
   var scoredAnnotation;
+  var annotationScoreThreshold = 0.5;
   var URLs = {
     kegg: {
-      b: "https://www.kegg.jp/dbget-bin/www_bget?map",
+      b: "https://www.kegg.jp/dbget-bin/www_bget?map+",
+      a: "",
+    },
+    "KEGG pathways": {
+      b: "https://www.kegg.jp/dbget-bin/www_bget?map+",
+      a: "",
+    },
+    "KEGG Orthology": {
+      b: "https://www.genome.jp/dbget-bin/www_bget?ko+",
       a: "",
     },
     unigene: {
@@ -69,7 +79,15 @@ function GeCoViz(selector, opts) {
       b: "http://eggnog5.embl.de/#/app/results?target_nogs=",
       a: "",
     },
+    "eggNOG Orthology": {
+      b: "http://eggnog5.embl.de/#/app/results?target_nogs=",
+      a: "",
+    },
     pfam: {
+      b: "https://pfam.xfam.org/family/",
+      a: "",
+    },
+    Pfam: {
       b: "https://pfam.xfam.org/family/",
       a: "",
     },
@@ -89,7 +107,7 @@ function GeCoViz(selector, opts) {
     exit: 0,
   };
   var geneRect = {
-    w: (width - 2) / (2 * nSide + 1),
+    w: (width - 2) / (nSide.up + nSide.down + 1),
     h: opts && opts.geneRect ? opts.geneRect.h : 16,
     ph: 15,
     pv: 5,
@@ -100,12 +118,20 @@ function GeCoViz(selector, opts) {
   var customBar;
   var options = {
     showBar: true,
-    geneText: true,
+    // Tree
     showTree: false,
+    shrinkTreeWidth: false,
+    branchLength: true,
+    branchSupport: true,
+    // Heatmap
     showHeatmap: false,
-    showLegend: true,
+    // Context graph
+    onlyViewport: true,
+    geneText: true,
     scaleDist: false,
     collapseHeight: false,
+    showLegend: true,
+    splitLegend: false,
   };
   // Color variables
   var color = {
@@ -217,9 +243,15 @@ function GeCoViz(selector, opts) {
     return scale
   }
 
+    function updateContainerY() {
+        containerY = select(selector).node().getBoundingClientRect().top + 40;
+    }
+
   function updateData() {
     data = unfData.filter(
-      (d) => Math.abs(+d.pos) <= nSide && filterAnchor(d.anchor)
+      (d) => +d.pos <= nSide.down
+        && +d.pos >= -nSide.up
+        && filterAnchor(d.anchor)
     );
     anchors = data.filter((d) => d.pos == 0);
     if (heatmapData.unfData)
@@ -237,11 +269,9 @@ function GeCoViz(selector, opts) {
               distScaleContainer
                 .style('opacity', 1);
           }
-      } else if (initialized) {
+      } else if (initialized)
           distScaleContainer
             .style('opacity', 0);
-      }
-
   }
 
   function swapStrands(unswapped) {
@@ -263,13 +293,13 @@ function GeCoViz(selector, opts) {
   // Coordinate getters
   function getX(d) {
     if (options.scaleDist) return +d.vStart;
-    else return (+d.pos + nSide) * geneRect.w;
+    else return (+d.pos + nSide.up) * geneRect.w;
   }
 
   function getY(d) {
     if (treeData.newick) {
       try {
-        const y = select(`${selector} #leaf${cleanString(d.anchor)}`).node()
+        const y = select(`${selector} #node${cleanString(d.anchor)}`).node()
           .__data__.x;
         return y - (geneRect.h - geneRect.pv) - (options.collapseHeight ? 4 : 0);
       } catch {
@@ -280,15 +310,17 @@ function GeCoViz(selector, opts) {
   }
 
   function inViewPort(d) {
+    if (!options.onlyViewport)
+      return true;
     // Check x coordinate
     const x = getX(d);
     if (!x && x != 0) return false;
     // Check y coordinate
     const y = getY(d) + containerY;
-    const minY = viewport.scrollTop;
+    const minY = viewport.scrollTop - 50;
     const maxY = minY + viewport.clientHeight;
-    const margin = 50;
-    return y >= 0 && y >= (minY - margin) && y <= (maxY + margin);
+    const margin = 100;
+    return y >= (minY - margin) && y <= (maxY + margin);
   }
 
   // Tip and arrow strokes
@@ -435,9 +467,9 @@ function GeCoViz(selector, opts) {
   }
 
   function filterAnnotation(n) {
-    return !n.id || excludedAnnotation.includes(n.id) || n.id.trim() == ""
-      ? false
-      : filterByLevel(n);
+    return !n.id || excludedAnnotation.includes(n.id)
+          || !scoredAnnotation.find(a => a.id === n.id)
+          || n.id.trim() == "" ? false : filterByLevel(n);
   }
 
   function formatAnnotation(n) {
@@ -461,16 +493,22 @@ function GeCoViz(selector, opts) {
 
   // Gene listeners
   function hoverGene(d) {
-    let geneG = contextG.select("#gene" + cleanString(d.anchor + d.pos));
-    let stroke = geneG.select("path.stroke");
-    let geneName = geneG.select("text.geneName");
-    function mouseOver() {
-      stroke.style("opacity", 1);
+    const geneG = contextG.select("#gene" + cleanString(d.anchor + d.pos));
+    const geneName = geneG.select("text.geneName");
+    const stroke = geneG.select("path.stroke");
+    const classString = "." 
+          + [ ...geneG.select("path.stroke").node().classList ].join(".");
+    function mouseEnter() {
+      // Highlight strokes that have same annotation
+      if (![".stroke", ".stroke.cNA"].includes(classString))
+          contextG.selectAll(classString).style("opacity", 1);
+      else
+          stroke.style("opacity", 1);
       geneName.style("fill", color.black);
       // Highlight tree
-      let leaf = graphContainer.select("#leaf" + cleanString(d.anchor));
-      let leafCircle = leaf.select("circle");
-      let leafText = leaf.select("text");
+      const leaf = graphContainer.select("#node" + cleanString(d.anchor));
+      const leafCircle = leaf.select("circle");
+      const leafText = leaf.select("text");
       leafCircle
         .style("stroke", color.highlight)
         .style("fill", color.highlight);
@@ -479,19 +517,23 @@ function GeCoViz(selector, opts) {
       if (typeof annots != "object") annots = [{ id: annots }];
       annots.filter(filterByLevel).forEach((n) => {
         // Highlight legend
-        let div = graphContainer.select(`.lgnd${cleanString(n.id)}`);
+        const div = graphContainer.select(`.lgnd${cleanString(n.id)}`);
         let t = div.select("a");
         t = t.nodes().length == 0 ? div.select("em") : t;
         t.style("color", color.highlight);
       });
     }
     function mouseLeave() {
-      stroke.style("opacity", 0);
+      // Highlight strokes that have same annotation
+      if (classString !== ".stroke.cNA")
+          contextG.selectAll(classString).style("opacity", 0);
+      else
+          stroke.style("opacity", 0);
       geneName.style("fill", color.white);
       // Highlight tree
-      let leaf = graphContainer.select("#leaf" + cleanString(d.anchor));
-      let leafCircle = leaf.select("circle");
-      let leafText = leaf.select("text");
+      const leaf = graphContainer.select("#node" + cleanString(d.anchor));
+      const leafCircle = leaf.select("circle");
+      const leafText = leaf.select("text");
       leafCircle
         .style("stroke", leafColor.stroke)
         .style("fill", leafColor.fill);
@@ -500,14 +542,14 @@ function GeCoViz(selector, opts) {
       if (typeof annots != "object") annots = [{ id: annots }];
       annots.filter(filterByLevel).forEach((n) => {
         // Highlight legend
-        let div = graphContainer.select(`.lgnd${cleanString(n.id)}`);
+        const div = graphContainer.select(`.lgnd${cleanString(n.id)}`);
         let t = div.select("a");
         t = t.nodes().length == 0 ? div.select("em") : t;
         t.style("color", color.primary);
       });
     }
     return {
-      mouseOver: mouseOver,
+      mouseEnter: mouseEnter,
       mouseLeave: mouseLeave,
     };
   }
@@ -524,7 +566,7 @@ function GeCoViz(selector, opts) {
     const barWidth = (geneWidth - geneRect.ph) / nRect;
     let x0;
     x0 = d.strand == "-" ? tipWidth : 0;
-    const geneRects = geneG.selectAll("rect.gene-rect").data(annots, (n) => n.id);
+    const geneRects = geneG.selectAll("rect.gene-rect").data(annots, n => n.id);
     geneRects
       .enter()
       .append("rect")
@@ -538,8 +580,8 @@ function GeCoViz(selector, opts) {
     geneG
       .selectAll("path.gene-tip")
       .data(
-        (d) => (d.strand == "-" ? [annots[0]] : [annots[annots.length - 1]]),
-        (n) => n.id
+        d => (d.strand == "-" ? [annots[0]] : [annots[annots.length - 1]]),
+        n => n.id
       )
       .enter()
       .append("path")
@@ -575,30 +617,39 @@ function GeCoViz(selector, opts) {
       )
       .text((g) => getShowName(g));
     // Hover rationale
-    const { mouseOver, mouseLeave } = hoverGene(d);
+    const { mouseEnter, mouseLeave } = hoverGene(d);
     // Gene SVG group
-    geneG.node().childNodes.forEach(child => {
-      child.addEventListener("click", () =>
-        PopperCreate(selector + " .gcontext", d, URLs)
-      );
-      child.addEventListener("mouseover", mouseOver);
-      child.addEventListener("mouseleave", mouseLeave);
-    });
+    const geneGNode = geneG.node();
+    geneGNode
+          .addEventListener("mouseenter", mouseEnter);
+    geneGNode
+          .addEventListener("mouseleave", mouseLeave);
+    geneGNode
+          .addEventListener("click", () =>
+            PopperCreate(selector + " .gcontext", d, URLs)
+          );
+    //geneG.node().childNodes.forEach(child => {
+      //child.addEventListener("click", () =>
+        //PopperCreate(selector + " .gcontext", d, URLs)
+      //);
+      //child.addEventListener("mouseenter", mouseEnter);
+      //child.addEventListener("mouseleave", mouseLeave);
+    //});
   }
 
   function updateGene(d) {
     let geneG = contextG.select(`#gene${cleanString(d.anchor)}${d.pos}`);
     // let popperShow = PopperCreate(selector + ' .gcontext', d, URLs);
-    let { unfAnnots, annots } = formatAnnotation(d[annotation]);
-    let nRect = +annots.length > 0 ? +annots.length : 1;
+    const { unfAnnots, annots } = formatAnnotation(d[annotation]);
+    const nRect = +annots.length > 0 ? +annots.length : 1;
     let geneWidth;
     if (options.scaleDist) geneWidth = d.vSize;
     else geneWidth = geneRect.w;
     d.geneWidth = geneWidth;
-    let barWidth = (geneWidth - geneRect.ph) / nRect;
-    let x0 = d.strand == "-" ? tipWidth : 0;
-    let geneRects = geneG.selectAll("rect.gene-rect").data(annots, (n) => n.id);
-    let geneRectsEnter = geneRects
+    const barWidth = (geneWidth - geneRect.ph) / nRect;
+    const x0 = d.strand == "-" ? tipWidth : 0;
+    const geneRects = geneG.selectAll("rect.gene-rect").data(annots, (n) => n.id);
+    const geneRectsEnter = geneRects
       .enter()
       .insert("rect", "path")
       .attr("class", "gene-rect")
@@ -608,13 +659,13 @@ function GeCoViz(selector, opts) {
       .attr("width", 0)
       .attr("height", geneRect.h - geneRect.pv)
       .style("opacity", 0);
-    let { mouseOver, mouseLeave } = hoverGene(d);
+    const { mouseEnter, mouseLeave } = hoverGene(d);
     geneRectsEnter
-      .on("mouseover", mouseOver)
+      .on("mouseenter", mouseEnter)
       .on("mouseleave", mouseLeave)
       .on("click", () => PopperCreate(selector + " .gcontext", d, URLs));
     // Updating gene rects
-    let mergedGeneRects = geneRectsEnter.merge(geneRects);
+    const mergedGeneRects = geneRectsEnter.merge(geneRects);
     mergedGeneRects
       .transition()
       .duration(duration)
@@ -635,19 +686,19 @@ function GeCoViz(selector, opts) {
       .style("opacity", 0)
       .remove();
 
-    let { tipPath, strokePath } = getArrow(d, x0, geneWidth, tipWidth);
-    let geneTip = geneG.selectAll("path.gene-tip").data(
-      (d) => (d.strand == "-" ? [annots[0]] : [annots[annots.length - 1]]),
-      (n) => n.id
+    const { tipPath, strokePath } = getArrow(d, x0, geneWidth, tipWidth);
+    const geneTip = geneG.selectAll("path.gene-tip").data(
+      d => (d.strand == "-" ? [annots[0]] : [annots[annots.length - 1]]),
+      n => n.id
     );
-    let geneTipEnter = geneTip
+    const geneTipEnter = geneTip
       .enter()
       .insert("path", "path.light-stroke")
       .attr("class", "gene-tip");
     geneTipEnter
-      .attr("fill", (n) => (n.id == "NA" ? color.noData : palette.get(n.id)))
+      .attr("fill", n => (n.id == "NA" ? color.noData : palette.get(n.id)))
       .style("opacity", 0);
-    let geneTipMerged = geneTipEnter.merge(geneTip);
+    const geneTipMerged = geneTipEnter.merge(geneTip);
     geneTipMerged
       .transition()
       .duration(duration)
@@ -657,7 +708,7 @@ function GeCoViz(selector, opts) {
       .transition()
       .duration(duration)
       .delay(delay.enter)
-      .attr("fill", (n) => (n.id == "NA" ? color.noData : palette.get(n.id)))
+      .attr("fill", n => (n.id == "NA" ? color.noData : palette.get(n.id)))
       .style("opacity", 1);
     geneTip.exit().transition().duration(duration).style("opacity", 0).remove();
     geneG
@@ -674,8 +725,8 @@ function GeCoViz(selector, opts) {
         "class",
         "stroke " +
           unfAnnots
-            .filter((n) => filterByLevel(n))
-            .map((n) => `c${cleanString(n.id)}`)
+            .filter(n => filterByLevel(n))
+            .map(n => `c${cleanString(n.id)}`)
             .join(" ")
       )
       .transition()
@@ -702,7 +753,7 @@ function GeCoViz(selector, opts) {
     // Update data-dependant variables
     const genes = contextG
       .selectAll("g.gene")
-      .data(data.filter(inViewPort), (d) => d.anchor + d.pos);
+      .data(data.filter(inViewPort), d => d.anchor + d.pos);
 
     genes
       .enter()
@@ -712,10 +763,10 @@ function GeCoViz(selector, opts) {
         cl += d.pos == 0 ? " anchor" : "";
         return cl;
       })
-      .attr("id", (d) => "gene" + cleanString(d.anchor + d.pos))
-      .attr("transform", (d) => `translate(${getX(d)}, ${getY(d)})`)
+      .attr("id", d => "gene" + cleanString(d.anchor + d.pos))
+      .attr("transform", d => `translate(${getX(d)}, ${getY(d)})`)
       .style("opacity", 0)
-      .each((d) => enterGene(d))
+      .each(enterGene)
       .transition()
       .duration(duration)
       .delay(delay.enter)
@@ -726,8 +777,8 @@ function GeCoViz(selector, opts) {
       .transition()
       .duration(duration)
       .delay(delay.update)
-      .attr("transform", (d) => `translate(${getX(d)}, ${getY(d)})`)
-      .each((d) => updateGene(d));
+      .attr("transform", d => `translate(${getX(d)}, ${getY(d)})`)
+      .each(updateGene);
 
     genes
       .exit()
@@ -741,22 +792,23 @@ function GeCoViz(selector, opts) {
   }
 
   function updateViewPortGenes() {
+    updateContainerY();
     const genes = contextG
       .selectAll("g.gene")
-      .data(data.filter(inViewPort), (d) => d.anchor + d.pos);
+      .data(data.filter(inViewPort), d => d.anchor + d.pos);
 
     genes
       .enter()
       .append("g")
-      .attr("class", (d) => {
+      .attr("class", d => {
         let cl = "gene";
         cl += d.pos == 0 ? " anchor" : "";
         return cl;
       })
-      .attr("id", (d) => "gene" + cleanString(d.anchor + d.pos))
-      .attr("transform", (d) => `translate(${getX(d)}, ${getY(d)})`)
+      .attr("id", d => "gene" + cleanString(d.anchor + d.pos))
+      .attr("transform", d => `translate(${getX(d)}, ${getY(d)})`)
       .style("opacity", 0)
-      .each((d) => enterGene(d))
+      .each(enterGene)
       .style("opacity", 1);
 
     genes
@@ -766,7 +818,7 @@ function GeCoViz(selector, opts) {
 
   // Graph methods
   function updateWidth() {
-    const totalWidth = +graphContainer.node().clientWidth;
+    const totalWidth = +graphContainer.node().clientWidth + 20;
     let nonContextWidth = 0;
     if (treeData.newick && options.showTree) {
       let treeWidth = +graphContainer
@@ -774,8 +826,6 @@ function GeCoViz(selector, opts) {
         .attr("target-width");
       treeWidth = Math.min(0.4 * totalWidth, treeWidth);
       nonContextWidth += treeWidth;
-    } else {
-      nonContextWidth += 10;
     }
     if (heatmap && options.showHeatmap) {
       let heatmapWidth = +heatmapContainer.attr("target-width");
@@ -783,10 +833,9 @@ function GeCoViz(selector, opts) {
     }
     width = totalWidth - nonContextWidth;
     graphContainer.select(".gcontextAndLegend").style("width", `${width}px`);
-    if (options.showLegend) width -= 320; // Legend width
-    width -= 10; // Account for svg padding
+    if (options.showLegend) width -= (options.splitLegend ? 360 : 200); // Legend width
     graphContainer.select(".gcontextSVG").attr("width", width);
-    geneRect.w = (width - 2) / (2 * nSide + 1);
+    geneRect.w = (width - 2) / (nSide.up + nSide.down + 1);
   }
 
   function updateHeight() {
@@ -839,11 +888,22 @@ function GeCoViz(selector, opts) {
   }
 
   function scrollIntoView() {
-      container.select(".gene.anchor").node().scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
+      let minY = { val: 0, el: undefined };
+      container.selectAll(".gene.anchor")
+          .each(function(d) {
+              const y = getY(d);
+              if (y > -1000 && y <= minY.val)
+                  minY = { val: y, el: this };
+          });
+
+      if (minY.el)
+          minY.el.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "center",
+            });
+      else
+          console.log(minY)
   }
 
   function drawHeatmap() {
@@ -870,8 +930,17 @@ function GeCoViz(selector, opts) {
 
   function initGraph() {
     customBar = new CustomBar(data, treeData.fields);
-    customBar.drawBar(selector, { ...options, nSide: nSide });
-    customBar.updateLevels(annotation);
+    customBar.drawBar(selector, { 
+        ...options, 
+        nSide: nSide, 
+        zoom: zoom,
+        leafText: treeData.leafText,
+        geneText: geneText,
+        annotation: annotation,
+        annotationLevel: annotationLevel,
+        conservationThreshold: annotationScoreThreshold,
+    });
+    customBar.updateLevels(annotation, annotationLevel);
 
     graphContainer = container.append("div")
       .attr("class", "graph-container");
@@ -909,6 +978,9 @@ function GeCoViz(selector, opts) {
     drawHeatmap();
 
     updateWidth();
+
+    // Calculate prior to drawing genes
+    scoredAnnotation = scoreAnnotation();
 
     const contextSVG = contextContainer
       .insert("svg", ".legendContainer")
@@ -963,15 +1035,47 @@ function GeCoViz(selector, opts) {
   // Custombar (control pannel) listeners
   function parameterListener() {
     // nSide slider
-    const nSideSlider = container.select(".nSideSlider").node().noUiSlider;
-    nSideSlider.on("change", () => {
-      graph.nSide(Math.round(nSideSlider.get()));
+    const nSideSliderUp = container.select(".nSideSliderUp").node().noUiSlider;
+    nSideSliderUp.on("change", () => {
+      graph.nSide(Math.round(nSideSliderUp.get()), undefined);
+    });
+    // nSide slider
+    const nSideSliderDown = container.select(".nSideSliderDown").node().noUiSlider;
+    nSideSliderDown.on("change", () => {
+      graph.nSide(undefined, Math.round(nSideSliderDown.get()));
     });
     // Tree toggler
-    const treeToggler = container.select("input.toggleTree");
+    const treeToggler = container.select("button.toggleTree");
     treeToggler.on("change", () => {
       options.showTree = treeToggler.property("checked");
       options.showTree ? graph.toggleTree(true) : graph.toggleTree(false);
+    });
+    treeToggler.on("click", () => {
+        options.showTree = !options.showTree;
+        graph.toggleTree(options.showTree);
+        treeToggler.select("i")
+            .attr("class", () => "fas fa-" + 
+                (options.showTree ? "times" : "plus"));
+    })
+    // Tree width shrink
+    const treeShrinkWidth = container.select("input.shrinkTreeWidth");
+    treeShrinkWidth.on("change", () => {
+      options.shrinkTreeWidth = treeShrinkWidth.property("checked");
+      tree.shrinkWidth(options.shrinkTreeWidth);
+      updateWidth();
+      setTimeout(updateGenes, 100);
+    });
+    // Branch length
+    const treeBranchLength = container.select("input.branchLength");
+    treeBranchLength.on("change", () => {
+      options.branchLength = treeBranchLength.property("checked");
+      tree.branchLength(options.branchLength);
+    });
+    // Branch support
+    const treeBranchSupport = container.select("input.branchSupport");
+    treeBranchSupport.on("change", () => {
+      options.branchSupport = treeBranchSupport.property("checked");
+      tree.branchSupport(options.branchSupport);
     });
     // Heatmap toggler
     const heatmapToggler = container.select("input.toggleHeatmap");
@@ -982,10 +1086,19 @@ function GeCoViz(selector, opts) {
         : graph.toggleHeatmap(false);
     });
     // Legend toggler
-    const legendToggler = container.select("input.toggleLegend");
-    legendToggler.on("change", () => {
-      options.showLegend = legendToggler.property("checked");
-      options.showLegend ? graph.toggleLegend(true) : graph.toggleLegend(false);
+    const legendToggler = container.select("button.toggleLegend");
+    legendToggler.on("click", () => {
+        options.showLegend = !options.showLegend;
+        graph.toggleLegend(options.showLegend);
+        legendToggler.select("i")
+            .attr("class", () => "fas fa-" + 
+                (options.showLegend ? "times" : "plus"));
+    })
+    
+    const legendSplitter = container.select("input.splitLegend");
+    legendSplitter.on("change", () => {
+      options.splitLegend = legendSplitter.property("checked");
+      graph.toggleLegend(options.toggleLegend)
     });
     // Collapse gene height 
     const collapseHeight = container.select("input.collapseHeight");
@@ -1039,17 +1152,25 @@ function GeCoViz(selector, opts) {
     annotationSelect.on("change", () => {
       const newAnnotation =
         annotationOptions.options[annotationOptions.selectedIndex].value;
-      customBar.updateLevels(newAnnotation);
+      customBar.updateLevels(newAnnotation, annotationLevel);
       const annotationLevelOption =
         annotationLevelOptions.options[annotationLevelOptions.selectedIndex]
           .value;
       graph.annotation(newAnnotation, annotationLevelOption);
     });
+    // Zoom slider
+    const conservationSlider = container.select(".conservationSlider").node().noUiSlider;
+    conservationSlider.on("change", () => {
+      graph.conservationThreshold(conservationSlider.get());
+    });
     container.select(".shuffleColors").on("click", () => graph.shuffleColors());
-    container.select(".downloadPng").on("click", () => graph.toSvg());
+    //container.select(".downloadPng").on("click", () => graph.toSvg());
 
     // Scrolling listener
-    window.addEventListener("scroll", updateViewPortGenes, { passive: true });
+    if (options.onlyViewport)
+        scrollport.addEventListener("scroll", () => {
+            updateViewPortGenes();
+        }, { passive: true })
   }
 
   // Legend
@@ -1068,25 +1189,29 @@ function GeCoViz(selector, opts) {
   }
 
   function scoreAnnotation() {
-    let annots = data
-      .map(d =>
-        !d[annotation]
+    let groupedData = {};
+    data.forEach(d => {
+        const annot = !d[annotation]
           ? []
           : typeof d[annotation] == "object"
           ? d[annotation].filter(a => filterByLevel(a))
-          : [{ id: d[annotation] }]
-      );
-    const annotated_neighs = annots.filter(a => a.length > 0).length
-    annots = annots.flat();
-    const count = counter(annots, "id");
-    let uniqueAnnotation = {};
-    annots.forEach(a => (uniqueAnnotation[a.id] = a));
-    uniqueAnnotation = [...Object.values(uniqueAnnotation)];
-    uniqueAnnotation.forEach(a => {
-      a.score = +(count[a.id] / annotated_neighs).toFixed(3);
+          : [{ id: d[annotation] }];
+        groupedData[d.anchor] = groupedData[d.anchor] || [];
+        groupedData[d.anchor] = [...groupedData[d.anchor], ...annot];
     });
+    const groupedIds = [...Object.values(groupedData)].map(d => d.map(a => a.id));
+    const allAnnotation = [...Object.values(groupedData)].reduce((t, d) =>
+        t = [...t, ...d], []);
+    let uniqueAnnotation = {};
+    allAnnotation.forEach(a => uniqueAnnotation[a.id] = a);
+    uniqueAnnotation = [...Object.values(uniqueAnnotation)];
+    const nAnchors = anchors.length;
+    uniqueAnnotation.forEach(a => {
+        const matches = groupedIds.filter(g => g.includes(a.id)).length;
+        a.score = (+matches / nAnchors).toFixed(2);
+    })
     uniqueAnnotation.sort((a, b) => b.score - a.score);
-    return uniqueAnnotation;
+    return uniqueAnnotation.filter(a => a.score >= annotationScoreThreshold);
   }
 
   function updatePalette(shuffle = false) {
@@ -1106,7 +1231,7 @@ function GeCoViz(selector, opts) {
     splitLegend = stickyLegend
       .append("div")
       .attr("class", "split-legend annotation-legend bg-sand")
-      .style("width", "300px");
+      .style("width", options.splitLegend ? "345px" : "180px");
     // Legend title
     splitLegend.append("div").attr("class", "legend-title font-weight-bold");
     // Select-all checkbox
@@ -1115,6 +1240,7 @@ function GeCoViz(selector, opts) {
         .append("div")
         .attr("class", "pl-3")
         .style("display", "flex")
+        .style("width", "160px")
         .style("height", "35px"),
       "Select all",
       "form-check-legend lgnd-toggleAll"
@@ -1125,16 +1251,17 @@ function GeCoViz(selector, opts) {
       .style("outline", "none")
       .style("display", "flex")
       .style("padding-top", "6.5px")
+      .style("width", "160px")
       .style("height", "35px");
     let noDataSVG = noData
       .append("svg")
-      .attr("width", 40)
+      .attr("width", 30)
       .attr("height", 20)
       .style("display", "inline-block");
     noDataSVG
       .append("circle")
       .attr("r", 6)
-      .attr("cx", 20)
+      .attr("cx", 15)
       .attr("cy", 6.5)
       .style("fill", color.noData);
     noData
@@ -1142,7 +1269,7 @@ function GeCoViz(selector, opts) {
       .style("display", "inline-block")
       .style("outline", "none")
       .html("No data");
-    updateLegend(splitLegend);
+    updateLegend();
     // Toggle checkboxes if clicked
     let legendSwitch = splitLegend.select(".lgnd-toggleAll");
     legendSwitch.on("change", () => {
@@ -1174,7 +1301,7 @@ function GeCoViz(selector, opts) {
       .attr("class", "lgnd-entry")
       .style("outline", "none")
       .style("display", "flex");
-    legendEntryEnter.on("mouseover", (_, n) =>
+    legendEntryEnter.on("mouseenter", (_, n) =>
       graphContainer
         .selectAll(`path.stroke.c${cleanString(n.id)}`)
         .style("opacity", 1)
@@ -1186,13 +1313,13 @@ function GeCoViz(selector, opts) {
     );
     legendEntryEnter
       .append("svg")
-      .attr("width", 40)
+      .attr("width", 30)
       .attr("height", 20)
       .style("display", "inline-block")
       .style("margin-top", "6px")
       .append("circle")
       .attr("r", 6)
-      .attr("cx", 20)
+      .attr("cx", 15)
       .attr("cy", 6.5)
       .style("fill", (n) => palette.get(n.id));
     let checkboxDivEnter = legendEntryEnter
@@ -1201,7 +1328,7 @@ function GeCoViz(selector, opts) {
       .style("outline", "none");
     let checkboxLabelEnter = checkboxDivEnter
       .append("label")
-      .attr("class", "form-check m-1 ml-2");
+      .attr("class", "form-check m-1");
     checkboxLabelEnter
       .append("input")
       .attr("type", "checkbox")
@@ -1252,7 +1379,7 @@ function GeCoViz(selector, opts) {
     legendEntryMerged.select(".lgnd-entry-description").html(
       (n) =>
         `<strong class='font-weight-bold'>\
-                    conservation: ${n.score}\
+                    vertical score: ${n.score}\
                     </strong><br>` + (n.description || "")
     );
     legendEntry.exit().style("opacity", 0).remove();
@@ -1266,7 +1393,7 @@ function GeCoViz(selector, opts) {
   }
 
   function updateLegendHeight() {
-    let factor = 60;
+    const factor = 100 / (options.splitLegend ? 2 : 1);
     // Scale legend to fit all data
     let legendHeight =
       (scoredAnnotation.length > 1 ? scoredAnnotation.length : 2) * factor;
@@ -1325,25 +1452,42 @@ function GeCoViz(selector, opts) {
     graph.excludeAnchor(cleanString(l.data.name), false);
   }
 
+  function treeCollapseEnter(n) {
+    //function getFirstLeaf(n) {
+      //if (!n.children)
+          //return n
+      //return getFirstLeaf(n.children[0])
+    //}
+    //const leafName = getFirstLeaf(n.data).name
+    //graph.excludeAnchor(cleanString(leafName), false);
+    console.log('enter')
+    console.log(n.data)
+  }
+
+  function treeCollapseExit(n) {
+      console.log('exit')
+      console.log(n.data)
+  }
+
   function treeLeafExit(l) {
     graph.excludeAnchor(cleanString(l.data.name), true);
   }
 
-  function treeLeafMouseOver(_, l) {
-    let anchor = cleanString(l.data.name);
-    let genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
+  function treeLeafMouseEnter(_, l) {
+    const anchor = cleanString(l.data.name);
+    const genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
     genes.select(".stroke").style("opacity", 1);
   }
 
   function treeLeafMouseLeave(_, l) {
-    let anchor = cleanString(l.data.name);
-    let genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
+    const anchor = cleanString(l.data.name);
+    const genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
     genes.select(".stroke").style("opacity", 0);
   }
 
-  function treeLeafClick(event, l) {
-    if (event.altKey) {
-      const name = cleanString(l.data.name);
+  function treeNodeClick(event, n) {
+    if (event.shiftKey && !n.children) {
+      const name = cleanString(n.data.name);
       const excluded = excludedAnchors.includes(name);
       graph.excludeAnchor(name, !excluded);
     }
@@ -1358,14 +1502,21 @@ function GeCoViz(selector, opts) {
         treeData.fields,
         {
           enterEach: treeLeafEnter,
-          enterMouseOver: treeLeafMouseOver,
-          enterMouseLeave: treeLeafMouseLeave,
-          enterClick: treeLeafClick,
           exitEach: treeLeafExit,
+          enterMouseEnter: treeLeafMouseEnter,
+          enterMouseLeave: treeLeafMouseLeave,
+          enterCollapsed: treeCollapseEnter,
+          exitCollapsed: treeCollapseExit,
+          enterClick: treeNodeClick,
         },
-        { leafHeight: treeData.leafHeight,
+        { 
+          branchLength: options.branchLength,
+          branchSupport: options.branchSupport,
+          leafHeight: treeData.leafHeight,
+          shrinkWidth: options.shrinkTreeWidth,
           show: options.showTree, 
-          collapse: options.collapseHeight }
+          outline: options.collapseHeight, 
+        }
       );
   }
 
@@ -1466,8 +1617,9 @@ function GeCoViz(selector, opts) {
     let legendContainer = select(selector).select(".legendContainer");
     let splitLegend = legendContainer.select(".split-legend");
     if (show) {
-      legendContainer.style("display", "block").style("width", "320px");
-      splitLegend.style("width", "300px");
+      legendContainer.style("display", "block")
+            .style("width", options.splitLegend ? "360px" : "200px");
+      splitLegend.style("width", options.splitLegend ? "345px" : "180px");
       legendContainer
         .transition()
         .duration(duration)
@@ -1530,11 +1682,18 @@ function GeCoViz(selector, opts) {
         //geneRect.ph = 20;
     }
     if (initialized) {
-      tree.collapse(options.collapseHeight)
+      tree.outline(options.collapseHeight)
       updateWidth();
       updateHeight();
       updateGenes();
     }
+    return graph;
+  };
+
+  graph.scrollPort = function (sp) {
+    if (!sp) return scrollport;
+    scrollport = sp;
+    if (initialized) updateViewPortGenes();
     return graph;
   };
 
@@ -1545,9 +1704,9 @@ function GeCoViz(selector, opts) {
     return graph;
   };
 
-  graph.nSide = function (d) {
+  graph.nSide = function (u, d) {
     if (!arguments.length) return nSide;
-    nSide = d;
+    nSide = { up: u || nSide.up, down: d || nSide.down };
     updateData();
     if (initialized) {
         updateLegend();
@@ -1586,19 +1745,17 @@ function GeCoViz(selector, opts) {
   graph.excludeAnchor = function (anchor, exclude = true) {
     if (!arguments.length) return excludedAnchors;
     if (timer) clearTimeout(timer);
-    if (exclude && !excludedAnchors.includes(anchor)) {
+
+    if (exclude && !excludedAnchors.includes(anchor))
       excludedAnchors.push(anchor);
-      updateData();
-      if (options.showHeatmap && heatmapData.data)
-        heatmap.updateData(heatmapData.data);
-    } else if (!exclude && excludedAnchors.includes(anchor)) {
+    else if (!exclude && excludedAnchors.includes(anchor))
       excludedAnchors = excludedAnchors.filter((a) => a != anchor);
-      updateData();
-      if (options.showHeatmap && heatmapData.data)
-        heatmap.updateData(heatmapData.data);
-    }
+
     timer = setTimeout(() => {
         if (initialized) {
+            updateData();
+            if (options.showHeatmap && heatmapData.data)
+                heatmap.updateData(heatmapData.data);
             updateWidth();
             updateHeight();
             updateGenes();
@@ -1614,6 +1771,15 @@ function GeCoViz(selector, opts) {
     return graph;
   };
 
+  graph.conservationThreshold = function (threshold) {
+    if (!arguments.length) return annotationScoreThreshold;
+    annotationScoreThreshold = +threshold;
+    updatePalette();
+    if (initialized) updateLegend();
+    if (initialized) updateAnnotation();
+    return graph;
+  };
+
   graph.shuffleColors = function () {
     updatePalette(true);
     if (initialized) updateLegend();
@@ -1622,9 +1788,8 @@ function GeCoViz(selector, opts) {
   };
 
   graph.options = function (opts) {
-    Object.entries(opts).forEach(([k, v]) => {
-      options[k] = v;
-    });
+    for (let key in opts)
+      options[key] = opts[key];
     return graph;
   };
 
@@ -1682,7 +1847,8 @@ function GeCoViz(selector, opts) {
     splitLegend.select(".pl-3").remove(); // Remove toggleAll
     splitLegend.selectAll("input").remove(); // Remove checkboxes
     const legendEntries = splitLegend.selectAll(".lgnd-entry");
-    legendEntries.select("label").style("padding-left", ".5rem");
+    legendEntries.select("label").style("margin-left", "0");
+    legendEntries.select(".form-check-label").style("margin", "0 !important");
     
     // Apply css
     const styleSheets = Array.from(document.styleSheets).filter(s => {
@@ -1690,7 +1856,7 @@ function GeCoViz(selector, opts) {
       catch { return false } 
     });
     styleSheets.forEach(styleSheet => applyCss(toDownload.node(), styleSheet));
-    toDownload.select("*").style("font-family", "sans-serif");
+    toDownload.selectAll("*").style("font-family", "sans-serif");
 
     // Download
     const svg_xml = (new XMLSerializer()).serializeToString(toDownload.node());

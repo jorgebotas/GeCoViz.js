@@ -17,34 +17,45 @@ var Tree = function(selector,
     fields = ['name'],
     callbacks = {
         enterEach : () => undefined,
-        enterMouseOver : () => undefined,
+        enterMouseEnter : () => undefined,
         enterMouseLeave : () => undefined,
         enterClick : () => undefined,
+        enterCollapsed: () => undefined,
+        exitCollapsed: () => undefined,
         exitEach : () => undefined,
     },
     options = {
         width: 700,
+        branchLength: true,
+        branchSupport: true,
         leafHeight: 18,
+        shrinkWidth: false,
         show: true,
-        collapse: false,
-    }){
+        outline: false,
+        }
+    ){
     var margin = {
         top : 5,
         right : 5,
         bottom : 25,
         left : 10
     }
-    var graph = function() { return this };
+    var graph = function() {
+        return this
+    };
     leafText = leafText || fields[0];
-    var treeRootHierarchy = hierarchy(root)
-            .sort(node => node.children ? node.children.length : -1);
+    function buildHierarchy(root) {
+        return hierarchy(root)
+            .sort(node => node.children ? node.children.length : -1)
+    }
+    var treeRootHierarchy = buildHierarchy(root);
     var width = (+options.width || 700) - margin.left - margin.right;
-    var height = treeRootHierarchy.leaves().length * (options.collapse ? 
+    var height = treeRootHierarchy.leaves().length * (options.outline ? 
         4 : options.leafHeight || 18);
     var tree = cluster()
             .size([height, width])
             .separation(() => 1);
-    var treeRoot = tree(treeRootHierarchy)
+    var treeRoot = tree(treeRootHierarchy);
     var visContainer = select(selector)
         .style('width', width)
     var visDiv = visContainer
@@ -152,8 +163,31 @@ var Tree = function(selector,
         }
     }
 
-    function getShowName(d) {
-        return options.collapse ? '' : d.data[leafText] || '';
+    function collapseNode(event, n) {
+        if (n.children || n._children) {
+            if (event.altKey) toggleAll(n);
+            else toggle(n);
+            graph.update(n);
+        }
+    }
+
+    function getNodeClass(n) {
+        return !n.parent ? 
+            'root node' :
+            (n.children || n._children) ? 
+            'inner node' + (n._children ? ' collapsed' : '') : 
+            'leaf node';
+    }
+
+    function getNodeId(n) {
+        const id = n.data.name ? n.data.name : `-inner${n.data.id}`;
+        return "node" + cleanString(id)
+    }
+
+    function getNodeText(d) {
+        return d.data[leafText] 
+            || (d.data.lineage ? d.data.lineage[leafText] : "")
+            || "";
     }
 
     function scaleBranchLength(nodes) {
@@ -170,7 +204,7 @@ var Tree = function(selector,
           node.rootDist = (node.parent ? node.parent.rootDist : 0)
                 + (node.data.length || 0);
         })
-        const branchLength = options.collapse ? 10 : 25;
+        const branchLength = (options.outline || options.shrinkWidth) ? 10 : 25;
         const nodeLengths = nodes.map(n => n.data.length);
         const yscale = scaleLinear()
             .domain([0, max(nodeLengths)])
@@ -194,7 +228,7 @@ var Tree = function(selector,
             leaf.select('text')
                 .style('fill', highlight ? color.highlight : leafColor.text);
             highlight
-                ? callbacks.enterMouseOver(undefined, d)
+                ? callbacks.enterMouseEnter(undefined, d)
                 : callbacks.enterMouseLeave(undefined, d);
         }
     }
@@ -235,22 +269,23 @@ var Tree = function(selector,
             .text(ticks[1] + units);
     }
 
-    function updateScale(scale) {
+    function updateScale(scale, removeOnly=false) {
         let scaleG = visDiv.select('.scale');
         if (scaleG.node()) {
             scaleG = scaleG.select("g");
             scaleG.selectAll("*").remove();
-        } else
+        } else if (!removeOnly)
             scaleG = visDiv
                 .append('svg')
                 .attr('class', 'scale')
                 .append('g');
-        drawScale(scaleG, scale, 0, 0);
+        if (!removeOnly)
+            drawScale(scaleG, scale, 0, 0);
     }
 
     function updateWidth() {
         width = max(treeRoot.leaves()
-            .map(l => l.y + getShowName(l).length*6 + 6));
+            .map(l => l.y + getNodeText(l).length*6 + 6));
         visSVG
         .attr('target-width', width + 30)
         .transition()
@@ -258,7 +293,7 @@ var Tree = function(selector,
         .delay(delay.update)
         .attr('width', width + 20)
         .attr('height', height + 20)
-        if(options.show != false)
+        if (options.show != false)
             visContainer
             .transition()
             .duration(duration)
@@ -268,68 +303,165 @@ var Tree = function(selector,
 
     function updateHeight() {
         // 18 pixels per line
-        height = treeRoot.leaves().length * (options.collapse ? 
+        height = treeRoot.leaves().length * (options.outline ? 
             4 : options.leafHeight || 18); 
         visSVG
             .attr('target-height', height + 30)
         tree.size([height, width])
     }
 
+    function updateBranchText(text) {
+        // text may be either "support" or "length"
+        let show;
+        if (text === "support")
+            show = options.branchSupport;
+        else if (text === "length")
+            show = options.branchLength;
+        else
+            return
+        const innerNodes = vis.selectAll("g.inner.node");
+        innerNodes.select(`text.${text}`)
+            .transition()
+            .duration(duration)
+            .style('fill-opacity', 
+                (!options.outline && !options.shrinkWidth && show) ? 1 : 1e-6)
+            .style('display', 
+                (!options.outline && !options.shrinkWidth && show) ?
+                "block" : "none");
+    }
+
     function updateLeafText() {
         updateWidth();
-        const leaves = vis.selectAll('g.node.leaf')
-        leaves.select('text')
+        // Both leaves and collapsed inner nodes (now external)
+        const externalNodes = vis.selectAll("g.leaf.node, g.external.node");
+        externalNodes.select('text')
             .transition()
             .duration(duration)
-            .style('opacity', 0)
+            .style('fill-opacity', 1e-6)
             .transition()
             .duration(duration)
-            .style('opacity', 1)
-            .text(getShowName)
+            .style('fill-opacity', 1)
+            .text(getNodeText)
     }
 
     graph.update = function (source=treeRoot, firstTime=false) {
         // compute the new height
         updateHeight();
-        treeRoot = tree(treeRootHierarchy);
-        let nodes = treeRoot.descendants();
+        const nodes = treeRoot.descendants();
         // Scale branches by length
         const scale = scaleBranchLength(nodes)
         // Draw yscale legend
         if (firstTime)
-            updateScale(scale);
+            updateScale(scale, options.shrinkWidth || options.outline);
 
         // ENTERING NODES
-        let node = vis.selectAll('g.node')
+        const node = vis.selectAll('g.node')
             .data(nodes, n => n.data.id);
         // Enter any new nodes at the parent's previous position.
-        let nodeEnter = node.enter()
+        const nodeEnter = node.enter()
                 .append('svg:g')
-                .attr('class', n =>
-                    !n.parent ? 'root node' :
-                     n.children || n._children
-                        ? 'inner node'
-                        : 'leaf node')
+                .attr('class', getNodeClass)
+                .attr('id', getNodeId)
                 .attr('transform',
                       'translate('
                         + source.y0
                         + ','
                         + source.x0
                         + ')')
-                .on('click', (event, d) => {
-                    if (event.altKey) toggleAll(d)
-                    else toggle(d)
-                    graph.update(d);
+                .on('click', (event, n) => {
+                    if (event.altKey)
+                        graph.remove(n);
+                    else {
+                        callbacks.enterClick(event, n);
+                        if (event.altKey) 
+                            collapseNode(event, n);
+                    }
                 })
         nodeEnter.append('svg:circle')
             .attr('r', 1e-6)
             .style('fill', d => {
                 return d.data._children ? leafColor.full : leafColor.empty
             });
+        nodeEnter
+            .append('text')
+            .attr('class', 'name')
+            .attr('dx', 10)
+            .attr('dy', 3)
+            .attr('text-anchor', 'start')
+            .style("fill-opacity", 1e-6)
+            .style("display", "none")
+            .text(getNodeText);
+
+        // Associate each node to pop-up
+        // Display fields data
+        nodeEnter
+            .on('click', (event, n) => {
+                callbacks.enterClick(event, n);
+                if (event.altKey)
+                    graph.remove(n);
+                else {
+                    if (event.shiftKey) 
+                        collapseNode(event, n);
+                    else {
+                        const popperCallback = (popper) => {
+                            let popperHTML = '';
+                            if (fields)
+                                fields.forEach(f => {
+                                    popperHTML += f === 'showName'
+                                        ? ''
+                                        : n.data[f]
+                                        ? '<p>' + f + ': ' + n.data[f] + '</p>'
+                                        : ''
+                                })
+                            if (n.data.lineage)
+                                Object.entries(n.data.lineage).forEach(([ rank, t ]) => {
+                                    popperHTML += `<p>${rank}: ${t}</p>`;
+                                })
+                            const text = getNodeText(n);
+                            popperHTML = text 
+                                ? '<p>' + text + '</p>' + popperHTML 
+                                : popperHTML;
+
+                            const popperContent = popper.select(".popper-content");
+                            if (popperHTML.length)
+                                popperContent.html(popperHTML);
+                            else
+                                popper.style("width", "220px").style("height", "85px");
+                            popperContent.append("button")
+                                .attr("class", "btn btn-sm btn-primary collapseNode")
+                                .style("position", "absolute")
+                                .style("right", "15px")
+                                .style("top", "15px")
+                                .text(() => n._children ? "Expand node" : n.children ? "Collapse node" : "Toggle context")
+                                .on("click", () => {
+                                    if (n.children || n._children)
+                                        collapseNode({ altKey: false }, n);
+                                    else
+                                        callbacks.enterClick({ altKey:true }, n);
+                                    visDiv.selectAll(".popper").remove();
+                                })
+                            popperContent.append("button")
+                                .attr("class", "btn btn-sm btn-danger collapseNode")
+                                .style("position", "absolute")
+                                .style("right", "15px")
+                                .style("top", "45px")
+                                .html("<i class='fas fa-exclamation-circle mr-1'></i>Permantently remove node")
+                                .on("click", () => {
+                                    graph.remove(n);
+                                })
+                        }
+                        TreePopper(selector + ' .phylogram',
+                            cleanString(n.data.name ? n.data.name : `-inner${n.data.id}`),
+                            popperCallback,
+                            'col-md-2 col-sm-4')
+                    }
+                }
+            })
         // Style inner nodes
-        let nodeInnerEnter = nodeEnter.filter('.inner');
+        const nodeInnerEnter = nodeEnter.filter('.inner');
         nodeInnerEnter
             .append('text')
+            .attr('class', 'support')
             .attr('dx', -3)
             .attr('dy', -3)
             .attr('text-anchor', 'end')
@@ -339,6 +471,7 @@ var Tree = function(selector,
             .text(n => (+n.data.support).toFixed(2));
         nodeInnerEnter
             .append('text')
+            .attr('class', 'length')
             .attr('dx', -3)
             .attr('dy', +11)
             .attr('text-anchor', 'end')
@@ -346,79 +479,76 @@ var Tree = function(selector,
             .attr('fill', color.gray)
             .style('fill-opacity', 1e-6)
             .text(n => {
-                let length = (+n.data.length)
-                let rounded = length < 0.01
+                const length = (+n.data.length)
+                const rounded = length < 0.01
                     ? length.toExponential(0)
                     : length.toFixed(2)
                 return rounded ? rounded : n.data.length
             });
 
+
         // Hovering over clade will highlight descendants
         nodeInnerEnter
-            .on('mouseover', (_, d) => highlightLeaves(d, true))
+            .on('mouseenter', (_, d) => highlightLeaves(d, true))
             .on('mouseleave', (_, d) => highlightLeaves(d, false));
-        let nodeLeafEnter = nodeEnter.filter('.leaf')
-        nodeLeafEnter
-            .attr('id', n => 'leaf'
-                + cleanString(n.data.name))
-        nodeLeafEnter
-            .on('mouseover', (e, l) => callbacks.enterMouseOver(e, l))
-            .on('mouseleave', (e, l) => callbacks.enterMouseLeave(e, l))
-            .on('click', (e, l) => callbacks.enterClick(e, l))
-            .each(l => callbacks.enterEach(l))
-        nodeLeafEnter
-            .append('text')
-            .attr('dx', 10)
-            .attr('dy', 3)
-            .attr('text-anchor', 'start')
-            .style('fill-opacity', 1e-6)
-            .text(getShowName)
-        // Associate each leaf to pop-up
-        // Display fields data
-        if (fields) {
-            nodeLeafEnter
-                .on('click', (event, n) => {
-                    callbacks.enterClick(event, n);
-                    if (!event.altKey) {
-                        let popperContent = '';
-                        fields.forEach(f => {
-                            popperContent += f == 'showName'
-                                ? ''
-                                : n.data[f]
-                                ? '<p>' + f + ': ' + n.data[f] + '</p>'
-                                : ''
-                        })
-                        popperContent = n.data.showName
-                            ? '<p>' + n.data.showName + '</p>' + popperContent
-                            : popperContent
-                        TreePopper(selector + ' .phylogram',
-                            cleanString(n.data.name),
-                            popperContent,
-                            'col-md-2 col-sm-4')
-                    }
-                })
-        }
 
+        const nodeLeafEnter = nodeEnter.filter('.leaf');
+        nodeLeafEnter
+            .on('mouseenter', (e, l) => callbacks.enterMouseEnter(e, l))
+            .on('mouseleave', (e, l) => callbacks.enterMouseLeave(e, l))
+            .each(l => callbacks.enterEach(l))
+
+
+        // COLLAPSED NODES
+        const collapsedNodes = vis.selectAll("g.collapsed.node")
+            .data(nodes.filter(n => n._children && !n.children), n => n.id);
+        collapsedNodes.enter()
+            .each(callbacks.enterCollapsed);
+        collapsedNodes.exit()
+            .each(callbacks.exitCollapsed);
 
         // UPDATING NODES
         // Transition nodes to their new position.
-        let nodeUpdate = nodeEnter
+        const nodeUpdate = nodeEnter
             .merge(node)
+            .attr("class", getNodeClass)
             .transition()
             .duration(duration)
             .delay(delay.update)
             .attr('transform', d => 'translate(' + d.y + ',' + d.x + ')');
         nodeUpdate.select('circle')
-            .attr('r', options.collapse ? 1.5 : 4)
+            .attr('r', options.outline ? 1.5 : 4)
             .attr('stroke-width', '1.5px')
             .attr('stroke', leafColor.stroke)
             .style('fill', d => d._children ? leafColor.full : leafColor.empty);
-        nodeUpdate.selectAll('text')
-            .style("display", options.collapse ? "none" : "block")
-            .style('fill-opacity', options.collapse ? 1e-6 : 1);
+        nodeUpdate.select('text.name')
+            .style("display", n => 
+                (options.outline || n.children) ? "none" : "block")
+            .style("fill-opacity", n => 
+                (options.outline || n.children) ? 1e-6 : 1);
+
+        const nodeInnerUpdate = nodeUpdate.filter('.inner');
+        nodeInnerUpdate.select('circle')
+            .attr('r', d => 
+                (options.outline || (options.shrinkWidth && !d._children)) ?
+                 1.5 : 4);
+        nodeInnerUpdate.select('text.length')
+            .style("display", 
+                (options.outline || options.shrinkWidth || !options.branchLength)
+                ? "none" : "block")
+            .style('fill-opacity', 
+                (options.outline || options.shrinkWidth || !options.branchLength)
+                ? 1e-6 : 1);
+        nodeInnerUpdate.select('text.support')
+            .style("display", 
+                (options.outline || options.shrinkWidth || !options.branchSupport)
+                ? "none" : "block")
+            .style('fill-opacity', 
+                (options.outline || options.shrinkWidth || !options.branchSupport)
+                ? 1e-6 : 1);
 
         // EXITING NODES
-        let nodeExit = node.exit()
+        const nodeExit = node.exit()
             .transition()
             .duration(duration)
             .delay(delay.exit)
@@ -439,14 +569,15 @@ var Tree = function(selector,
             .filter('.leaf')
             .each(l => callbacks.exitEach(l))
 
+
         // LINKS
-        let link = vis.selectAll('path.link')
+        const link = vis.selectAll('path.link')
             .data(treeRoot.links(nodes), d =>  d.target.data.id);
-        let dottedLink = vis.selectAll('line.dotted-link')
+        const dottedLink = vis.selectAll('line.dotted-link')
             .data(treeRoot.links(nodes), d =>  d.target.data.id);
-        let linkEnter = link
+        const linkEnter = link
             .enter();
-        let dottedLinkEnter = dottedLink
+        const dottedLinkEnter = dottedLink
             .enter();
         linkEnter
             .insert('svg:path', 'g')
@@ -471,8 +602,9 @@ var Tree = function(selector,
             .attr("stroke", color.sand)
             .attr("stroke-width", "2px")
             .attr("stroke-dasharray", "2")
-            .style("display", options.collapse ? "none" : "block");
-
+            .style("display", 
+                (options.outline || options.shrinkWidth) ? "none" : "block");
+    
         // Transition links to new position
         link
             .transition()
@@ -487,7 +619,8 @@ var Tree = function(selector,
             .attr('y1', n => n.target.x)
             .attr('x2', n => n.target.y)
             .attr('y2', n => n.target.x)
-            .style("display", options.collapse ? "none" : "block");
+            .style("display", 
+                (options.outline || options.shrinkWidth) ? "none" : "block");
 
         // Transition exiting nodes to parent's new position
         link
@@ -512,13 +645,45 @@ var Tree = function(selector,
         return graph;
     }
 
-    graph.collapse = function(collapse=true) {
-        if (collapse)
-            options.collapse = true;
-        else
-            options.collapse = false;
+    graph.remove = function(node){
+        const hierarchyNode = treeRootHierarchy
+            .find(d => d.data.id === node.data.id);
+        function removeChild(d) {
+            if (!d.parent)
+                return
+            d.parent.children = d.parent.children
+                .filter(c => c != d);
+            if (!d.parent.children.length)
+                removeChild(d.parent);
+        }
+        removeChild(hierarchyNode);
+        treeRoot = tree(treeRootHierarchy);
+        graph.update(node, true);
+    }
+
+    graph.branchLength = function (show=true) {
+        if (show) options.branchLength = true;
+        else options.branchLength = false;
+        updateBranchText("length");
+    }
+
+    graph.branchSupport = function (show=true) {
+        if (show) options.branchSupport = true;
+        else options.branchSupport = false;
+        updateBranchText("support");
+    }
+
+    graph.shrinkWidth = function (shrink=true) {
+        if (shrink) options.shrinkWidth = true;
+        else options.shrinkWidth = false;
         graph.update(treeRoot, true);
-        visSVG.node().scrollIntoView({ behaviour: "smooth" });
+    }
+
+    graph.outline = function (outline=true) {
+        if (outline) options.outline = true;
+        else options.outline = false;
+        graph.update(treeRoot, true);
+        //visSVG.node().scrollIntoView({ behaviour: "smooth" });
         return graph;
     }
 
@@ -529,7 +694,7 @@ var Tree = function(selector,
         return graph;
     }
 
-    graph.leafText = function(field) {
+    graph.leafText = function (field) {
         if (!field) return leafText;
         leafText = field;
         updateLeafText();
@@ -539,6 +704,7 @@ var Tree = function(selector,
     graph.update(treeRoot, true);
     // Enable pop-up interactivity
     PopperClick(selector + ' .phylogram');
+
     return graph;
 }
 

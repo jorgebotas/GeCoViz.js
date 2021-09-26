@@ -11,7 +11,10 @@
     display: none;
     visibility: hidden;
     opacity: 0;
-    z-index: 11;
+    z-index: 100;
+    width: 40vw; /* 40vw */
+    max-width: 700px;
+    min-height: 55px;
 }
 
 .popper-content {
@@ -22,6 +25,10 @@
     overflow: auto;
     border: solid transparent 1px;
     border-radius: 5px;
+}
+
+.popper-content p {
+    margin-bottom: .5rem;
 }
 
 .popper[data-show] {
@@ -53,6 +60,10 @@ ul.popper-ul {
     overflow-y:auto;
     border: solid var(--dark-gray) 1px;
     border-radius: 5px;
+}
+
+ul.popper-ul:only-child { 
+    width: 100%;
 }
 
 .popper-ul > li {

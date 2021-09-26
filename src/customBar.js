@@ -30,6 +30,7 @@ class CustomBar {
         this.treeFields = treeFields;
         this.computeFields();
         this.levelSelect;
+        this.levelSelectContainer;
     }
 
     computeDataKeys() {
@@ -44,20 +45,21 @@ class CustomBar {
         // Extract complex and simple data fields
         const dataComplexFields = {}
         this.data.forEach(d => {
-            Object.entries(d).forEach(([k, v]) =>{
+            Object.entries(d).forEach(([k, v]) => {
                 if (nonEmptyArray(v)) {
                     v.forEach(v => {
                         if (dataComplexFields[k]) {
                             if (v.level
-                                && !dataComplexFields[k].includes(v.level)) {
-                                dataComplexFields[k].push(v.level)
+                                && !dataComplexFields[k].filter(d => d.id == v.level).length) {
+                                dataComplexFields[k].push({ id: v.level, name: (v.levelName || v.level) })
                             }
                         } else {
                             dataComplexFields[k] = v.level
-                                    ? [v.level]
+                                    ? [{ id: v.level, name: v.levelName || v.level }]
                                     : []
                         }
                     })
+                    dataComplexFields[k].sort((a, b) => +a.id - +b.id);
                 }
             })
         })
@@ -75,13 +77,13 @@ class CustomBar {
             .append('div');
         // Dropdown toggler
         dropdown.append('a')
-            .attr('class', 'btn-clean dropdown-toggle dropdown-noafter')
+            .attr('class', 'btn-clean dropdown-toggle dropdown-noafter f-bold')
             .attr('role', 'button')
             .attr('id', dropdownId)
             .attr('data-toggle', 'dropdown')
             .attr('aria-expanded', 'false')
             .attr('aria-haspopup', 'true')
-            .html(label);
+            .html(label + " <i class='fas fa-chevron-down ml-2'></i>");
         const dropdownMenuClass = 'dropdown-menu dropdown-menu-arrow' 
             + ' clickoutside-dropdown'
             + (end ? ' dropdown-menu-right' : '')
@@ -90,15 +92,15 @@ class CustomBar {
             .attr('class', dropdownMenuClass)
             .attr('aria-labelledby', dropdownId)
             .append('div')
-              .attr('class', 'dropdown-menu-content d-flex p-3')
+              .attr('class', 'dropdown-menu-content p-3')
         return dropdownMenu
     }
 
     drawSlider(container, label, sliderClass, options, formatter) {
-        const sliderLabel = addLabel(container, label)
+        const sliderLabel = addLabel(container, label, 1)
         let slider = container
             .append('div')
-            .style('width', '160px')
+            .style('width', '175px')
             .style('margin-top', '1.6rem')
             .style('margin-bottom', '.9rem');
         createSlider(slider, sliderClass, options)
@@ -115,62 +117,98 @@ class CustomBar {
 
         this.container = select(selector)
             .append('div')
-            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0 w-100');
+            .attr('class', 'customBar col-md-10 mx-auto my-0 py-0 w-100')
 
         // Tree visualization
+        const treeTogglerContainer = this.container
+            .append('div')
+            .attr("class", "mr-auto btn-group split-btn-group")
+            .style("margin-top", "1.7rem");
+
         const treeDropdown = this.drawDropdown(
-            this.container.append('div'),
+            treeTogglerContainer,
             "Tree visualization",
             "treeVizDropdown",
         );
+
+        treeTogglerContainer
+            .append("div")
+            .append("button")
+            .attr("class", "btn-clean toggleTree")
+            .append("i")
+            .attr("class", () => "fas fa-" + 
+                (options.showTree ? "times" : "plus"));
+
+        const treeDropdownButtons = treeDropdown
+            .append("div")
+            .attr("class", "d-flex")
+            .style("min-width", "350px");
         addCheckButton(
-            treeDropdown,
-            "Toggle tree",
-            "toggleTree",
-            options.showTree,
+            treeDropdownButtons,
+            "Shrink width",
+            "shrinkTreeWidth",
+            options.shrinkTreeWidth,
+        );
+        addCheckButton(
+            treeDropdownButtons,
+            "Branch length",
+            "branchLength",
+            options.branchLength,
+        );
+        addCheckButton(
+            treeDropdownButtons,
+            "Branch support",
+            "branchSupport",
+            options.branchSupport,
         );
         if (this.treeFields) {
             let leafTextSelect = treeDropdown
-                .append('div');
+                .append('div')
+                .attr("class", "mt-4");
             addLabel(leafTextSelect,
-                'Tree visualization')
+                'Text on leaf')
             leafTextSelect = addCustomSelect(leafTextSelect,
                     'leafText',
                     'leafText');
             leafTextSelect.setChoices(
-            [{ value: '', label: 'Leaf text', selected: true, disabled: true },
-                ...this.treeFields.map(f => {
-                    return { value : f, label : capitalize(f) }
+            [{ value: '___', label: 'Off', selected: false },
+             ...this.treeFields.map(f => {
+                return { value : f, label : capitalize(f), 
+                         selected: f === options.leafText }
                 })
             ])
         }
 
         // Scaling
         const scalingDropdown = this.drawDropdown(
-            this.container.append('div'),
-            "Gene dimensions",
+            this.container.append('div')
+                .style("margin-top", "1.7rem"),
+            "Genomic context visualization",
             "scalingDropdown"
         );
+        const scalingDropdownButtons = scalingDropdown
+            .append("div")
+            .attr("class", "d-flex");
         addCheckButton(
-            scalingDropdown,
-            "Collapse height",
-            "collapseHeight",
-            options.collapseHeight,
-        );
-        addCheckButton(
-            scalingDropdown,
+            scalingDropdownButtons,
             "Scale by length",
             "scaleDist",
             options.scaleDist,
         );
+        addCheckButton(
+            scalingDropdownButtons,
+            "Collapse height",
+            "collapseHeight",
+            options.collapseHeight,
+        );
         this.drawSlider(
             scalingDropdown
                 .append('div')
-                .attr('class', 'ml-3'),
+                .attr('class', 'ml-3 mt-4'),
             'Scaling zoom',
             'zoomSlider',
             {
-                start : 1,
+                start : options.zoom,
                 step : 0.1,
                 min : 0.1,
                 max : 2
@@ -179,52 +217,67 @@ class CustomBar {
         );
 
         // Neighbors
-        const neighborsDropdown = this.drawDropdown(
-            this.container.append('div'),
-            "Neighbors",
-            "neighborsDropdown"
-        );
+        //const neighborsDropdown = this.drawDropdown(
+            //this.container.append('div'),
+            //"Neighbors",
+            //"neighborsDropdown"
+        //);
         this.drawSlider(
-            neighborsDropdown.append('div'),
-            'Genes up/downstream',
-            'nSideSlider',
+            scalingDropdown.append('div').attr("class", 'ml-3 mt-4'),
+            'Genes upstream',
+            'nSideSliderUp',
             {
-                start : options.nSide,
+                start : options.nSide.up,
                 step : 1,
                 min : 0,
                 max : 10
             },
             n => Math.round(+n)
         );
-        let geneTextSelect = neighborsDropdown
-            .append('div');
+        this.drawSlider(
+            scalingDropdown.append('div').attr("class", 'ml-3 mt-4'),
+            'Genes downstream',
+            'nSideSliderDown',
+            {
+                start : options.nSide.down,
+                step : 1,
+                min : 0,
+                max : 10
+            },
+            n => Math.round(+n)
+        );
+        let geneTextSelect = scalingDropdown
+            .append('div')
+            .attr("class", "mt-4");
         addLabel(geneTextSelect,
-            'Show on gene');
+            'Text on gene');
         geneTextSelect = addCustomSelect(geneTextSelect,
                 'geneText',
                 'geneText');
         geneTextSelect.setChoices(
         [{ value: '', label: 'Gene text', selected: true, disabled: true },
             ...this.dataSimpleFields.map(f => {
-                return { value : f, label : capitalize(f) }
+                return { value : f, label : capitalize(f), selected: f === options.geneText }
             })
         ])
 
-        // Legend
-        const legendDropdown = this.drawDropdown(
-            this.container.append('div'),
-            "Color by",
-            "legendDropdown",
-            true,
-        )
-        addCheckButton(
-            legendDropdown,
-            "Toggle legend",
-            "toggleLegend",
-            options.showLegend,
-        )
-        let annotationSelect = legendDropdown
-            .append('div')
+        this.drawSlider(
+            this.container
+                .append('div'),
+            'Conservation threshold',
+            'conservationSlider',
+            {
+                start : options.conservationThreshold,
+                step : 0.01,
+                min : 0.0,
+                max : 1
+            },
+            n => (+n).toFixed(2)
+        );
+        
+        // Gene color
+        let annotationSelect = this.container
+            .append('div');
         addLabel(annotationSelect,
             'Color genes by')
             //.style('text-align', 'center');
@@ -232,18 +285,16 @@ class CustomBar {
                 'annotation',
                 'annotation')
         annotationSelect.setChoices(
-        [{ value: '', label: 'Color', selected: true, disabled: true },
-            ...this.dataKeys.map(k => {
-                return { value : k, label : capitalize(k) }
-            })
-        ])
+            this.dataKeys.map(k => {
+                return { value : k, label : capitalize(k), selected: k === options.annotation }
+            }))
 
-        const levelSelect = legendDropdown
+        this.levelSelectContainer = this.container
             .append('div');
-        addLabel(levelSelect,
+        addLabel(this.levelSelectContainer,
             'Annotation level')
             //.style('text-align', 'center');
-        this.levelSelect = addCustomSelect(levelSelect,
+        this.levelSelect = addCustomSelect(this.levelSelectContainer,
                 'annotationLevel',
                 'annotationLevel')
         this.levelSelect.setChoices([
@@ -251,20 +302,51 @@ class CustomBar {
         ])
         this.updateLevels('');
 
-        const shuffleColors = legendDropdown
-            .append('div');
-        shuffleColors
+
+        // Legend
+        const legendTogglerContainer = this.container.append('div')
+                .attr("class", "ml-auto mr-0 btn-group split-btn-group")
+                .style("margin-top", "1.7rem");
+
+        legendTogglerContainer
             .append('button')
-            .attr('class', 'shuffleColors btn-clean')
+            .attr('class', 'shuffleColors btn-clean f-bold')
             .style('width', '7rem')
             .html('Shuffle colors');
 
-        const downloadPng = this.container
-            .append('div');
-        downloadPng
-            .append('button')
-            .attr('class', 'downloadPng btn-clean')
-            .html('Download image');
+        legendTogglerContainer
+            .append("div")
+            .append("button")
+            .attr("class", "btn-clean toggleLegend")
+            .append("i")
+            .attr("class", () => "fas fa-" + 
+                (options.showLegend ? "times" : "plus"));
+
+        //const legendDropdown = this.drawDropdown(
+            //legendTogglerContainer,
+            //"Legend control panel",
+            //"legendDropdown",
+            //true,
+        //)
+
+        //const legendDropdownButtons = legendDropdown
+            //.append("div")
+            //.attr("class", "d-flex mb-4");
+
+        //addCheckButton(
+            //legendDropdownButtons,
+            //"Split legend",
+            //"splitLegend",
+            //options.splitLegend,
+        //);
+
+
+        //const downloadPng = this.container
+            //.append('div');
+        //downloadPng
+            //.append('button')
+            //.attr('class', 'downloadPng btn-clean')
+            //.html('Download image');
 
         // Deal with choices and dropdowns not working properly
         this.container
@@ -286,18 +368,22 @@ class CustomBar {
             })
     }
 
-    updateLevels(annotation) {
+    updateLevels(annotation, annotationLevel) {
         const levels = this.dataComplexFields[annotation] || [];
         this.levelSelect.clearChoices();
         this.levelSelect.setChoices(levels.map((l, idx) => {
-            if (idx == 0) {
-                return { value: l, label: capitalize(l), selected: true }
-            }
-            return { value: l, label: capitalize(l) }
+            const selected = (!annotationLevel && idx == 0) 
+                || (annotationLevel && l.id == annotationLevel);
+            return { value: l.id, label: capitalize(l.name), selected: selected }
         }))
-        const levelSelect = this.container.select('select.annotationLevel');
-        if (nonEmptyArray(levels)) levelSelect.attr('disabled', null);
-        else levelSelect.attr('disabled', '');
+        if (nonEmptyArray(levels))
+            this.levelSelectContainer
+                .style("pointer-events", "all")
+                .style("opacity", 1);
+        else 
+            this.levelSelectContainer
+                .style("pointer-events", "none")
+                .style("opacity", 0.5);
     }
 }
 

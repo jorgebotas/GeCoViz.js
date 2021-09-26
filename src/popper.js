@@ -165,7 +165,7 @@ var PopperCreate = function(selector, d, URLs) {
 
 var TreePopper = function(selector,
                     id,
-                    popperHTML,
+                    popperDecoratorCallback,
                     popperClass) {
     let popper = select(selector)
                 .append('div')
@@ -174,14 +174,14 @@ var TreePopper = function(selector,
                 .attr('role', 'tooltip')
     // popper content
     popper.append('div')
-        .attr('class', 'popper-content card-body h6 pt-2')
-        .html(popperHTML);
+        .attr('class', 'popper-content card-body h6 pt-2');
+    popperDecoratorCallback(popper);
     // popper arrow
     popper.append('div')
         .attr('class', 'popper-arrow')
         .attr('data-popper-arrow', '');
     popper = popper.node();
-    let ref = document.querySelector(selector + ' g#leaf' + id);
+    let ref = document.querySelector(selector + ' g#node' + id);
     createPopper(ref, popper, {
           placement: 'right',
           modifiers: [
@@ -219,7 +219,7 @@ var PopperClick = function(selector) {
         }
 
         let targetID;
-        const targetClasses = ['gene', 'leaf', 'popper', 'customBar-item'];
+        const targetClasses = ['gene', 'node', 'popper', 'customBar-item'];
         targetClasses.forEach(c => {
             try { targetID = lookForParent(e.target, c).id } catch {}
         })
@@ -229,7 +229,7 @@ var PopperClick = function(selector) {
         const suffix = targetID.slice(4);
         const popper = document.querySelector(`${selector} .popper#popr${suffix}`);
         let poppers = selectAll(`${selector} .popper`);
-        if (!(['gene','leaf','popr', 'cbit'].includes(prefix)) || popper == null)
+        if (!(['gene','node','popr', 'cbit'].includes(prefix)) || popper == null)
             poppers.remove();
         poppers = poppers.nodes();
         if(popper != null && poppers.length > 1)
