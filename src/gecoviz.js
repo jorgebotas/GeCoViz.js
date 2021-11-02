@@ -1717,6 +1717,10 @@ function GeCoViz(selector, opts) {
     return graph;
   };
 
+    graph.nAnchors = function() {
+        return anchors.length;
+    }
+
   graph.annotation = function (not, level = undefined) {
     if (!arguments.length) return annotation;
     annotation = not;
@@ -1794,7 +1798,7 @@ function GeCoViz(selector, opts) {
   };
 
   // Download
-  graph.toPng = function () {
+  graph.toPng = function (fileName="GeCoViz") {
     function filterNodes(node) {
       if (node.tagName == "input") return false;
       let classes = ["popper", "stroke"];
@@ -1816,13 +1820,13 @@ function GeCoViz(selector, opts) {
     let toDownload = graphContainer.node();
     domtoimage
       .toPng(toDownload, { filter: filterNodes })
-      .then((blob) => saveAs(blob, "GeCoViz.png"))
+      .then((blob) => saveAs(blob, `${fileName}.png`))
       .then(() => drawLegend())
       .then(() => select(":root").style("cursor", "default"));
     return graph;
   };
 
-  graph.toSvg = function() {
+  graph.toSvg = function(fileName="GeCoViz") {
     // Set cursor to progress
     select(":root").style("cursor", "progress");
     const old_viewport = graph.viewPort();
@@ -1863,7 +1867,7 @@ function GeCoViz(selector, opts) {
     const content = "data:image/svg+xml;base64," + btoa(svg_xml);
     const element = document.createElement("a");
     element.setAttribute("href", encodeURI(content));
-    element.setAttribute("download", "GeCoViz.svg");
+    element.setAttribute("download", `${fileName}.svg`);
     element.style.display = "none";
     document.body.appendChild(element);
     element.click();

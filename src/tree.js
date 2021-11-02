@@ -180,6 +180,8 @@ var Tree = function(selector,
     }
 
     function getNodeId(n) {
+        if (n._children)
+            return `leaf${cleanString(n._children[0].data.name)}`
         const id = n.data.name ? n.data.name : `-inner${n.data.id}`;
         return "node" + cleanString(id)
     }
@@ -332,8 +334,8 @@ var Tree = function(selector,
 
     function updateLeafText() {
         updateWidth();
-        // Both leaves and collapsed inner nodes (now external)
-        const externalNodes = vis.selectAll("g.leaf.node, g.external.node");
+        // Both leaves and collapsed inner nodes
+        const externalNodes = vis.selectAll("g.leaf.node, g.collapsed.node");
         externalNodes.select('text')
             .transition()
             .duration(duration)
@@ -347,6 +349,7 @@ var Tree = function(selector,
     graph.update = function (source=treeRoot, firstTime=false) {
         // compute the new height
         updateHeight();
+        treeRoot = tree(treeRootHierarchy);
         const nodes = treeRoot.descendants();
         // Scale branches by length
         const scale = scaleBranchLength(nodes)
@@ -512,6 +515,7 @@ var Tree = function(selector,
         const nodeUpdate = nodeEnter
             .merge(node)
             .attr("class", getNodeClass)
+            .attr('id', getNodeId)
             .transition()
             .duration(duration)
             .delay(delay.update)
@@ -657,7 +661,6 @@ var Tree = function(selector,
                 removeChild(d.parent);
         }
         removeChild(hierarchyNode);
-        treeRoot = tree(treeRootHierarchy);
         graph.update(node, true);
     }
 
