@@ -148,13 +148,40 @@ var applyCss = function(container, stylesheet) {
     container.appendChild(style_element);
 }
 
+function addCss(styles) {
+    /* Create style element */
+    const css = document.createElement('style');
+
+    if (css.styleSheet)
+        css.styleSheet.cssText = styles;
+    else
+        css.appendChild(document.createTextNode(styles));
+     
+    /* Append style to the head element */
+    document.getElementsByTagName("head")[0].appendChild(css);
+}
+
+function hexToRgbA(hex, a){
+    var c;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+        c= hex.substring(1).split('');
+        if(c.length== 3){
+            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c= '0x'+c.join('');
+        return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+`,${a})`;
+    }
+    throw new Error('Bad Hex');
+}
 
 export {
     addCheckbox,
     addCheckButton,
     addCustomSelect,
     addLabel,
+    addCss,
     applyCss,
+    hexToRgbA,
     capitalize,
     cleanString,
     counter,

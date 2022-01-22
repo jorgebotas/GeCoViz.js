@@ -34,7 +34,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "@jbotas/d3-heatmap": "^1.2.5",
+    "@jbotas/d3-heatmap": "^1.3.4",
     "@popperjs/core": "^2.9.1",
     "choices.js": "^9.0.1",
     "core-js": "^3.9.1",

@@ -16,7 +16,7 @@ import domtoimage from "dom-to-image";
 import { saveAs } from "file-saver";
 import Heatmap from "@jbotas/d3-heatmap";
 import CustomBar from "./customBar";
-import { addCheckbox, applyCss, cleanString, triggerEvent } 
+import { addCheckbox, applyCss, addCss, hexToRgbA, cleanString, triggerEvent } 
        from "./helpers";
 import parseNewick from "./newick";
 import Palette from "./palette";
@@ -36,7 +36,8 @@ function GeCoViz(selector, opts) {
   var unfData = [];
   var data = [];
   var heatmap;
-  var heatmapData = { data: undefined, unfData: undefined, vars: undefined };
+  var heatmapData = { data: undefined, unfData: undefined, 
+                      vars: undefined, colors: undefined, name: "Heatmap" };
   var tree;
   var treeData = { newick: undefined, leafText: "name", 
                    fields: ["name"], leafHeight: 18 };
@@ -253,11 +254,9 @@ function GeCoViz(selector, opts) {
         && +d.pos >= -nSide.up
         && filterAnchor(d.anchor)
     );
-    anchors = data.filter((d) => d.pos == 0);
+    anchors = data.filter(d => d.pos == 0);
     if (heatmapData.unfData)
-      heatmapData.data = heatmapData.unfData.filter((d) =>
-        filterAnchor(d.anchor)
-      );
+      heatmapData.data = heatmapData.unfData.filter(d => filterAnchor(d.anchor));
       if (options.scaleDist) {
           const scale = computeCoordinates();
           if (initialized) {
@@ -473,8 +472,7 @@ function GeCoViz(selector, opts) {
   }
 
   function formatAnnotation(n) {
-    let unfAnnots =
-      !n || n.length == 0
+    let unfAnnots = ( n === null || n === undefined || n.length == 0 )
         ? [{ id: "NA" }]
         : typeof n == "object"
         ? n
@@ -488,7 +486,30 @@ function GeCoViz(selector, opts) {
   }
 
   function updateAnnotation() {
-    contextG.selectAll("g.gene").each((g) => updateGene(g));
+    contextG.selectAll("g.gene").each(g => updateGene(g));
+  }
+
+  // GUI highlighters
+    
+  function highlightTreeLeaf(anchor, highlight=true) {
+      const leaf = graphContainer.select("#node" + cleanString(anchor));
+      const leafCircle = leaf.select("circle");
+      const leafText = leaf.select("text");
+      leafCircle
+        .style("stroke", highlight ? color.highlight : leafColor.stroke)
+        .style("fill", highlight ? color.highlight : leafColor.fill);
+      leafText.style("fill", highlight ? color.highlight : color.darkGray);
+  }
+
+  function highlightHeatmap(anchor, highlight=true) {
+    graphContainer.selectAll(`.heatRect.y_${cleanString(anchor)}`)
+        .style("stroke", highlight ? "black" : "none")
+        .style("opacity", highlight ? 1 : .6);
+  }
+
+  function highlightGene(anchor, highlight=true) {
+    const genes = graphContainer.selectAll(`[id^="gene${cleanString(anchor)}"]`);
+    genes.select(".stroke").style("opacity", highlight ? 1 : 0);
   }
 
   // Gene listeners
@@ -505,14 +526,13 @@ function GeCoViz(selector, opts) {
       else
           stroke.style("opacity", 1);
       geneName.style("fill", color.black);
+
       // Highlight tree
-      const leaf = graphContainer.select("#node" + cleanString(d.anchor));
-      const leafCircle = leaf.select("circle");
-      const leafText = leaf.select("text");
-      leafCircle
-        .style("stroke", color.highlight)
-        .style("fill", color.highlight);
-      leafText.style("fill", color.highlight);
+      highlightTreeLeaf(d.anchor);
+
+      // Highlight heatmap
+      highlightHeatmap(d.anchor);
+
       let annots = d[annotation];
       if (typeof annots != "object") annots = [{ id: annots }];
       annots.filter(filterByLevel).forEach((n) => {
@@ -530,14 +550,13 @@ function GeCoViz(selector, opts) {
       else
           stroke.style("opacity", 0);
       geneName.style("fill", color.white);
+
       // Highlight tree
-      const leaf = graphContainer.select("#node" + cleanString(d.anchor));
-      const leafCircle = leaf.select("circle");
-      const leafText = leaf.select("text");
-      leafCircle
-        .style("stroke", leafColor.stroke)
-        .style("fill", leafColor.fill);
-      leafText.style("fill", color.darkGray);
+      highlightTreeLeaf(d.anchor, false);
+
+      // Highlight heatmap
+      highlightHeatmap(d.anchor, false);
+
       let annots = d[annotation];
       if (typeof annots != "object") annots = [{ id: annots }];
       annots.filter(filterByLevel).forEach((n) => {
@@ -920,12 +939,23 @@ function GeCoViz(selector, opts) {
             bottom: 5,
             left: 5,
           },
-          height: height,
+          //height: height,
           showX: false,
           showY: false,
           rect: { height: geneRect.h },
-        }
+          customColors: heatmapData.colors,
+          name: heatmapData.name,
+        },
+        { mouseEnter: heatmapMouseEnter, mouseLeave: heatmapMouseLeave }
       );
+      customBar.updateHeatmapFields(heatmap.dataX.map(d => {
+          return { name: d, class: `heatmap_${cleanString(d)}` } 
+      }))
+
+      const css = Object.entries(heatmapData.colors).map(([k, v]) =>
+          `.customBar .${k}:checked + .form-selectgroup-label { 
+              background: ${hexToRgbA(v, 0.2)};}`);
+      addCss(css);
   }
 
   function initGraph() {
@@ -939,6 +969,7 @@ function GeCoViz(selector, opts) {
         annotation: annotation,
         annotationLevel: annotationLevel,
         conservationThreshold: annotationScoreThreshold,
+        heatmapName: heatmapData.name,
     });
     customBar.updateLevels(annotation, annotationLevel);
 
@@ -1046,10 +1077,6 @@ function GeCoViz(selector, opts) {
     });
     // Tree toggler
     const treeToggler = container.select("button.toggleTree");
-    treeToggler.on("change", () => {
-      options.showTree = treeToggler.property("checked");
-      options.showTree ? graph.toggleTree(true) : graph.toggleTree(false);
-    });
     treeToggler.on("click", () => {
         options.showTree = !options.showTree;
         graph.toggleTree(options.showTree);
@@ -1077,14 +1104,31 @@ function GeCoViz(selector, opts) {
       options.branchSupport = treeBranchSupport.property("checked");
       tree.branchSupport(options.branchSupport);
     });
-    // Heatmap toggler
-    const heatmapToggler = container.select("input.toggleHeatmap");
-    heatmapToggler.on("change", () => {
-      options.showHeatmap = heatmapToggler.property("checked");
-      options.showHeatmap
-        ? graph.toggleHeatmap(true)
-        : graph.toggleHeatmap(false);
-    });
+    if (heatmap.data) {
+        // Heatmap toggler
+        const heatmapToggler = container.select("button.toggleHeatmap");
+        heatmapToggler.on("click", () => {
+            options.showHeatmap = !options.showHeatmap;
+            graph.toggleHeatmap(options.showHeatmap);
+            heatmapToggler.select("i")
+                .attr("class", () => "fas fa-" + 
+                    (options.showHeatmap ? "times" : "plus"));
+        })
+        const allAnchors = unfData.filter(d => d.pos == 0);
+        heatmap.dataX.forEach(d => {
+            const dClass = `heatmap_${cleanString(d)}`;
+            const checkbox = container.select(`input.${dClass}`)
+            checkbox.on("change", () => {
+                const toModify = allAnchors.filter(a => {
+                    const ids = a[heatmapData.vars.x].map(d => d.id);
+                    return ids.includes(d);
+                }).map(a => a.anchor);
+                toModify.forEach(a => 
+                    graph.excludeAnchor(cleanString(a), !checkbox.property("checked")));
+            })
+        })
+    }
+
     // Legend toggler
     const legendToggler = container.select("button.toggleLegend");
     legendToggler.on("click", () => {
@@ -1474,15 +1518,17 @@ function GeCoViz(selector, opts) {
   }
 
   function treeLeafMouseEnter(_, l) {
-    const anchor = cleanString(l.data.name);
-    const genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
-    genes.select(".stroke").style("opacity", 1);
+    const anchor = l.data.name;
+    highlightTreeLeaf(anchor, true);
+    highlightGene(anchor, true);
+    highlightHeatmap(anchor, true);
   }
 
   function treeLeafMouseLeave(_, l) {
-    const anchor = cleanString(l.data.name);
-    const genes = graphContainer.selectAll(`[id^="gene${anchor}"]`);
-    genes.select(".stroke").style("opacity", 0);
+    const anchor = l.data.name;
+    highlightTreeLeaf(anchor, false);
+    highlightGene(anchor, false);
+    highlightHeatmap(anchor, false);
   }
 
   function treeNodeClick(event, n) {
@@ -1520,6 +1566,19 @@ function GeCoViz(selector, opts) {
       );
   }
 
+
+  // Heatmap callbacks
+  function heatmapMouseEnter(_, d) {
+    highlightTreeLeaf(d.anchor, true);
+    highlightGene(d.anchor, true);
+  }
+
+
+  function heatmapMouseLeave(_, d) {
+    highlightTreeLeaf(d.anchor, false);
+    highlightGene(d.anchor, false);
+  }
+
   // GECOVIZ MODIFIERS
 
   // Data
@@ -1543,7 +1602,7 @@ function GeCoViz(selector, opts) {
     return graph;
   };
 
-  graph.heatmapData = function (newHeatmapData, vars) {
+  graph.heatmapData = function (newHeatmapData, vars, colors, name) {
     if (!arguments.length) return heatmapData;
     if (newHeatmapData) {
       heatmapData.unfData = newHeatmapData;
@@ -1552,6 +1611,8 @@ function GeCoViz(selector, opts) {
       );
     }
     if (vars) heatmapData.vars = vars;
+    if (colors) heatmapData.colors = colors;
+    if (name) heatmapData.name = name;
     if (heatmapData.data) options.showHeatmap = true;
     return graph;
   };
@@ -1717,10 +1778,6 @@ function GeCoViz(selector, opts) {
     return graph;
   };
 
-    graph.nAnchors = function() {
-        return anchors.length;
-    }
-
   graph.annotation = function (not, level = undefined) {
     if (!arguments.length) return annotation;
     annotation = not;
@@ -1753,7 +1810,7 @@ function GeCoViz(selector, opts) {
     if (exclude && !excludedAnchors.includes(anchor))
       excludedAnchors.push(anchor);
     else if (!exclude && excludedAnchors.includes(anchor))
-      excludedAnchors = excludedAnchors.filter((a) => a != anchor);
+      excludedAnchors = excludedAnchors.filter(a => a != anchor);
 
     timer = setTimeout(() => {
         if (initialized) {

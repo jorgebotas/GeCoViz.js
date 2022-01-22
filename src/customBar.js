@@ -31,6 +31,7 @@ class CustomBar {
         this.computeFields();
         this.levelSelect;
         this.levelSelectContainer;
+        this.heatmapDropdownButtons;
     }
 
     computeDataKeys() {
@@ -178,12 +179,38 @@ class CustomBar {
                 })
             ])
         }
+        
+        // Heatmap visualization
+        const heatmapTogglerContainer = this.container
+            .append('div')
+            .attr("class", "mr-auto btn-group split-btn-group")
+            .style("margin-top", "1.7rem");
+
+        const heatmapDropdown = this.drawDropdown(
+            heatmapTogglerContainer,
+            `${options.heatmapName}`,
+            "heatmapVizDropdown",
+        );
+
+        heatmapTogglerContainer
+            .append("div")
+            .append("button")
+            .attr("class", "btn-clean toggleHeatmap")
+            .append("i")
+            .attr("class", () => "fas fa-" + 
+                (options.showHeatmap ? "times" : "plus"));
+
+        this.heatmapDropdownButtons = heatmapDropdown
+            .append("div")
+            .attr("class", "d-flex")
+            .style("min-width", "350px");
+
 
         // Scaling
         const scalingDropdown = this.drawDropdown(
             this.container.append('div')
                 .style("margin-top", "1.7rem"),
-            "Genomic context visualization",
+            "Context visualization",
             "scalingDropdown"
         );
         const scalingDropdownButtons = scalingDropdown
@@ -260,20 +287,6 @@ class CustomBar {
                 return { value : f, label : capitalize(f), selected: f === options.geneText }
             })
         ])
-
-        this.drawSlider(
-            this.container
-                .append('div'),
-            'Conservation threshold',
-            'conservationSlider',
-            {
-                start : options.conservationThreshold,
-                step : 0.01,
-                min : 0.0,
-                max : 1
-            },
-            n => (+n).toFixed(2)
-        );
         
         // Gene color
         let annotationSelect = this.container
@@ -302,6 +315,20 @@ class CustomBar {
         ])
         this.updateLevels('');
 
+        // Conservation slider
+        this.drawSlider(
+            this.container
+                .append('div'),
+            'Conservation threshold',
+            'conservationSlider',
+            {
+                start : options.conservationThreshold,
+                step : 0.01,
+                min : 0.0,
+                max : 1
+            },
+            n => (+n).toFixed(2)
+        );
 
         // Legend
         const legendTogglerContainer = this.container.append('div')
@@ -384,6 +411,11 @@ class CustomBar {
             this.levelSelectContainer
                 .style("pointer-events", "none")
                 .style("opacity", 0.5);
+    }
+
+    updateHeatmapFields(fields) {
+        fields.forEach(f =>
+            addCheckButton(this.heatmapDropdownButtons, f.name, f.class, true));
     }
 }
 

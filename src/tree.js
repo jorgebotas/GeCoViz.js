@@ -440,7 +440,7 @@ var Tree = function(selector,
                                     if (n.children || n._children)
                                         collapseNode({ altKey: false }, n);
                                     else
-                                        callbacks.enterClick({ altKey:true }, n);
+                                        callbacks.enterClick({ shiftKey: true }, n);
                                     visDiv.selectAll(".popper").remove();
                                 })
                             popperContent.append("button")
